@@ -1,0 +1,54 @@
+[bar/top]
+font-0 = scientifica
+bottom = false
+modules-left = workspaces
+modules-right = volume spacer bt_device spacer wifi spacer battery spacer date
+module-margin = 1
+height = 11
+
+[module/spacer]
+type = custom/script
+exec = echo "%{F#444444}|%{F-}"
+label = %output%
+
+[module/battery]
+type = custom/script
+exec = ~/polybar/gen_battery.sh
+label = %output%
+
+[module/date]
+type = internal/date
+time = %H:%M
+date = %m-%d-%Y
+label = %{F#B48EAD}%time% %{F#444444}|%{F-} %{F#B48EAD}%date%%{F-}
+
+[module/vpn]
+type = custom/script
+exec = ~/polybar/gen_vpn.sh
+label = %output%
+
+[module/wifi]
+type = custom/script
+exec = ~/polybar/gen_wifi.sh
+label = %output%
+
+[module/volume]
+type = internal/pulseaudio
+format-volume = %{F#B48EAD}<bar-volume>%{F-}
+bar-volume-width = 10
+interval = 10
+bar-volume-empty = "."
+bar-volume-fill = "."
+bar-volume-indicator = |
+
+[module/bt_device]
+type = custom/script
+exec = zsh ~/polybar/bt_devices.sh
+label = %output%
+
+[module/workspaces]
+type = internal/i3
+pin-workspaces = true
+label-focused-foreground = #B48EAD
+label-unfocused-foreground = #666666
+label-urgent-foreground = #FF0000
