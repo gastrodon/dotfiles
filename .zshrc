@@ -68,7 +68,7 @@ ZSH_THEME="liner"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -97,8 +97,20 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias please=sudo
-funciton mkcd () {mkdir -pv $1; cd $1}
+alias please="/bin/sudo"
+function sudo {
+	echo "Did you mean \"please $@\"?"
+}
+alias aws="python -m awscli"
+funciton mkcd () {mkdir "$@" && cd $1}
 function mkvenv () {mkdir -pv $1; python -m virtualenv $1; source $1/bin/activate}
 
 # disable stderr output so that my theme may handle it
+source ~/.gvm/scripts/gvm
+
+export RM_STAR_SILENT=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
