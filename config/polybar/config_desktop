@@ -2,7 +2,7 @@
 font-0 = scientifica
 bottom = false
 modules-left = workspaces
-modules-right = volume spacer bt_device spacer ip spacer date
+modules-right = volume spacer ip spacer date
 module-margin = 1
 height = 11
 
