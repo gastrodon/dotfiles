@@ -3,7 +3,7 @@ monitor = ${env:MONITOR}
 font-0 = scientifica
 bottom = false
 modules-left = workspaces
-modules-right = volume spacer bt_device spacer wifi spacer battery spacer date
+modules-right = volume spacer bt_device spacer wifi spacer battery0 spacer battery1 spacer date
 module-margin = 1
 height = 11
 
@@ -12,9 +12,14 @@ type = custom/script
 exec = echo "%{F#444444}|%{F-}"
 label = %output%
 
-[module/battery]
+[module/battery0]
 type = custom/script
-exec = ~/.config/polybar/scripts/gen_battery.sh
+exec = ~/.config/polybar/scripts/gen_battery.sh 0
+label = %output%
+
+[module/battery1]
+type = custom/script
+exec = ~/.config/polybar/scripts/gen_battery.sh 1
 label = %output%
 
 [module/date]
