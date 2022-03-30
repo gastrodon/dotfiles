@@ -4,7 +4,7 @@ ZSH_THEME="liner"
 CASE_SENSITIVE="false"
 HYPHEN_INSENSITIVE="false"
 
-export EDITOR="atom --wait"
+export EDITOR="atom --no-sandbox --wait"
 export ZSH="$HOME/.oh-my-zsh"
 export NVM_DIR="$HOME/.config/nvm"
 export PATH="$HOME/.local/bin:$HOME/.local/bin/scripts:$PATH"
