@@ -1,0 +1,9 @@
+#!/bin/sh
+
+rm -rf "$HOME/.dotfiles" \
+  && ln -s $(pwd) "$HOME/.dotfiles" 2>/dev/null || :
+
+mkdir -p $HOME/.{font,config,oh-my-zsh/custom}
+for it in "tokens" "zshrc" "config/i3" "font/gomme" "oh-my-zsh/custom/themes"; do
+  rm -rf "$HOME/.$it" && ln -s $HOME/{.dotfiles/,}.$it
+done
