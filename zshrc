@@ -19,6 +19,7 @@ source $ZSH/oh-my-zsh.sh
 [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
 
+alias atom='atom --no-sandbox'
 alias clear='printf "\033c"'
 
 [ -z "$NO_SSH_AGENT" ] && [ -z "$SSH_AGENT_PID" ] \
