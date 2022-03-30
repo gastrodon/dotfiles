@@ -5,4 +5,5 @@ language-v
 minimap
 minimap-lens
 minimap-pigments
+on-save
 sort-lines

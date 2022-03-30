@@ -1,1 +1,4 @@
+secret/**
+
 .tokens
+.on-save.json
