@@ -21,6 +21,7 @@ source $ZSH/oh-my-zsh.sh
 
 alias atom='atom --no-sandbox'
 alias clear='printf "\033c"'
+alias bew='brew'
 
 [ -z "$NO_SSH_AGENT" ] && [ -z "$SSH_AGENT_PID" ] \
   && eval $(ssh-agent -s) > /dev/null \
