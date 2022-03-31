@@ -68,9 +68,12 @@ in_repo_unpushed() {
 		&& above_default="$(git log --oneline "$name_remote/$name_branch_default".."$name_branch" | wc -l)" \
 		|| above_default="0"
 
+
+	delta="$(expr $above_default - $above_remote)"
+
 	[ "$above_remote" -eq "0" ] \
 		&& print -n "$(okay " +$above_remote ")" \
-		|| print -n "$(warn " +$above_remote") $(okay "[ +$above_default ]")"
+		|| print -n "$(warn " +$above_remote") $(okay "[ +$delta ]")"
 }
 
 in_repo() {
