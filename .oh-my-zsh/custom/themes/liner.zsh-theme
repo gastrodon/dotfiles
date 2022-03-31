@@ -108,11 +108,6 @@ prompt_main() {
 
 				line="$(user)@$(host) $(in_directory) $(in_repo)"
 				unpushed="$(in_repo_unpushed)"
-				empty=$(expr $(tput cols) - 19 - $(echo $unpushed | wc -l))
-				#
-				# [ "$unpushed" ] \
-				# 	&& printf "%s%s%*s%s\n%s" "$line" "$(tput setaf 2)" "$empty" "$unpushed" "$(tput sgr0)" "$(line_prompt)" \
-				# 	|| printf "%s\n%s" "$line" "$(line_prompt)"
 
 				print -n "$line$unpushed\n$(line_prompt)"
 }
