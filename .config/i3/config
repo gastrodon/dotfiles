@@ -1,5 +1,5 @@
 exec feh --bg-tile /home/gastrodon/.wall.png
-exec picom &
+exec picom --config /home/gastrodon/.config/picom/config &
 exec MONITOR=DP-2 polybar &
 exec MONITOR=DP-3 polybar &
 
