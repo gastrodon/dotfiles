@@ -1,4 +1,5 @@
-user.name 'Eva'
-user.email 'mail@gastrodon.io'
+commit.verbose true
 core.excludesfile '~/.gitignore'
 pull.rebase false
+user.email 'mail@gastrodon.io'
+user.name 'Eva'
