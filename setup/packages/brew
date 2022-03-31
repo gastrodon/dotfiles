@@ -1,11 +1,13 @@
 atom
 chromium
+coreutils
 deno
 git
 go
 iterm2
 mariadb
 neofetch
+parallel
 python
 python-pip
 rust
