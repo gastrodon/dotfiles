@@ -1,0 +1,24 @@
+#!/bin/sh
+export XDG_CONFIG_HOME="$HOME/.config"
+export PATH="$HOME/.local/bin:$PATH"
+
+# font
+[ -d "/usr/share/fonts/dotfile" ] \
+  && xset fp+ "/usr/share/fonts/dotfile/gomme"
+
+# wallpaper
+feh --bg-tile "/home/gastrodon/.wall.png"
+
+# compositor
+# picom -b &
+
+
+# start the gnome polkit agent
+/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+
+# set super key alone to emulate alt+F1
+ksuperkey -e 'Super_L=Alt_L|F1' &
+ksuperkey -e 'Super_R=Alt_L|F1' &
+
+# set keyboard repeat rate
+xset r rate 350 60
