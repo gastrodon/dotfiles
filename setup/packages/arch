@@ -1,4 +1,6 @@
 atom
+aws-cli-v2-bin
+deno
 expect
 git
 go
@@ -8,5 +10,8 @@ neofetch
 oh-my-zsh
 parallel
 python
+python-pip
+rust
 vim
+yarn
 zsh
