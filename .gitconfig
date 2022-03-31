@@ -1,0 +1,12 @@
+[commit]
+verbose=true
+
+[core]
+excludesfile='~/.gitignore'
+
+[pull]
+rebase=false
+
+[user]
+name="Eva"
+email="mail@gastrodon.io"

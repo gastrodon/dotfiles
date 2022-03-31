@@ -1,5 +1,0 @@
-commit.verbose true
-core.excludesfile '~/.gitignore'
-pull.rebase false
-user.email 'mail@gastrodon.io'
-user.name 'Eva'
