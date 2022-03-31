@@ -5,8 +5,14 @@ rm -rf "$HOME/.dotfiles" \
 
 mkdir -p $HOME/.{font,config,oh-my-zsh/custom}
 for it in \
-  "tokens" "zshrc" "gitignore" \
+  "tokens" "zshrc" "wall.png" "gitignore" \
+  "xinitrc" "xprofile" "Xresources" \
   "config/i3" "font/gomme" "oh-my-zsh/custom/themes"; \
 do
   rm -rf "$HOME/.$it" && ln -s $HOME/{.dotfiles/,}.$it
 done
+
+echo 'exit' | sudo -s
+
+sudo rm -rf "/usr/share/fonts/dotfile" \
+  && sudo ln -s "$HOME/.font" "/usr/share/fonts/dotfile"
