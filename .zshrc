@@ -4,10 +4,15 @@ ZSH_THEME="liner"
 CASE_SENSITIVE="false"
 HYPHEN_INSENSITIVE="false"
 
-export EDITOR="atom --no-sandbox --wait"
+export EDITOR="atom -a --no-sandbox --wait"
 export ZSH="$HOME/.oh-my-zsh"
 export NVM_DIR="$HOME/.config/nvm"
-export PATH="$HOME/.local/bin:$HOME/.local/bin/scripts:$PATH"
+export PATH="$HOME/.local/bin:\
+$HOME/.local/bin/scripts:\
+$HOME/.local/bin:\
+$HOME/.local/bin/scripts:\
+/opt/homebrew/opt/coreutils/libexec/gnubin:\
+$PATH"
 
 zstyle ':omz:update' mode auto    # update automatically without asking
 zstyle ':omz:update' frequency 2  # update every 2 days
@@ -25,4 +30,5 @@ alias bew='brew'
 
 [ -z "$NO_SSH_AGENT" ] && [ -z "$SSH_AGENT_PID" ] \
   && eval $(ssh-agent -s) > /dev/null \
-  && ssh-add "$HOME/.ssh/id_ed25519"
+  && ssh-add "$HOME/.ssh/id_ed25519" \
+  || :

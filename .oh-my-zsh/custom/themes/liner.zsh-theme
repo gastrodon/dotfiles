@@ -16,7 +16,6 @@ error () {
     print -n "$fg[red]$@$fg[white]"
 }
 
-
 user() {
 				print -n "$(whoami)"
 }
