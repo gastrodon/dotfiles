@@ -72,7 +72,7 @@ in_repo_unpushed() {
 	delta="$(expr $above_default - $above_remote)"
 
 	[ "$above_remote" -eq "0" ] \
-		&& print -n "$(okay " +$delta ")" \
+		&& print -n "$(okay " [ +$delta ]")" \
 		|| print -n "$(warn " +$above_remote") $(okay "[ +$delta ]")"
 }
 
