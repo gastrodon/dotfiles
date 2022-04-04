@@ -47,9 +47,18 @@ in_repo_unpushed() {
 		|| [ -z "$(git branch)" ] \
 		&& return
 
-	name_remote="$(git remote)"
-	name_branch="$(git rev-parse --abbrev-ref HEAD)"
-	name_branch_default="master"
+	[ "$NAME_REMOTE" ] \
+		&& name_remote="$NAME_REMOTE" \
+		|| name_remote="$(git remote)"
+
+	[ "$NAME_BRANCH" ] \
+		&& name_branch="$NAME_BRANCH" \
+		|| name_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+	[ "$NAME_BRANCH_DEFAULT" ] \
+		&& name_branch_default="$NAME_BRANCH_DEFAULT" \
+		|| name_branch_default="master"
+
 	# TODO this can fail if we're offline, which happens a lot
 	# name_branch_default="$( \
 	# 	git remote show "$name_remote" \
