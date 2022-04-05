@@ -57,7 +57,7 @@ URxvt*depth: 32
 URxvt*background: [100]#1C2023
 URxvt*scrollBar: false
 URxvt*scrollBar_right: false
-URxvt*internalBorder: 0
+URxvt*internalBorder: 12
 URxvt*externalBorder: 0
 URxvt*letterSpace: -1
 URxvt.font: xft:Gomme
