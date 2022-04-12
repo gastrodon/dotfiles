@@ -1,12 +1,13 @@
 [commit]
-verbose=true
+	verbose=true
 
 [core]
-excludesfile='~/.gitignore'
+	excludesfile='~/.gitignore'
+	pager='cat'
 
 [pull]
-rebase=false
+	rebase=false
 
 [user]
-name="Eva"
-email="mail@gastrodon.io"
+	name="Eva"
+	email="mail@gastrodon.io"
