@@ -8,8 +8,11 @@ iterm2
 mariadb
 neofetch
 parallel
+podman
 python
-python-pip
 rust
+slack
+spotify
+terraform
 vim
 yarn
