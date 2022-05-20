@@ -11,3 +11,5 @@
 [user]
 	name="Eva"
 	email="mail@gastrodon.io"
+[alias]
+	amend = commit --amend --no-edit
