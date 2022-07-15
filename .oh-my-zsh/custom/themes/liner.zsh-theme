@@ -106,11 +106,12 @@ in_repo() {
 
 line_prompt() {
 				color=white
-				[ $RETVAL -ne 0 ] && color=red
+				[ "$RETVAL" -ne 0 ] && color=red
 				[ $(jobs -l | wc -l) -gt 0 ] && color=blue
 
 				prefix="---"
-				[ $RETVAL = "127" ] && prefix="???"
+				[ ! -z "$VIRTUAL_ENV" ] && prefix="~~~"
+				[ "$RETVAL" -eq 127 ] && prefix="???"
 
 				print -n "%{$fg[$color]%}$prefix%{$fg[white]%} "
 }
