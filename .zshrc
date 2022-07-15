@@ -11,6 +11,7 @@ export PATH="$HOME/.local/bin:\
 $HOME/.local/bin/scripts:\
 $HOME/.local/bin:\
 $HOME/.local/bin/scripts:\
+$HOME/go/bin:\
 /opt/homebrew/opt/coreutils/libexec/gnubin:\
 $PATH"
 
