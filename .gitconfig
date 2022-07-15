@@ -3,7 +3,6 @@
 
 [core]
 	excludesfile='~/.gitignore'
-	pager='cat'
 
 [pull]
 	rebase=false
