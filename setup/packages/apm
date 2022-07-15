@@ -3,6 +3,7 @@ atom-material-ui
 fonts
 json-sort
 language-docker
+language-hcl
 language-ini
 language-nginx
 language-rust
