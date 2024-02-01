@@ -44,12 +44,20 @@ segment_git_info() {
 				branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 				print -n "$repo_name%{$fg[$color]%}/$branch_name"
 				 
-				unpushed=$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l)
+				unpushed=$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')
 				if [ $unpushed -gt "0" ]; then
 								print -n "+$unpushed"
 				fi
 
 				print -n "%{$fg[white]%}"
+}
+
+segment_aws_info() {
+	if [ "$AWS_PROFILE" ]; then
+		print -n " [aws:$AWS_PROFILE";
+		if [ "$AWS_REGION" ]; then print -n ", %{$fg[green]%}$AWS_REGION%{$fg[white]%}"; fi
+		print -n "]"
+	fi
 }
 
 segment_pre_line() {
@@ -69,6 +77,7 @@ prompt_main() {
 				segment_user_info
 				segment_path_info
 				segment_git_info
+				segment_aws_info
 				segment_pre_line
 }
 

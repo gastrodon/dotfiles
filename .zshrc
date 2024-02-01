@@ -8,7 +8,6 @@ export ZSH="/home/zero/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-#ZSH_THEME="zagnoster"
 ZSH_THEME="liner"
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -80,11 +79,11 @@ source $ZSH/oh-my-zsh.sh
 # export LANG=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='codium --wait'
+fi
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
@@ -97,20 +96,29 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias please="/bin/sudo"
-function sudo {
-	echo "Did you mean \"please $@\"?"
-}
 alias aws="python -m awscli"
-funciton mkcd () {mkdir "$@" && cd $1}
-function mkvenv () {mkdir -pv $1; python -m virtualenv $1; source $1/bin/activate}
+funciton mkcd () {
+	mkdir "$@" && cd "$1"
+}
 
-# disable stderr output so that my theme may handle it
-source ~/.gvm/scripts/gvm
+function mkvenv () {
+	mkdir -pv "$1"; python -m virtualenv "$1"; source "$1/bin/activate"
+}
 
-export RM_STAR_SILENT=1
+FE_SH_SESSION="$(mktemp -d)/fe.sh"
+touch "$FE_SH_SESSION"
+function fe() {
+	$=EDITOR $FE_SH_SESSION && eval "$(cat $FE_SH_SESSION)"
+}
+
+source ~/.gvm/scripts/gvm # set up go version manager
+
+export RM_STAR_SILENT=1 # disables "are you sure you want to remove ..." zsh warning
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# set up node versoin manager
+export NVM_DIR="$HOME/.config/nvm" # this is different on mac
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+export PATH="$HOME/.cargo/bin:$HOME/go/bin:$PATH"
