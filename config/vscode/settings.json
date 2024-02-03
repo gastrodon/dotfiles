@@ -1,0 +1,31 @@
+{
+    "workbench.startupEditor": "none",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.find.seedSearchStringFromSelection": "never",
+    "files.trimFinalNewlines": true,
+    "security.workspace.trust.untrustedFiles": "open",
+    "explorer.confirmDelete": false,
+    "terraform.experimentalFeatures.validateOnSave": true,
+    "workbench.editor.enablePreview": false,
+    "chatgpt.sessionToken": "",
+    "chatgpt.clearanceToken": "",
+    "chatgpt.timeoutLength": 10,
+    "CodeGPT.model": "gpt-3.5-turbo-16k",
+    "CodeGPT.maxTokens": 3000,
+    "files.associations": {
+        "apply": "shellscript",
+        "*.nomad": "hcl"
+    },
+    "rust-client.rustupPath": "/Users/eva/.cargo/bin/rustup",
+    "rust.clippy_preference": "on",
+    "window.zoomLevel": 1,
+    "workbench.editorAssociations": {
+        "*.gene": "hexEditor.hexedit"
+    },
+    "hexeditor.columnWidth": 16,
+    "hexeditor.showDecodedText": false,
+    "hexeditor.defaultEndianness": "little",
+    "hexeditor.inspectorType": "aside",
+    "editor.fontFamily": "w"
+}
