@@ -27,5 +27,7 @@
     "hexeditor.showDecodedText": false,
     "hexeditor.defaultEndianness": "little",
     "hexeditor.inspectorType": "aside",
-    "editor.fontFamily": "w"
+    "editor.fontFamily": "iosevka ss04",
+    "editor.codeLensFontFamily": "iosevka ss04 thin",
+    "terminal.integrated.fontFamily": "iosevka term ss04"
 }

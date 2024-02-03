@@ -32,7 +32,7 @@
 *color7:  #a89984
 *color15: #ebdbb2
 ! Rofi
-rofi.font: monospace 12
+rofi.font: iosevka ss04 12
 rofi.padding: 20
 rofi.line-padding: 2
 rofi.color-enabled: true
@@ -46,8 +46,8 @@ rofi.kb-cancel: Escape,Alt+F1
 
 ! xterm
 xterm*termName: xterm-256color
-xterm*font: monospace
-xterm*faceName: monospace:size=11
+xterm*font: iosevka term ss04
+xterm*faceName: iosevka term ss04:size=11
 xterm*loginShell: true
 xterm*vt100*geometry: 90x34
 xterm*saveLines: 2000
@@ -65,7 +65,11 @@ URxvt*scrollBar_right: false
 URxvt*internalBorder: 15
 URxvt*externalBorder: 0
 URxvt*letterSpace: -1
-URxvt.font: xft:Gomme
+URxvt.font: xft:iosevka term ss04:size=13:antialias=true
+URxvt.boldFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
+URxvt.italicFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
+URxvt.boldItalicFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
+URxvt.intensityStyles: false
 URxvt.perl-ext-common: default,clipboard,url-select,keyboard-select
 URxvt.copyCommand: xclip -i -selection clipboard
 URxvt.pasteCommand: xclip -o -selection clipboard
