@@ -1,15 +1,15 @@
 // Place your key bindings in this file to override the defaults
 [
     {
-        "key": "cmd+p",
+        "key": "ctrl+p",
         "command": "workbench.action.showCommands"
     },
     {
-        "key": "cmd+o",
+        "key": "ctrl+o",
         "command": "workbench.action.quickOpen"
     },
     {
-        "key": "cmd+t",
+        "key": "ctrl+t",
         "command": "workbench.action.createTerminalEditor"
     },
 ]
