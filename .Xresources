@@ -78,7 +78,7 @@ URxvt.keysym.m-v: perl:clipboard:paste
 URxvt.urlLauncher: exo-open
 URxvt.underlineURLs: true
 URxvt.urlButton: 1
-URxvt.geometry: 90x34
+URxvt.geometry: 400x400
 URxvt.tabbed.tabbar-fg: 4
 URxvt.tabbed.tabbar-bg: 16
 URxvt.tabbed.tab-fg: 15
