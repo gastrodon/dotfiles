@@ -7,7 +7,7 @@ fi
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/home/zero/.oh-my-zsh"
+export ZSH="/usr/share/oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -73,7 +73,6 @@ ZSH_THEME="liner"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git zsh-autosuggestions)
-
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
@@ -101,6 +100,7 @@ fi
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias code="codium"
 alias aws="python -m awscli"
 funciton mkcd () {
 	mkdir "$@" && cd "$1"
@@ -116,7 +116,6 @@ function fe() {
 	$=EDITOR $FE_SH_SESSION && eval "$(cat $FE_SH_SESSION)"
 }
 
-source ~/.gvm/scripts/gvm # set up go version manager
 
 export RM_STAR_SILENT=1 # disables "are you sure you want to remove ..." zsh warning
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
