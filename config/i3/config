@@ -35,8 +35,15 @@ exec --no-startup-id nm-applet
 exec --no-startup-id feh --bg-tile ~/Pictures/wall.jpg
 exec bash ~/.screenlayout/3MONITOR.sh
 
-# start polybar
-exec ~/polybar/launch.sh
+# polybar
+exec_always --no-startup-id killall polybar; \
+  if type "xrandr"; then \
+    for m in $(xrandr --query | grep " connected" | cut -d" " -f1); do \
+      MONITOR=$m polybar --reload & \
+    done \
+  else \
+    polybar --reload & \
+  fi
 
 # set a wallpaper
 

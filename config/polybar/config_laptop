@@ -1,6 +1,6 @@
 [bar/top]
-monitor = ${env:MONITOR}
 font-0 = scientifica
+monitor = ${env:MONITOR:}
 bottom = false
 modules-left = workspaces
 modules-right = volume spacer bt_device spacer wifi spacer battery0 spacer battery1 spacer date
