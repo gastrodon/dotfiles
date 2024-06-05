@@ -5,8 +5,9 @@ active_battery="BAT$1"
 
 charged=$(expr $(cat /sys/class/power_supply/$active_battery/capacity) / 10)
 discharged=$(expr 10 - $charged)
+status=$(cat /sys/class/power_supply/$active_battery/status)
 
-if [ $(cat /sys/class/power_supply/$active_battery/status) = "Unknown" ]; then
+if [ "$status" = "Unknown" ]; then
 	charged_bar="?"
 else
 	charged_bar="|"
@@ -28,7 +29,7 @@ if [ "$(cat /sys/class/power_supply/$active_battery/capacity)" -lt 10 ]; then
 	color="F#BF616A"
 fi
 
-if [ "$(cat /sys/class/power_supply/$active_battery/status)" = "Charging" ]; then
+if [ "$status" = "Charging" ]; then
 	color="F#A3BE8C"
 fi
 

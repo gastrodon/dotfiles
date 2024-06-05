@@ -1,46 +1,53 @@
+; light purple - B48EAD
+; light gray   - 444444
+; light red    - 8E5A48
+
 [bar/top]
-font-0 = scientifica
 monitor = ${env:MONITOR:}
+font-0 = iosevka term ss04:size=10
 bottom = false
 modules-left = workspaces
-modules-right = volume spacer bt_device spacer wifi spacer battery0 spacer battery1 spacer date
+modules-right =  bt_device spacer wifi spacer volume spacer battery0 spacer date
 module-margin = 1
-height = 11
+top-padding = 10
+; bottom-padding = -2
+; height = 32
 
 [module/spacer]
 type = custom/script
-exec = echo "%{F#444444}|%{F-}"
-label = %output%
+exec = echo "%{F#444444}│%{F-}"
+label = "%output%"
 
 [module/battery0]
 type = custom/script
 exec = ~/.config/polybar/scripts/gen_battery.sh 0
-label = %output%
+label = "%output%"
 
-[module/battery1]
-type = custom/script
-exec = ~/.config/polybar/scripts/gen_battery.sh 1
-label = %output%
+; [module/battery1]
+; type = custom/script
+; exec = ~/.config/polybar/scripts/gen_battery.sh 1
+; label = "%output%"
 
 [module/date]
 type = internal/date
-time = %H:%M
-date = %m-%d-%Y
-label = %{F#B48EAD}%time% %{F#444444}|%{F-} %{F#B48EAD}%date%%{F-}
+time = "%H:%M"
+date = "%m-%d-%Y"
+label = "%{F#B48EAD}%time% %{F#444444}│%{F-} %{F#B48EAD}%date%%{F-}"
 
 [module/vpn]
 type = custom/script
 exec = ~/.config/polybar/scripts/gen_vpn.sh
-label = %output%
+label = "%output%"
 
 [module/wifi]
 type = custom/script
 exec = ~/.config/polybar/scripts/gen_wifi.sh
-label = %output%
+label = "%output%"
 
 [module/volume]
 type = internal/pulseaudio
-format-volume = %{F#B48EAD}<bar-volume>%{F-}
+format-volume = "%{F#B48EAD}<bar-volume>%{F-}"
+format-muted = "%{F#8E5A48}<bar-volume>%{F-}"
 bar-volume-width = 10
 interval = 10
 bar-volume-empty = "."
@@ -50,7 +57,7 @@ bar-volume-indicator = |
 [module/bt_device]
 type = custom/script
 exec = zsh ~/.config/polybar/scripts/bt_devices.sh
-label = %output%
+label = "%output%"
 
 [module/workspaces]
 type = internal/i3
