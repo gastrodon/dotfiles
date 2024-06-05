@@ -1,15 +1,31 @@
 // Place your key bindings in this file to override the defaults
 [
     {
-        "key": "ctrl+p",
-        "command": "workbench.action.showCommands"
+        "command": "workbench.action.showCommands",
+        "key": "ctrl+p"
     },
     {
-        "key": "ctrl+o",
-        "command": "workbench.action.quickOpen"
+        "command": "workbench.action.quickOpen",
+        "key": "ctrl+o"
     },
     {
-        "key": "ctrl+t",
-        "command": "workbench.action.createTerminalEditor"
+        "command": "workbench.action.createTerminalEditor",
+        "key": "ctrl+t"
     },
+    {
+        "command": "-workbench.action.files.newUntitledFile",
+        "key": "ctrl+n"
+    },
+    {
+        "command": "explorer.newFile",
+        "key": "ctrl+n"
+    },
+    {
+        "command": "-workbench.action.newWindow",
+        "key": "ctrl+shift+n"
+    },
+    {
+        "command": "explorer.newFolder",
+        "key": "ctrl+shift+n"
+    }
 ]
