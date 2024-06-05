@@ -32,11 +32,11 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
 
-exec bash ~/.screenlayout/3MONITOR.sh
 # wallpaper
 exec_always --no-startup-id killall feh; feh --bg-tile ~/Pictures/wall.jpg
 
 # polybar
+# exec_always --no-startup-id killall polybar; polybar
 exec_always --no-startup-id killall polybar; \
   if type "xrandr"; then \
     for m in $(xrandr --query | grep " connected" | cut -d" " -f1); do \
