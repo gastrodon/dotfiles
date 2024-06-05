@@ -125,4 +125,4 @@ export NVM_DIR="$HOME/.config/nvm" # this is different on mac
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
-export PATH="$HOME/.cargo/bin:$HOME/go/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:/opt/android-sdk/platform-tools:$PATH"
