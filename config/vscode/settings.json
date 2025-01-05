@@ -1,4 +1,9 @@
 {
+    "editor.rulers": [
+        96,
+        120
+    ],
+    "window.restoreWindows": "none",
     "editor.codeLensFontFamily": "Fira Code thin",
     "editor.find.seedSearchStringFromSelection": "never",
     "editor.fontFamily": "Fira Code",
@@ -33,5 +38,8 @@
     "workbench.editorAssociations": {
         "*.gene": "hexEditor.hexedit"
     },
-    "workbench.startupEditor": "none"
+    "rust-analyzer.debug.engineSettings": {
+        "terminal": null
+    },
+    "debug.terminal.clearBeforeReusing": true
 }
