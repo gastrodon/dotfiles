@@ -41,5 +41,8 @@
     "rust-analyzer.debug.engineSettings": {
         "terminal": null
     },
-    "debug.terminal.clearBeforeReusing": true
+    "debug.terminal.clearBeforeReusing": true,
+    "github.copilot.advanced": {
+        "useLanguageServer": true
+    }
 }
