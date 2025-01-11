@@ -4,6 +4,7 @@ export DEVKITARM='/opt/devkitpro/devkitARM'
 export DEVKITPPC='/opt/devkitpro/devkitPPC'
 
 ZSH_THEME="liner"
+ZSH_CUSTOM="$HOME/.config/oh-my-zsh"
 
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
@@ -49,6 +50,4 @@ export NVM_DIR="$HOME/.config/nvm" # this is different on mac
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:/opt/android-sdk/platform-tools:$PATH"
 
-if [[ -f "$HOME/.zshrc-secret" ]]; then
-    source "$HOME/.zshrc-secret"
-fi
+source "$ZSH/oh-my-zsh.sh"

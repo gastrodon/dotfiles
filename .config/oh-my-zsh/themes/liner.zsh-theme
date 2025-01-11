@@ -18,12 +18,8 @@ segment_path_info() {
 }
 
 segment_git_info() {
-				in_git="0"
-
-				[ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1 && in_git="1"
-
-				if [ $in_git -eq "0" ]; then
-								return
+				if ! git rev-parse --git-dir 2>/dev/null 1>&2; then
+					return
 				fi
 
 				if [ $(git status --porcelain 2>/dev/null | wc -l) -gt "0" ]; then
@@ -34,7 +30,7 @@ segment_git_info() {
 
 				branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 				remote_name=$(git remote 2> /dev/null)
-				
+
 				if [ $(git remote -v | wc -l) -lt "1" ]; then
 								print -n "${$(pwd)##*/}%{$fg[$color]%}/$branch_name"
 								return
@@ -43,7 +39,7 @@ segment_git_info() {
 				repo_name=$(basename -s .git `git config --get remote.origin.url`)
 				branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 				print -n "$repo_name%{$fg[$color]%}/$branch_name"
-				 
+
 				unpushed=$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')
 				if [ $unpushed -gt "0" ]; then
 								print -n "+$unpushed"
