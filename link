@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+if [ -z "$HOME" ]; then
+  echo "HOME unset!"
+  exit 1
+fi
+
+function __find {
+  find -not -path '.' -not -path './.git/*' -not -name link $@
+}
+
+for d in $(__find -type d); do
+  echo "creating $HOME/$d"
+  mkdir -p "$HOME/$d"
+done
+
+for d in $(__find -type f); do
+  echo "linking $d -> $HOME/$d"
+  ln -f $d "$HOME/$d"
+done
