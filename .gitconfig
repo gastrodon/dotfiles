@@ -1,0 +1,5 @@
+[user]
+	name = eva
+	email = mail@gastrodon.io
+[core]
+	editor = vim
