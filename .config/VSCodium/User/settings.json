@@ -28,12 +28,11 @@
     "rust-client.rustupPath": "/Users/eva/.cargo/bin/rustup",
     "rust.clippy_preference": "on",
     "security.workspace.trust.untrustedFiles": "open",
-    "terminal.integrated.fontFamily": "iosevka term ss04",
     "terraform.experimentalFeatures.validateOnSave": true,
     "window.closeWhenEmpty": true,
     "window.confirmSaveUntitledWorkspace": false,
     "window.menuBarVisibility": "hidden",
-    "window.zoomLevel": 2,
+    "window.zoomLevel": 1,
     "workbench.editor.enablePreview": false,
     "workbench.editorAssociations": {
         "*.gene": "hexEditor.hexedit"
