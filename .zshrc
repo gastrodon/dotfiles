@@ -1,3 +1,8 @@
+export ZSH='/usr/share/oh-my-zsh'
+export DEVKITPRO='/opt/devkitpro'
+export DEVKITARM='/opt/devkitpro/devkitARM'
+export DEVKITPPC='/opt/devkitpro/devkitPPC'
+
 ZSH_THEME="liner"
 
 if [[ -n $SSH_CONNECTION ]]; then
@@ -47,7 +52,3 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/go/bin:/opt/android-sdk/pla
 if [[ -f "$HOME/.zshrc-secret" ]]; then
     source "$HOME/.zshrc-secret"
 fi
-
-export DEVKITPRO='/opt/devkitpro'
-export DEVKITARM='/opt/devkitpro/devkitARM'
-export DEVKITPPC='/opt/devkitpro/devkitPPC'
