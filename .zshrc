@@ -6,11 +6,7 @@ export DEVKITPPC='/opt/devkitpro/devkitPPC'
 ZSH_THEME="liner"
 ZSH_CUSTOM="$HOME/.config/oh-my-zsh"
 
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
-else
-  export EDITOR='codium --wait'
-fi
+export EDITOR='vim'
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
