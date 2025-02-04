@@ -26,7 +26,7 @@
 # font pango: Noto Sans Regular 10
 
 # not so sure this does anything
-font iosevka term ss04 
+font iosevka term ss04
 
 # set the mod key to the winkey:
 set $mod Mod4
@@ -156,7 +156,7 @@ mode "resize" {
 	bindsym Alt+Shift+k resize grow height 1 px
 	bindsym Alt+Shift+l resize shrink height 1 px
 	bindsym Alt+Shift+semicolon resize grow width 1 px
-	
+
 	bindsym Shift+j resize shrink width 16 px
 	bindsym Shift+k resize grow height 16 px
 	bindsym Shift+l resize shrink height 16 px
@@ -278,7 +278,7 @@ bindsym XF86AudioMute exec --no-startup-id ~/.config/i3/scripts/volume_brightnes
 bindsym XF86AudioMicMute exec amixer sset Capture toggle
 
 # audio control
-bindsym XF86AudioPlay exec --no-startup-id playerctl play-pause 
+bindsym XF86AudioPlay exec --no-startup-id playerctl play-pause
 # Above line will also work for pausing
 bindsym XF86AudioNext exec --no-startup-id playerctl next
 bindsym XF86AudioPrev exec --no-startup-id playerctl previous
@@ -363,7 +363,7 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # dunst config used ~/.config/dunst/dunstrc
 # set alternative config if needed:
 #exec --no-startup-id /usr/bin/dunst --config ~/.config/dunst/dunstrc
-# may need to run dbus-launch explicitly: 
+# may need to run dbus-launch explicitly:
 #exec --no-startup-id dbus-launch /usr/bin/dunst
 exec --no-startup-id /usr/bin/dunst
 # alternative if you installed aside with XFCE4:
@@ -417,7 +417,7 @@ for_window [class="urxvt"] border pixel 1
 
 # set size of floating window
 #for_window [window_role="(?i)GtkFileChooserDialog"] resize set 640 480 #to set size of file choose dialog
-#for_window [class=".*"] resize set 640 480 #to change size of all floating windows 
+#for_window [class=".*"] resize set 640 480 #to change size of all floating windows
 
 # set position of floating window
 #for_window [class=".*"] move position center
