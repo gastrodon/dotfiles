@@ -3,3 +3,9 @@
 	email = mail@gastrodon.io
 [core]
 	editor = vim
+[init]
+	defaultBranch = main
+[commit]
+	verbose = true
+[diff]
+	wsErrorHightlight = all
