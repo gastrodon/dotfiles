@@ -16,5 +16,5 @@ done
 
 for d in $(__find -type f); do
   echo "linking $d -> $HOME/$d"
-  ln -f $d "$HOME/$d"
+  ln -sf "$PWD/$d" "$HOME/$d"
 done
