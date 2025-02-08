@@ -41,6 +41,7 @@
         "terminal": null
     },
     "debug.terminal.clearBeforeReusing": true,
+    "github.copilot.editor.enableAutoCompletions": false,
     "github.copilot.advanced": {
         "useLanguageServer": true
     },
