@@ -43,5 +43,10 @@
     "debug.terminal.clearBeforeReusing": true,
     "github.copilot.advanced": {
         "useLanguageServer": true
-    }
+    },
+    "files.readonlyInclude": {
+        "**/.cargo/registry/src/**/*.rs": true,
+        "**/lib/rustlib/src/rust/library/**/*.rs": true,
+    },
+    "editor.fontSize": 13,
 }
