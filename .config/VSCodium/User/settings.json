@@ -4,9 +4,9 @@
         120
     ],
     "window.restoreWindows": "none",
-    "editor.codeLensFontFamily": "Fira Code thin",
-    "editor.find.seedSearchStringFromSelection": "never",
+    "editor.codeLensFontFamily": "Fira Code Light",
     "editor.fontFamily": "Fira Code",
+    "editor.find.seedSearchStringFromSelection": "never",
     "editor.fontLigatures": true,
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
