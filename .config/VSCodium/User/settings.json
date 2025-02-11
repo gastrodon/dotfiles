@@ -25,6 +25,8 @@
     "hexeditor.showDecodedText": false,
     "rust-analyzer.inlayHints.typeHints.enable": false,
     "rust-analyzer.typing.autoClosingAngleBrackets.enable": true,
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.check.command": "clippy",
     "rust-client.rustupPath": "/Users/eva/.cargo/bin/rustup",
     "rust.clippy_preference": "on",
     "security.workspace.trust.untrustedFiles": "open",
