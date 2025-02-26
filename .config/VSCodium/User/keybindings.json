@@ -53,4 +53,14 @@
         "key": "ctrl+alt+o",
         "command": "openremotessh.openEmptyWindowInCurrentWindow"
     },
+    {
+        "key": "ctrl+enter",
+        "command": "inlineChat.acceptChanges",
+        "when": "inlineChatVisible"
+    },
+    {
+        "key": "ctrl+enter",
+        "command": "-inlineChat.acceptChanges",
+        "when": "inlineChatHasProvider && inlineChatVisible"
+    },
 ]
