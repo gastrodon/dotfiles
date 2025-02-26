@@ -41,4 +41,16 @@
         "key": "ctrl+shift+/",
         "command": "workbench.panel.chat.view.copilot.focus"
     },
+    {
+        "key": "ctrl+shift+alt+o",
+        "command": "workbench.action.remote.showMenu"
+    },
+    {
+        "key": "ctrl+alt+o",
+        "command": "-workbench.action.remote.showMenu"
+    },
+    {
+        "key": "ctrl+alt+o",
+        "command": "openremotessh.openEmptyWindowInCurrentWindow"
+    },
 ]
