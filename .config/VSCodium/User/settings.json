@@ -53,5 +53,9 @@
         "**/lib/rustlib/src/rust/library/**/*.rs": true,
     },
     "editor.fontSize": 13,
+    "lldb.suppressUpdateNotifications": true,
     "accessibility.verbosity.inlineChat": false,
+    "editor.unicodeHighlight.allowedCharacters": {
+        "σ": true
+    },
 }
