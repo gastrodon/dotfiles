@@ -9,3 +9,5 @@
 	verbose = true
 [diff]
 	wsErrorHightlight = all
+[branch]
+	sort = -committerdate
