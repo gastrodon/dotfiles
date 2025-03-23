@@ -35,6 +35,11 @@ function fe() {
 	$=EDITOR $FE_SH_SESSION && eval "$(cat $FE_SH_SESSION)"
 }
 
+function code-remote() {
+	r="$1"
+	shift
+	code --folder-uri vscode-remote://ssh-remote+$r$@
+}
 
 export RM_STAR_SILENT=1 # disables "are you sure you want to remove ..." zsh warning
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
