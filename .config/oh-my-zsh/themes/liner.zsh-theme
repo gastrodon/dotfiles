@@ -22,25 +22,24 @@ segment_git_info() {
 					return
 				fi
 
-				if [ $(git status --porcelain 2>/dev/null | wc -l) -gt "0" ]; then
+				if [ "$(git status --porcelain 2>/dev/null | wc -l)" -gt "0" ]; then
 								color="yellow"
 				else
 								color="green"
 				fi
 
-				branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-				remote_name=$(git remote 2> /dev/null)
+				branch_name="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+				remote_name="$(git remote | head -n1 2> /dev/null)"
 
-				if [ $(git remote -v | wc -l) -lt "1" ]; then
+				if [ "$(git remote -v | wc -l)" -lt "1" ]; then
 								print -n "${$(pwd)##*/}%{$fg[$color]%}/$branch_name"
 								return
 				fi
 
-				repo_name=$(basename -s .git `git config --get remote.origin.url`)
-				branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+				repo_name="$(basename -s .git $(git config --get remote.origin.url))"
 				print -n "$repo_name%{$fg[$color]%}/$branch_name"
 
-				unpushed=$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')
+				unpushed="$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')"
 				if [ $unpushed -gt "0" ]; then
 								print -n "+$unpushed"
 				fi
