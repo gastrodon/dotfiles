@@ -58,4 +58,5 @@
     "editor.unicodeHighlight.allowedCharacters": {
         "σ": true
     },
+    "zig.zls.enabled": "on",
 }
