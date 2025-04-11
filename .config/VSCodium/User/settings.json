@@ -1,15 +1,20 @@
 {
+    "accessibility.verbosity.inlineChat": false,
+    "debug.terminal.clearBeforeReusing": true,
+    "editor.codeLensFontFamily": "Fira Code Light",
+    "editor.find.seedSearchStringFromSelection": "never",
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "editor.fontSize": 13,
+    "editor.formatOnSave": true,
     "editor.rulers": [
         96,
         120
     ],
-    "window.restoreWindows": "none",
-    "editor.codeLensFontFamily": "Fira Code Light",
-    "editor.fontFamily": "Fira Code",
-    "editor.find.seedSearchStringFromSelection": "never",
-    "editor.fontLigatures": true,
-    "editor.formatOnSave": true,
     "editor.tabSize": 2,
+    "editor.unicodeHighlight.allowedCharacters": {
+        "σ": true
+    },
     "explorer.confirmDelete": false,
     "explorer.confirmDragAndDrop": false,
     "files.associations": {
@@ -18,15 +23,28 @@
         "apply": "shellscript"
     },
     "files.insertFinalNewline": true,
+    "files.readonlyInclude": {
+        "**/.cargo/registry/src/**/*.rs": true,
+        "**/lib/rustlib/src/rust/library/**/*.rs": true
+    },
     "files.trimTrailingWhitespace": true,
+    "github.copilot.advanced": {
+        "useLanguageServer": true
+    },
+    "github.copilot.editor.enableAutoCompletions": false,
     "hexeditor.columnWidth": 16,
     "hexeditor.defaultEndianness": "little",
     "hexeditor.inspectorType": "aside",
     "hexeditor.showDecodedText": false,
+    "inlineChat.lineNaturalLanguageHint": false,
+    "lldb.suppressUpdateNotifications": true,
+    "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.debug.engineSettings": {
+        "terminal": null
+    },
     "rust-analyzer.inlayHints.typeHints.enable": false,
     "rust-analyzer.typing.autoClosingAngleBrackets.enable": true,
-    "rust-analyzer.checkOnSave": true,
-    "rust-analyzer.check.command": "clippy",
     "rust-client.rustupPath": "/Users/eva/.cargo/bin/rustup",
     "rust.clippy_preference": "on",
     "security.workspace.trust.untrustedFiles": "open",
@@ -34,30 +52,12 @@
     "window.closeWhenEmpty": true,
     "window.confirmSaveUntitledWorkspace": false,
     "window.menuBarVisibility": "hidden",
+    "window.restoreWindows": "none",
     "window.zoomLevel": 1,
     "workbench.colorTheme": "Solarized Light",
     "workbench.editor.enablePreview": false,
     "workbench.editorAssociations": {
         "*.gene": "hexEditor.hexedit"
     },
-    "rust-analyzer.debug.engineSettings": {
-        "terminal": null
-    },
-    "debug.terminal.clearBeforeReusing": true,
-    "github.copilot.editor.enableAutoCompletions": false,
-    "inlineChat.lineNaturalLanguageHint": false,
-    "github.copilot.advanced": {
-        "useLanguageServer": true
-    },
-    "files.readonlyInclude": {
-        "**/.cargo/registry/src/**/*.rs": true,
-        "**/lib/rustlib/src/rust/library/**/*.rs": true,
-    },
-    "editor.fontSize": 13,
-    "lldb.suppressUpdateNotifications": true,
-    "accessibility.verbosity.inlineChat": false,
-    "editor.unicodeHighlight.allowedCharacters": {
-        "σ": true
-    },
-    "zig.zls.enabled": "on",
+    "zig.zls.enabled": "on"
 }

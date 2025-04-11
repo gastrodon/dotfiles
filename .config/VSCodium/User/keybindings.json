@@ -38,29 +38,29 @@
         "when": "editorTextFocus && github.copilot.activated && !commentEditorFocused && !inInteractiveInput && !interactiveEditorFocused"
     },
     {
-        "key": "ctrl+shift+/",
-        "command": "workbench.panel.chat.view.copilot.focus"
+        "command": "workbench.panel.chat.view.copilot.focus",
+        "key": "ctrl+shift+/"
     },
     {
-        "key": "ctrl+shift+alt+o",
-        "command": "workbench.action.remote.showMenu"
+        "command": "workbench.action.remote.showMenu",
+        "key": "ctrl+shift+alt+o"
     },
     {
-        "key": "ctrl+alt+o",
-        "command": "-workbench.action.remote.showMenu"
+        "command": "-workbench.action.remote.showMenu",
+        "key": "ctrl+alt+o"
     },
     {
-        "key": "ctrl+alt+o",
-        "command": "openremotessh.openEmptyWindowInCurrentWindow"
+        "command": "openremotessh.openEmptyWindowInCurrentWindow",
+        "key": "ctrl+alt+o"
     },
     {
-        "key": "ctrl+enter",
         "command": "inlineChat.acceptChanges",
+        "key": "ctrl+enter",
         "when": "inlineChatVisible"
     },
     {
-        "key": "ctrl+enter",
         "command": "-inlineChat.acceptChanges",
+        "key": "ctrl+enter",
         "when": "inlineChatHasProvider && inlineChatVisible"
     },
 ]
