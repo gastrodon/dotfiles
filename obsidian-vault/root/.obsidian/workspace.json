@@ -1,0 +1,251 @@
+{
+  "main": {
+    "id": "caa2a53c0e8b7f99",
+    "type": "split",
+    "children": [
+      {
+        "id": "2098e109f2a156be",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5bd28ccf16f046fc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "project/porygon.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "porygon"
+            }
+          },
+          {
+            "id": "261ed32ea7a69276",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "project/NEAT/attachments/binary-nn.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "binary-nn"
+            }
+          },
+          {
+            "id": "f3f40b8791978684",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "project/NEAT/Eevee - A Generalized NEAT.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "Eevee - A Generalized NEAT"
+            }
+          }
+        ],
+        "currentTab": 2
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "d6a558928e64be3a",
+    "type": "split",
+    "children": [
+      {
+        "id": "59df6ff4dda9c4c1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "78b8d6e7e180a718",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7025c5a4d90daf46",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "filter",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "f56c44aeb240b0b0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 355.5,
+    "collapsed": true
+  },
+  "right": {
+    "id": "fa5a96eb8962d614",
+    "type": "split",
+    "children": [
+      {
+        "id": "b278e2c56a11837d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dbb3bbf015929387",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "a1d0aa2d969c8cad",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "a6a96292997ebb8a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "23fd747a7540e3e1",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {},
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 625.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "canvas:Create new canvas": false,
+      "graph:Open graph view": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-kanban:Create new board": false,
+      "copilot:Open Copilot Chat": false,
+      "obsidian-livesync:Show log": false,
+      "obsidian-livesync:Replicate": false,
+      "obsidian-livesync:Show Customization sync": false
+    }
+  },
+  "active": "f3f40b8791978684",
+  "lastOpenFiles": [
+    "get-a-job/interviewing/buf.md",
+    "Where to send checks.md",
+    "project/porygon.md",
+    "project/NEAT/attachments/binary-nn.pdf",
+    "project/NEAT/Eevee - A Generalized NEAT.md",
+    "project/fuck it second shelf.md",
+    "project/dotfiles.md",
+    "project/eva-resume-c.pdf",
+    "project/av-launcher.md",
+    "drugs.md",
+    "project/NEAT/attachments/NEAT.pdf",
+    "project/NEAT/Mutation Events.md",
+    "project/NEAT/attachments/ctrnn.pdf.pdf",
+    "Spread Strike Organization.md",
+    "tuido/overview.md",
+    "project/NEAT/attachments/HyperNEAT.pdf",
+    "project/NEAT/attachments/NEAT-fit-3.png",
+    "project/NEAT/attachments/NEAT-fig-4.png",
+    "project/NEAT/attachments/NEAT-formula-shared-fitness.png",
+    "project/NEAT/attachments/NEAT-formula-delta.png",
+    "project/NEAT/attachments/NEAT-footnote-1.png",
+    "project/NEAT/attachments/activation-functions-comparison.pdf",
+    "project/NEAT/NES mario.md",
+    "project/NEAT/ctrnn.md",
+    "project/NEAT/some possible tree building debugging.md",
+    "project/NEAT/specie-culling.md",
+    "project/NEAT/attachments%2Fbeer1995.pdf.md",
+    "get-a-job/interviewing/hashicorp.md",
+    "get-a-job/interviewing/mia resume notes.md",
+    "k-life-stuff/medical tasks.md",
+    "k-life-stuff/Untitled.md",
+    "k-life-stuff/shopping run.md",
+    "amphetamine notes.md",
+    "get-a-job/resume/overview.md",
+    "get-a-job/resume/wp-aviary.sh.md",
+    "project/neat-brain/Overview.md",
+    "project/NEAT/brain-rs-3 notes.md",
+    "project/NEAT/attachments",
+    "project/NEAT",
+    "tuido",
+    "k-life-stuff",
+    "Untitled.canvas",
+    "project/psyduck/ifunny-etl.canvas",
+    "project/psyduck/psyduck.canvas",
+    "get-a-job/interviewing/citrine infra diagram.canvas",
+    "get-a-job/interviewing/citrine-ci-diagram.png",
+    "get-a-job/interviewing/citrine-infra-diagram.png",
+    "project/neat-brain/footnote-1.png",
+    "month-overview/Pasted image 20231212094035.png",
+    "project/neat-brain/formula-specie-fitness.png"
+  ]
+}
