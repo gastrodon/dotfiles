@@ -15,6 +15,9 @@ for d in $(__find -type d); do
 done
 
 for d in $(__find -type f); do
+  if [ "$(basename "$d")" = ".gitignore" ]; then
+    continue
+  fi
   echo "linking $d -> $HOME/$d"
   ln -sf "$PWD/$d" "$HOME/$d"
 done
