@@ -35,6 +35,7 @@
     "window.confirmSaveUntitledWorkspace": false,
     "window.menuBarVisibility": "hidden",
     "window.zoomLevel": 1,
+    "workbench.colorTheme": "Solarized Light",
     "workbench.editor.enablePreview": false,
     "workbench.editorAssociations": {
         "*.gene": "hexEditor.hexedit"
