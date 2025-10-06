@@ -9,15 +9,18 @@ function __find {
   find -not -path '.' -not -path './.git/*' -not -name link $@
 }
 
-for d in $(__find -type d); do
-  echo "creating $HOME/$d"
-  mkdir -p "$HOME/$d"
-done
+find -type f -name '*.rs' -exec sh -c \
+  'rustc -C opt-level=z -C panic=abort -C lto $0 -o ${0%.rs}' {} \;
 
-for d in $(__find -type f); do
-  if [ "$(basename "$d")" = ".gitignore" ]; then
-    continue
-  fi
-  echo "linking $d -> $HOME/$d"
-  ln -sf "$PWD/$d" "$HOME/$d"
-done
+# for d in $(__find -type d); do
+#   echo "creating $HOME/$d"
+#   mkdir -p "$HOME/$d"
+# done
+
+# for d in $(__find -type f); do
+#   if [ "$(basename "$d")" = ".gitignore" ]; then
+#     continue
+#   fi
+#   echo "linking $d -> $HOME/$d"
+#   ln -sf "$PWD/$d" "$HOME/$d"
+# done
