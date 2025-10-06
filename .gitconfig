@@ -9,5 +9,8 @@
 	verbose = true
 [diff]
 	wsErrorHightlight = all
+	wsErrorHighlight = context,old
 [branch]
 	sort = -committerdate
+[color]
+	ui = true
