@@ -36,7 +36,14 @@ segment_git_info() {
 								return
 				fi
 
-				repo_name="$(basename -s .git $(git config --get remote.origin.url))"
+				repo_origin="$(git config --get remote.origin.url)"
+				if [ ! -z "$repo_origin" ]; then
+					repo_name="$(basename -s .git $repo_origin)"
+				else
+					repo_name="${$(pwd)##*/}"
+				fi
+
+
 				print -n "$repo_name%{$fg[$color]%}/$branch_name"
 
 				unpushed="$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')"
