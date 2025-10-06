@@ -63,4 +63,34 @@
         "key": "ctrl+enter",
         "when": "inlineChatHasProvider && inlineChatVisible"
     },
+    {
+        "key": "alt+pagedown",
+        "command": "merge-conflict.next",
+        "when": "!isMergeEditor"
+    },
+    {
+        "key": "alt+pageup",
+        "command": "merge-conflict.previous"
+    },
+    {
+        "key": "ctrl+0",
+        "command": "-workbench.action.focusSideBar"
+    },
+    {
+        "key": "ctrl+0",
+        "command": "workbench.action.zoomReset"
+    },
+    {
+        "key": "ctrl+numpad0",
+        "command": "-workbench.action.zoomReset"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "-editor.action.selectHighlights",
+        "when": "editorFocus"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.toggleLightDarkThemes"
+    },
 ]
