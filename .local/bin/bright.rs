@@ -1,5 +1,5 @@
 use std::env::args;
-use std::fs::{metadata, read_to_string, write};
+use std::fs::{read_to_string, write};
 use std::process::exit;
 
 fn read_u32_from_file(path: &str) -> u32 {
