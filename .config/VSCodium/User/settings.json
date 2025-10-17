@@ -67,5 +67,10 @@
     "workbench.startupEditor": "none",
     "zig.zls.enabled": "on",
     "typescript.updateImportsOnFileMove.enabled": "always",
-    "github.copilot.chat.byok.ollamaEndpoint": "http://stone:11434"
+    "github.copilot.chat.byok.ollamaEndpoint": "http://stone:11434",
+    "github.copilot.chat.scopeSelection": true,
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.completionContext.typescript.mode": "on",
+    "github.copilot.chat.editor.temporalContext.enabled": true,
+    "chat.editing.confirmEditRequestRemoval": false
 }
