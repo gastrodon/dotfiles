@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# note-unbuffer: Process daily note buffer and move content to project notes
+# Usage: note-unbuffer
+
+set -euo pipefail
+
+VAULT_ROOT="$HOME/Documents/obsidian-vault/root"
+BUFFER_FILE="$VAULT_ROOT/day overview/buffer.md"
+
+# Check if buffer file exists
+if [[ ! -f "$BUFFER_FILE" ]]; then
+    echo "Buffer file not found: $BUFFER_FILE"
+    exit 1
+fi
+
+# Check if buffer is empty
+if [[ ! -s "$BUFFER_FILE" ]]; then
+    echo "Buffer is empty, nothing to process."
+    exit 0
+fi
+
+# Change to vault root for context
+cd "$VAULT_ROOT"
+
+# Invoke copilot with the processing prompt
+copilot << 'PROMPT'
+I take daily notes in day overview/buffer.md pertaining to topics in project.
+Please walk through all topical "chunks" of text in the buffer file,
+and see what project notes can be updated with that information.
+
+Do this for each topic and, when done with a topic, delete the cooresponding chunk in buffer for that topic.
+PROMPT
+
+echo "Buffer processing complete!"
