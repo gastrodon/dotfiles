@@ -46,7 +46,7 @@ segment_git_info() {
 
 				print -n "$repo_name%{$fg[$color]%}/$branch_name"
 
-				unpushed="$(eval "git log --oneline $remote_name/$branch_name..$f 2>/dev/null" | wc -l | tr -d '[:space:]')"
+				unpushed="$(eval "git log --oneline $remote_name.. 2>/dev/null" | wc -l | tr -d '[:space:]')"
 				if [ $unpushed -gt "0" ]; then
 								print -n "+$unpushed"
 				fi
