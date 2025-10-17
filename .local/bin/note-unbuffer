@@ -23,13 +23,34 @@ fi
 # Change to vault root for context
 cd "$VAULT_ROOT"
 
-# Invoke copilot with the processing prompt
-copilot << 'PROMPT'
-I take daily notes in day overview/buffer.md pertaining to topics in project.
-Please walk through all topical "chunks" of text in the buffer file,
+# Define the processing prompt
+PROMPT="I take daily notes in day overview/buffer.md pertaining to topics in project.
+Please walk through all topical \"chunks\" of text in the buffer file,
 and see what project notes can be updated with that information.
 
-Do this for each topic and, when done with a topic, delete the cooresponding chunk in buffer for that topic.
-PROMPT
+Do this for each topic and, when done with a topic,
+delete the cooresponding chunk in buffer for that topic.
+Be sure to move attached images too"
+
+# Invoke copilot with the processing prompt
+copilot \
+    --add-dir "$VAULT_ROOT" \
+    --add-dir "$BUFFER_FILE" \
+    --allow-tool 'shell(mv:*)' \
+    --allow-tool 'shell(cat:*)' \
+    --allow-tool 'shell(grep:*)' \
+    --allow-tool 'shell(find:*)' \
+    --allow-tool 'shell(ls:*)' \
+    --allow-tool 'shell(xargs:*)' \
+    --allow-tool 'shell(awk:*)' \
+    --allow-tool 'shell(sed:*)' \
+    --allow-tool 'shell(head:*)' \
+    --allow-tool 'shell(tail:*)' \
+    --allow-tool 'shell(wc:*)' \
+    --allow-tool 'shell(sort:*)' \
+    --allow-tool 'shell(uniq:*)' \
+    --allow-tool 'shell(cut:*)' \
+    --allow-tool 'write' \
+    -p "$PROMPT"
 
 echo "Buffer processing complete!"
