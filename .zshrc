@@ -6,6 +6,8 @@ export DEVKITPPC='/opt/devkitpro/devkitPPC'
 ZSH_THEME="liner"
 ZSH_CUSTOM="$HOME/.config/oh-my-zsh"
 
+setopt rm_star_silent
+
 export EDITOR='vim'
 
 # Compilation flags
