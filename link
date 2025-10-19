@@ -24,3 +24,8 @@ for d in $(__find -type f); do
   echo "linking $d -> $HOME/$d"
   ln -sf "$PWD/$d" "$HOME/$d"
 done
+
+## TODO a better way to do this
+rm -rf "$HOME/.config/VSCodium - Insiders" "$HOME/.config/Code - OSS"
+ln -sf "$HOME/.config/VSCodium/" "$HOME/.config/VSCodium - Insiders"
+ln -sf "$HOME/.config/VSCodium/" "$HOME/.config/Code - OSS"
