@@ -31,6 +31,24 @@ function mkvenv () {
 	mkdir -pv "$1"; python -m virtualenv "$1"; source "$1/bin/activate"
 }
 
+function scrt () {
+	disc="$1";
+	if [[ "$disc" == "@obsidian" ]]; then 
+		shift;
+		f="$(date +'%d-%m-%Y-%_H-%M-%S').png";
+	
+		scrot --select --ignorekeyboard "$HOME/Documents/obsidian-vault/root/scrt/$f";
+		xdg-open "obsidian://open?vault=root&file=scrt/$f";
+	else
+		shift;
+		f="$HOME/Pictures/scrot/$disc-$(date +'%d-%m-%Y-%_H-%M-%S').png";
+		scrot --select --ignorekeyboard "$f"
+		echo "$f";
+	fi
+
+}
+
+
 FE_SH_SESSION="$(mktemp -d)/fe.sh"
 touch "$FE_SH_SESSION"
 function fe() {
