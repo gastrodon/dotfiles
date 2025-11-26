@@ -42,8 +42,8 @@
 
 ### 8. **scrot Command**
 - **Issue**: The `scrt` function requires `scrot` package for screenshots
-- **Current Status**: Not added to packages list
-- **Action Needed**: Add `scrot` to home.packages
+- **Current Status**: Added to packages list
+- **Status**: ✓ Resolved
 
 ### 9. **VSCodium Extensions**
 - **Issue**: `.config/VSCodium/User/extensions.json` lists extensions but doesn't install them
