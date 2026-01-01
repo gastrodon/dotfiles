@@ -9,6 +9,7 @@
     ./module/users.nix
     ./module/x11.nix
     ./module/i3.nix
+    ./module/firefox.nix
   ];
 
   # Bootloader configuration
