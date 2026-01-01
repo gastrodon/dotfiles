@@ -19,6 +19,49 @@
   # Networking
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
+  
+  # WiFi Networks Configuration
+  # Add your WiFi networks here. You can configure multiple networks.
+  # After adding networks, run: sudo nixos-rebuild switch
+  # 
+  # Example configuration:
+  # networking.networkmanager.ensureProfiles.profiles = {
+  #   "MyHomeWiFi" = {
+  #     connection = {
+  #       id = "MyHomeWiFi";
+  #       type = "wifi";
+  #     };
+  #     wifi = {
+  #       ssid = "MyHomeWiFi";
+  #       mode = "infrastructure";
+  #     };
+  #     wifi-security = {
+  #       key-mgmt = "wpa-psk";
+  #       psk = "your-wifi-password-here";
+  #     };
+  #     ipv4.method = "auto";
+  #     ipv6.method = "auto";
+  #   };
+  #   "WorkWiFi" = {
+  #     connection = {
+  #       id = "WorkWiFi";
+  #       type = "wifi";
+  #     };
+  #     wifi = {
+  #       ssid = "WorkWiFi";
+  #       mode = "infrastructure";
+  #     };
+  #     wifi-security = {
+  #       key-mgmt = "wpa-psk";
+  #       psk = "work-wifi-password";
+  #     };
+  #     ipv4.method = "auto";
+  #     ipv6.method = "auto";
+  #   };
+  # };
+  #
+  # Alternative: Use nmcli or NetworkManager GUI to configure WiFi
+  # After boot, you can run: nmcli device wifi connect "SSID" password "PASSWORD"
 
   # Time zone and locale
   time.timeZone = "America/New_York";
