@@ -78,7 +78,7 @@ This will symlink all dotfiles to your home directory.
 The minimal NixOS configuration provides:
 
 ✅ **Disk Setup** - Simple single-partition layout on /dev/sda  
-✅ **No Swap** - Swap-less configuration  
+✅ **Swap File** - Configurable swap file sized to match system RAM  
 ✅ **User Eva** - Unprivileged user with sudo access  
 ✅ **X11** - Graphical window system  
 ✅ **i3** - Tiling window manager  

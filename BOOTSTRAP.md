@@ -12,7 +12,7 @@ This guide walks you through installing NixOS from a live environment using the 
 
 ### 1. Partition the Disk
 
-We'll use the entire `/dev/sda` disk with a simple single-partition layout (no swap).
+We'll use the entire `/dev/sda` disk with a simple single-partition layout. A swap file will be created on the root partition.
 
 ```bash
 # Partition the disk
@@ -31,7 +31,25 @@ sudo mkfs.ext4 -L nixos /dev/sda1
 sudo mount /dev/disk/by-label/nixos /mnt
 ```
 
-### 3. Generate Initial Configuration
+### 3. Create Swap File
+
+Create a swap file sized to match your system's RAM:
+
+```bash
+# Determine your RAM size (in MB)
+RAM_SIZE=$(free -m | awk '/^Mem:/{print $2}')
+echo "RAM size: ${RAM_SIZE}MB"
+
+# Create swap file
+sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=$RAM_SIZE status=progress
+sudo chmod 600 /mnt/swapfile
+sudo mkswap /mnt/swapfile
+sudo swapon /mnt/swapfile
+```
+
+Note: The swap file will be automatically managed by NixOS after installation based on the configuration in `hardware-configuration.nix`.
+
+### 4. Generate Initial Configuration
 
 ```bash
 # Generate hardware configuration
@@ -40,7 +58,7 @@ sudo nixos-generate-config --root /mnt
 
 This creates `/mnt/etc/nixos/configuration.nix` and `/mnt/etc/nixos/hardware-configuration.nix`.
 
-### 4. Replace with Repository Configuration
+### 5. Replace with Repository Configuration
 
 Option A - If you have network access and git:
 ```bash
@@ -68,7 +86,7 @@ sudo mkdir -p module
 # - module/i3.nix
 ```
 
-### 5. Review and Adjust Configuration
+### 6. Review and Adjust Configuration
 
 Before installing, review the hardware configuration:
 
@@ -77,11 +95,12 @@ sudo nano /mnt/etc/nixos/hardware-configuration.nix
 ```
 
 **Important adjustments:**
+- **Swap size**: Update the swap file size in `swapDevices` to match your RAM (in MB)
 - Verify the filesystem UUIDs match your actual partitions (you can use `blkid` to check)
 - If you have AMD CPU instead of Intel, change the microcode line in hardware-configuration.nix
 - Adjust timezone in configuration.nix if needed (default is America/New_York)
 
-### 6. Install NixOS
+### 7. Install NixOS
 
 ```bash
 # Run the installation
@@ -95,7 +114,7 @@ sudo nixos-install
 
 The installation may take several minutes depending on your internet connection and hardware.
 
-### 7. Reboot
+### 8. Reboot
 
 ```bash
 # Reboot into the new system
