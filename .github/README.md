@@ -6,9 +6,10 @@ The `build-nixos.yml` workflow automatically validates the syntax of NixOS modul
 
 ### What it does
 
-1. **Installs Nix** - Sets up the Nix package manager in the GitHub Actions runner
-2. **Validates Modules** - Checks syntax of all `.nix` files in the `module/` directory
-3. **Reports Results** - Lists validated modules and reports any syntax errors
+1. **Runs in NixOS Container** - Uses official NixOS Docker container for validation
+2. **Configures NixOS 25.11** - Sets up NixOS 25.11 channel for validation
+3. **Validates Modules** - Checks syntax of all `.nix` files in the `module/` directory
+4. **Reports Results** - Lists validated modules and reports any syntax errors
 
 ### When it runs
 
@@ -19,14 +20,16 @@ The `build-nixos.yml` workflow automatically validates the syntax of NixOS modul
 ### Configuration
 
 The workflow uses:
-- **nixos-24.05** channel for reproducible validation
+- **NixOS Docker container** (`nixos/nix:latest`)
+- **nixos-25.11** channel for reproducible validation
+- Runs directly on NixOS instead of Ubuntu with Nix installed
 
 ### Viewing Results
 
 Validation results appear in:
 - GitHub Actions tab for detailed logs
 - Pull request checks for quick status
-- Job summary with module listing
+- Job summary with module listing and NixOS version
 
 ### Local Testing
 

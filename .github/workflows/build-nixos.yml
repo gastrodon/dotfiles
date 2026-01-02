@@ -10,17 +10,21 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    container:
+      image: nixos/nix:latest
+      options: --user root
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Install Nix
-        uses: cachix/install-nix-action@v24
-        with:
-          nix_path: nixpkgs=channel:nixos-24.05
-          extra_nix_config: |
-            experimental-features = nix-command flakes
+      - name: Configure Nix
+        run: |
+          echo "Configuring Nix for NixOS 25.11..."
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+          nix-channel --add https://nixos.org/channels/nixos-25.11 nixpkgs
+          nix-channel --update
       
       - name: Verify module syntax
         run: |
@@ -64,6 +68,7 @@ jobs:
           module_count=$(find ./module -name "*.nix" -type f | wc -l)
           echo "### NixOS Modules" >> $GITHUB_STEP_SUMMARY
           echo "- **Total modules**: $module_count" >> $GITHUB_STEP_SUMMARY
+          echo "- **NixOS version**: 25.11" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Available modules:**" >> $GITHUB_STEP_SUMMARY
           for module in ./module/*.nix; do
