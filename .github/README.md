@@ -1,15 +1,14 @@
 # GitHub Actions Workflows
 
-## Build NixOS System
+## Validate NixOS Modules
 
-The `build-nixos.yml` workflow automatically builds the NixOS system configuration to verify it compiles correctly.
+The `build-nixos.yml` workflow automatically validates the syntax of NixOS modules to ensure they are correctly formatted.
 
 ### What it does
 
 1. **Installs Nix** - Sets up the Nix package manager in the GitHub Actions runner
-2. **Builds System Derivation** - Compiles the NixOS configuration without installing it
-3. **Verifies Syntax** - Checks all `.nix` files for syntax errors
-4. **Reports Metrics** - Shows system closure size and dependency count
+2. **Validates Modules** - Checks syntax of all `.nix` files in the `module/` directory
+3. **Reports Results** - Lists validated modules and reports any syntax errors
 
 ### When it runs
 
@@ -20,41 +19,50 @@ The `build-nixos.yml` workflow automatically builds the NixOS system configurati
 ### Configuration
 
 The workflow uses:
-- **nixos-24.05** channel for reproducible builds
-- **Cachix** for optional build caching (requires `CACHIX_AUTH_TOKEN` secret)
+- **nixos-24.05** channel for reproducible validation
 
 ### Viewing Results
 
-Build results appear in:
+Validation results appear in:
 - GitHub Actions tab for detailed logs
 - Pull request checks for quick status
-- Job summary with system information (derivation path, dependencies, size)
+- Job summary with module listing
 
 ### Local Testing
 
-To test the build locally before pushing:
+To test module syntax locally before pushing:
 
 ```bash
 # Install Nix if not already installed
 curl -L https://nixos.org/nix/install | sh
 
-# Build the system
-nix-build '<nixpkgs/nixos>' -A system -I nixos-config=./configuration.nix
+# Validate a specific module
+nix-instantiate --parse module/users.nix
 
-# Check the result
-ls -lh result/
+# Validate all modules
+for module in module/*.nix; do
+  echo "Checking $module"
+  nix-instantiate --parse "$module"
+done
 ```
 
-### Troubleshooting
+### Available Modules
 
-**Build fails with "attribute missing":**
-- Check that all module imports in `configuration.nix` are valid
-- Verify module file paths exist
+The repository contains modular NixOS configurations in the `module/` directory:
+- `users.nix` - User account configuration
+- `x11.nix` - X Window System setup
+- `i3.nix` - i3 window manager
+- `firefox.nix` - Firefox browser with policy templates
+
+These modules are designed to be imported into your main NixOS configuration.
+
+### Troubleshooting
 
 **Syntax errors:**
 - Run `nix-instantiate --parse <file>.nix` locally to check syntax
 - Ensure all Nix expressions are properly closed (braces, brackets)
+- Check for missing semicolons or commas in attribute sets
 
-**Out of memory:**
-- The build may require significant RAM for large closures
-- Consider using Cachix to cache expensive builds
+**Module not found:**
+- Verify the module file exists in the `module/` directory
+- Ensure file permissions are correct (readable)

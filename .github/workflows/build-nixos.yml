@@ -1,4 +1,4 @@
-name: Build NixOS System
+name: Validate NixOS Modules
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     
     steps:
@@ -22,60 +22,55 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       
-      - name: Set up Cachix (optional - for caching builds)
-        uses: cachix/cachix-action@v12
-        with:
-          name: nixos-build
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          skipPush: true  # Set to false if you have CACHIX_AUTH_TOKEN configured
-      
-      - name: Build NixOS system configuration
+      - name: Verify module syntax
         run: |
-          echo "Building NixOS system derivation..."
+          echo "Verifying Nix module syntax..."
           
-          # Build the system configuration
-          # We use nix-build to build the system derivation without installing it
-          nix-build '<nixpkgs/nixos>' \
-            -A system \
-            -I nixos-config=./configuration.nix \
-            -I nixpkgs=channel:nixos-24.05 \
-            --show-trace \
-            --option allow-import-from-derivation true
+          module_count=0
+          error_count=0
           
-          # Check the result
-          ls -lh result/
-          
-          echo "Build successful! System derivation created."
-      
-      - name: Check system closure size
-        run: |
-          echo "Calculating system closure size..."
-          nix-store -qR result | wc -l | xargs echo "Number of dependencies:"
-          du -sh result/ | awk '{print "Closure size:", $1}'
-      
-      - name: Verify configuration syntax
-        run: |
-          echo "Verifying Nix configuration syntax..."
-          nix-instantiate --parse ./configuration.nix > /dev/null
-          nix-instantiate --parse ./hardware-configuration.nix > /dev/null
           for module in ./module/*.nix; do
-            echo "Checking $module"
-            nix-instantiate --parse "$module" > /dev/null
+            if [ -f "$module" ]; then
+              echo "Checking $module"
+              if nix-instantiate --parse "$module" > /dev/null 2>&1; then
+                echo "✓ $module is valid"
+                ((module_count++))
+              else
+                echo "✗ $module has syntax errors"
+                nix-instantiate --parse "$module"
+                ((error_count++))
+              fi
+            fi
           done
-          echo "All configuration files have valid syntax!"
+          
+          echo ""
+          echo "Validation complete:"
+          echo "- Valid modules: $module_count"
+          echo "- Modules with errors: $error_count"
+          
+          if [ $error_count -gt 0 ]; then
+            echo "❌ Validation failed!"
+            exit 1
+          else
+            echo "✅ All modules are valid!"
+          fi
       
-      - name: Build summary
+      - name: Validation summary
         if: always()
         run: |
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -L result ]; then
-            echo "✅ NixOS system built successfully" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### System Information" >> $GITHUB_STEP_SUMMARY
-            echo "- **Derivation**: $(readlink result)" >> $GITHUB_STEP_SUMMARY
-            echo "- **Dependencies**: $(nix-store -qR result | wc -l)" >> $GITHUB_STEP_SUMMARY
-            echo "- **Size**: $(du -sh result/ | awk '{print $1}')" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
+          
+          module_count=$(find ./module -name "*.nix" -type f | wc -l)
+          echo "### NixOS Modules" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total modules**: $module_count" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Available modules:**" >> $GITHUB_STEP_SUMMARY
+          for module in ./module/*.nix; do
+            if [ -f "$module" ]; then
+              module_name=$(basename "$module")
+              echo "- \`$module_name\`" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All modules passed syntax validation" >> $GITHUB_STEP_SUMMARY

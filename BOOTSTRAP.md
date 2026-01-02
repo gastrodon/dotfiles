@@ -47,7 +47,7 @@ sudo mkswap /mnt/swapfile
 sudo swapon /mnt/swapfile
 ```
 
-Note: The swap file will be automatically managed by NixOS after installation based on the configuration in `hardware-configuration.nix`.
+Note: The swap file will be automatically managed by NixOS after installation based on your configuration.
 
 ### 4. Generate Initial Configuration
 
@@ -58,44 +58,61 @@ sudo nixos-generate-config --root /mnt
 
 This creates `/mnt/etc/nixos/configuration.nix` and `/mnt/etc/nixos/hardware-configuration.nix`.
 
-### 5. Replace with Repository Configuration
+### 5. Add Repository Modules
+
+The repository provides modular NixOS configurations that you can import into your generated configuration.
 
 Option A - If you have network access and git:
 ```bash
-# Clone this repository
+# Clone this repository for the modules
 cd /mnt/etc/nixos
-sudo rm configuration.nix hardware-configuration.nix
 git clone https://github.com/gastrodon/dotfiles.git temp
-sudo cp temp/configuration.nix .
-sudo cp temp/hardware-configuration.nix .
 sudo cp -r temp/module .
+sudo rm -rf temp
 ```
 
 Option B - Manual copy:
 ```bash
-# Copy the configuration files from this repository to /mnt/etc/nixos/
+# Copy the module directory from this repository to /mnt/etc/nixos/
 # You may need to use a USB drive or download them
 cd /mnt/etc/nixos
 sudo mkdir -p module
 
-# Copy files:
-# - configuration.nix
-# - hardware-configuration.nix
+# Copy module files:
 # - module/users.nix
 # - module/x11.nix
 # - module/i3.nix
+# - module/firefox.nix
 ```
 
-### 6. Review and Adjust Configuration
+### 6. Configure System with Modules
 
-Before installing, review the hardware configuration:
+Edit your generated `configuration.nix` to import the modules:
 
 ```bash
-sudo nano /mnt/etc/nixos/hardware-configuration.nix
+sudo nano /mnt/etc/nixos/configuration.nix
+```
+
+Add the module imports at the top of the file:
+
+```nix
+{ config, pkgs, ... }:
+
+{
+  imports = [
+    ./hardware-configuration.nix
+    ./module/users.nix      # User configuration (eva user)
+    ./module/x11.nix        # X Window System
+    ./module/i3.nix         # i3 window manager
+    ./module/firefox.nix    # Firefox browser
+  ];
+  
+  # ... rest of your configuration
+}
 ```
 
 **Important adjustments:**
-- **Swap size**: Update the swap file size in `swapDevices` to match your RAM (in MB)
+- **Swap size**: Update the swap file size in `swapDevices` in `hardware-configuration.nix` to match your RAM (in MB)
 - Verify the filesystem UUIDs match your actual partitions (you can use `blkid` to check)
 - If you have AMD CPU instead of Intel, change the microcode line in hardware-configuration.nix
 - Adjust timezone in configuration.nix if needed (default is America/New_York)
