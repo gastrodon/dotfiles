@@ -21,10 +21,10 @@
         # LightDM will automatically detect i3 from services.xserver.windowManager.i3
       };
     };
-    
-    # Configure libinput for touchpad support
-    libinput.enable = true;
   };
+
+  # Configure libinput for touchpad support
+  services.libinput.enable = true;
 
   # Install X11 related packages
   environment.systemPackages = with pkgs; [
