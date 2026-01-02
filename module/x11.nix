@@ -12,9 +12,12 @@
     layout = "us";
     xkbVariant = "";
     
-    # Display manager - using startx approach via .xinitrc
+    # Display manager - LightDM for graphical login
     displayManager = {
-      startx.enable = true;
+      lightdm = {
+        enable = true;
+        # LightDM will automatically detect i3 from services.xserver.windowManager.i3
+      };
     };
     
     # Configure libinput for touchpad support
@@ -26,6 +29,7 @@
     xorg.xrdb        # X resources database
     xorg.xmodmap     # Keyboard mapping
     xorg.xinit       # X initialization
-    xterm            # Basic terminal
+    xorg.xrandr      # Display configuration
+    xclip            # Clipboard utility
   ];
 }
