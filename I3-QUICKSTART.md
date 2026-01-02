@@ -18,7 +18,7 @@ The i3 module (`module/i3.nix`) provides a complete desktop environment with:
   - Simple and lightweight
 
 ### Terminal
-- **alacritty** - Primary terminal emulator (GPU-accelerated)
+- **ghostty** - Primary terminal emulator (modern, GPU-accelerated)
   - Launch with `Mod+Enter` (default i3 keybinding)
   - Set as default via `$TERMINAL` environment variable
 - **xterm** - Fallback terminal
@@ -83,7 +83,7 @@ When you first start i3, it will ask:
 
 ### Essential Keybindings
 
-- `Mod+Enter` - Open terminal (alacritty)
+- `Mod+Enter` - Open terminal (ghostty)
 - `Mod+d` - Open application launcher (rofi)
 - `Mod+Shift+q` - Close focused window
 - `Mod+Shift+e` - Exit i3
@@ -135,7 +135,7 @@ Then rebuild: `sudo nixos-rebuild switch`
 ## Troubleshooting
 
 ### Terminal won't open
-- Check if alacritty is installed: `which alacritty`
+- Check if ghostty is installed: `which ghostty`
 - Try xterm as fallback: `Mod+Enter` then type `xterm`
 - Check i3 config for terminal keybinding
 

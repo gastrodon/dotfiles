@@ -28,7 +28,7 @@
     rofi            # Advanced application launcher (preferred)
     
     # Terminal emulators
-    alacritty       # GPU-accelerated terminal (recommended)
+    ghostty         # Modern GPU-accelerated terminal (recommended)
     xterm           # Fallback terminal
     
     # Essential utilities
@@ -63,7 +63,7 @@
   # Default applications
   environment.variables = {
     # Set default terminal for i3-sensible-terminal
-    TERMINAL = "alacritty";
+    TERMINAL = "ghostty";
   };
 
   # Enable sound for desktop use
