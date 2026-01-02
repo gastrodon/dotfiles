@@ -1,0 +1,194 @@
+{ pkgs, ... }:
+let
+  # Blur-lock script for i3lock with blur effect
+  blur-lock = pkgs.writeScriptBin "blur-lock" ''
+    #!/bin/sh
+    ${pkgs.scrot}/bin/scrot /tmp/screenshot.png
+    ${pkgs.imagemagick}/bin/convert /tmp/screenshot.png -blur 0x5 /tmp/screenshotblur.png
+    ${pkgs.i3lock}/bin/i3lock -i /tmp/screenshotblur.png
+    rm /tmp/screenshot.png /tmp/screenshotblur.png
+  '';
+
+  # Volume and brightness control script
+  volume-brightness = pkgs.writeScriptBin "volume_brightness.sh" ''
+    #!/bin/bash
+    bar_color="#7f7fff"
+    volume_step=1
+    brightness_step=2.5
+    max_volume=100
+
+    function get_volume {
+        ${pkgs.pulseaudio}/bin/pactl get-sink-volume @DEFAULT_SINK@ | grep -Po '[0-9]{1,3}(?=%)' | head -1
+    }
+
+    function get_mute {
+        ${pkgs.pulseaudio}/bin/pactl get-sink-mute @DEFAULT_SINK@ | grep -Po '(?<=Mute: )(yes|no)'
+    }
+
+    function get_brightness {
+        ${pkgs.xorg.xbacklight}/bin/xbacklight | grep -Po '[0-9]{1,3}' | head -n 1
+    }
+
+    function get_volume_icon {
+        volume=$(get_volume)
+        mute=$(get_mute)
+        if [ "$volume" -eq 0 ] || [ "$mute" == "yes" ] ; then
+            volume_icon=""
+        elif [ "$volume" -lt 50 ]; then
+            volume_icon=""
+        else
+            volume_icon=""
+        fi
+    }
+
+    function get_brightness_icon {
+        brightness_icon=""
+    }
+
+    function show_volume_notif {
+        volume=$(get_volume)
+        get_volume_icon
+        ${pkgs.dunst}/bin/dunstify -i audio-volume-muted-blocking -t 1000 -r 2593 -u normal "$volume_icon $volume%" -h int:value:$volume -h string:hlcolor:$bar_color
+    }
+
+    function show_brightness_notif {
+        brightness=$(get_brightness)
+        get_brightness_icon
+        ${pkgs.dunst}/bin/dunstify -t 1000 -r 2593 -u normal "$brightness_icon $brightness%" -h int:value:$brightness -h string:hlcolor:$bar_color
+    }
+
+    case $1 in
+        volume_up)
+        ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ 0
+        volume=$(get_volume)
+        if [ $(( "$volume" + "$volume_step" )) -gt $max_volume ]; then
+            ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ $max_volume%
+        else
+            ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +$volume_step%
+        fi
+        show_volume_notif
+        ;;
+
+        volume_down)
+        ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -$volume_step%
+        show_volume_notif
+        ;;
+
+        volume_mute)
+        ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle
+        show_volume_notif
+        ;;
+
+        brightness_up)
+        ${pkgs.xorg.xbacklight}/bin/xbacklight -inc $brightness_step -time 0
+        show_brightness_notif
+        ;;
+
+        brightness_down)
+        ${pkgs.xorg.xbacklight}/bin/xbacklight -dec $brightness_step -time 0
+        show_brightness_notif
+        ;;
+    esac
+  '';
+
+  # Power menu script
+  powermenu = pkgs.writeScriptBin "powermenu" ''
+    #!/usr/bin/env bash
+
+    ROFI_OPTIONS="-theme ~/.config/rofi/powermenu.rasi"
+
+    shutdown=" Shutdown"
+    reboot=" Reboot"
+    suspend=" Suspend"
+    hibernate=" Hibernate"
+    lock=" Lock"
+    logout=" Logout"
+    cancel=" Cancel"
+
+    options="$shutdown\n$reboot\n$suspend\n$hibernate\n$lock\n$logout\n$cancel"
+
+    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Menu" $ROFI_OPTIONS)
+
+    case $selected in
+        $shutdown)
+            ${pkgs.systemd}/bin/systemctl poweroff
+            ;;
+        $reboot)
+            ${pkgs.systemd}/bin/systemctl reboot
+            ;;
+        $suspend)
+            ${pkgs.systemd}/bin/systemctl suspend
+            ;;
+        $hibernate)
+            ${pkgs.systemd}/bin/systemctl hibernate
+            ;;
+        $lock)
+            ${blur-lock}/bin/blur-lock
+            ;;
+        $logout)
+            i3-msg exit
+            ;;
+    esac
+  '';
+
+  # Empty workspace script
+  empty-workspace = pkgs.writeScriptBin "empty_workspace" ''
+    #!/usr/bin/env bash
+    MAX_DESKTOPS=20
+    WORKSPACES=$(seq -s '\n' 1 1 $MAX_DESKTOPS)
+
+    EMPTY_WORKSPACE=$( (i3-msg -t get_workspaces | tr ',' '\n' | grep num | awk -F:  '{print int($2)}' ; \
+                echo -e $WORKSPACES ) | sort -n | uniq -u | head -n 1)
+
+    i3-msg workspace $EMPTY_WORKSPACE
+  '';
+
+  # Keyhint script
+  keyhint = pkgs.writeScriptBin "keyhint-2" ''
+    #!/usr/bin/env bash
+    I3_CONFIG=/etc/i3/config
+    mod_key=$(sed -nre 's/^set \$mod (.*)/\1/p' $I3_CONFIG)
+    grep "^bindsym\|^bindcode" $I3_CONFIG \
+        | sed "s/-\(-\w\+\)\+//g;s/\$mod/$mod_key/g;s/Mod1/Alt/g;s/exec //;s/bindsym //;s/bindcode //;s/^\s\+//;s/^\([^ ]\+\) \(.\+\)$/\2: \1/;s/^\s\+//" \
+        | tr -s ' ' \
+        | ${pkgs.rofi}/bin/rofi -dmenu -theme ~/.config/rofi/rofikeyhint.rasi
+  '';
+
+  # Power profiles script
+  power-profiles = pkgs.writeScriptBin "power-profiles" ''
+    #!/usr/bin/env bash
+
+    ROFI_OPTIONS="-theme ~/.config/rofi/power-profiles.rasi"
+
+    performance=" Performance"
+    balanced=" Balanced"
+    powersaver=" Power Saver"
+    cancel=" Cancel"
+
+    options="$performance\n$balanced\n$powersaver\n$cancel"
+
+    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Profile" $ROFI_OPTIONS)
+
+    case $selected in
+        $performance)
+            powerprofilesctl set performance 2>/dev/null || echo "power-profiles-daemon not available"
+            ;;
+        $balanced)
+            powerprofilesctl set balanced 2>/dev/null || echo "power-profiles-daemon not available"
+            ;;
+        $powersaver)
+            powerprofilesctl set power-saver 2>/dev/null || echo "power-profiles-daemon not available"
+            ;;
+    esac
+  '';
+in
+{
+  scripts = [
+    blur-lock
+    volume-brightness
+    powermenu
+    empty-workspace
+    keyhint
+    power-profiles
+  ];
+}

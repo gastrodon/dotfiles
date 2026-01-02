@@ -1,7 +1,5 @@
-# X11 Window System Configuration
-# Configures the X server and display manager
-
 { config, pkgs, ... }:
+<<<<<<< HEAD
 let
   # Solarized Dark color palette
   colors = {
@@ -32,22 +30,20 @@ let
     green = "#859900";
   };
 in
+=======
+>>>>>>> 60de063 (tidy x11 + i3)
 {
-  # Enable the X11 windowing system
   services.xserver = {
     enable = true;
-    
-    # Keyboard layout (updated to use xkb prefix)
+
     xkb = {
       layout = "us";
       variant = "";
     };
-    
-    # Display manager - LightDM for graphical login
+
     displayManager = {
       lightdm = {
-        enable = true;
-        # LightDM will automatically detect i3 from services.xserver.windowManager.i3
+        enable = true;        # LightDM detects i3 from services.xserver.windowManager.i3
       };
 
       sessionCommands = ''
