@@ -8,9 +8,11 @@
   services.xserver = {
     enable = true;
     
-    # Keyboard layout
-    layout = "us";
-    xkbVariant = "";
+    # Keyboard layout (updated to use xkb prefix)
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
     
     # Display manager - LightDM for graphical login
     displayManager = {

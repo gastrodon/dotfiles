@@ -37,7 +37,7 @@
     picom           # Compositor for transparency and effects
     
     # System utilities
-    pavucontrol     # PulseAudio volume control GUI
+    pavucontrol     # Volume control GUI (works with PipeWire)
     networkmanagerapplet  # NetworkManager system tray applet
     
     # File management
@@ -66,9 +66,14 @@
     TERMINAL = "ghostty";
   };
 
-  # Enable sound for desktop use
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  # Enable sound with PipeWire (modern audio system)
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
   
   # Fonts for i3 and applications
   fonts.packages = with pkgs; [

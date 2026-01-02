@@ -19,8 +19,9 @@ The i3 module (`module/i3.nix`) provides a complete desktop environment with:
 
 ### Terminal
 - **ghostty** - Primary terminal emulator (modern, GPU-accelerated)
-  - Launch with `Mod+Enter` (default i3 keybinding)
+  - Launch with `Mod+Enter` (default i3 keybinding uses `$TERMINAL` variable)
   - Set as default via `$TERMINAL` environment variable
+  - i3 automatically uses i3-sensible-terminal which respects `$TERMINAL`
 - **xterm** - Fallback terminal
 
 ### Essential Components
@@ -30,9 +31,14 @@ The i3 module (`module/i3.nix`) provides a complete desktop environment with:
 - **scrot** - Take screenshots
 - **picom** - Compositor (optional, for transparency/shadows)
 - **dunst** - Desktop notifications
-- **pavucontrol** - Audio volume control GUI
+- **pavucontrol** - Volume control GUI (works with PipeWire)
 - **networkmanagerapplet** - Network manager system tray
 - **pcmanfm** - File manager
+
+### Audio
+- **PipeWire** - Modern audio system with PulseAudio compatibility
+  - Supports low latency and professional audio workflows
+  - Compatible with PulseAudio and JACK applications
 
 ## Quick Installation
 
@@ -155,7 +161,8 @@ Then rebuild: `sudo nixos-rebuild switch`
 ### Audio not working
 - Open pavucontrol: `pavucontrol`
 - Check if volume is muted
-- Verify PulseAudio is running: `systemctl --user status pulseaudio`
+- Verify PipeWire is running: `systemctl --user status pipewire pipewire-pulse`
+- Check audio devices: `pactl list sinks`
 
 ## Customization Tips
 
