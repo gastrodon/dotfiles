@@ -4,6 +4,7 @@
   imports = [
     ./git.nix
     ./gh.nix # I'm not 100% I actually use this
+    ./ssh.nix
   ];
 
   home-manager = {
@@ -22,6 +23,11 @@
         tldr
         ripgrep
       ];
+
+      home.sessionVariables = {
+        SSH_AUTH_SOCK = "$(gpgconf --list-dirs agent-ssh-socket)";
+        GPG_TTY = "$(tty)";
+      };
 
       programs.home-manager.enable = true;
     };

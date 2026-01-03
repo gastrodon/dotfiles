@@ -9,6 +9,7 @@
         user = {
           name = "eva";
           email = "mail@gastrodon.io";
+          signingKey = "mail@gastrodon.io";
         };
 
         core = {
@@ -19,6 +20,10 @@
         };
         commit = {
           verbose = true;
+          gpgSign = true;
+        };
+        gpg = {
+          format = "openpgp";
         };
         diff = {
           wsErrorHighlight = "context,old";
