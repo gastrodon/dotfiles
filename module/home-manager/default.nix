@@ -17,12 +17,12 @@
 
       home.stateVersion = "25.11";
 
-      # The home.packages option allows you to install Nix packages into your environment
       home.packages = with pkgs; [
-        # Add user-level packages here
+        bottom
+        tldr
+        ripgrep
       ];
 
-      # Let home-manager manage itself
       programs.home-manager.enable = true;
     };
   };

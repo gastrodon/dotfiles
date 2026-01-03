@@ -3,11 +3,6 @@
   users.users.eva = {
     isNormalUser = true;
     description = "eva";
-    packages = with pkgs; [
-      bottom
-      tldr
-      ripgrep
-    ];
 
     extraGroups = [
       "wheel"          # Enable sudo
