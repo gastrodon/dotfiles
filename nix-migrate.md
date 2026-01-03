@@ -9,6 +9,8 @@ note:
 - add just a `<name>/default.nix` if no files specified. We prefer to import directories
 ---
 - module/...
+  - identity: we provide id items ( name, username, email, ssh / gpg public keys)
+              and we use it elsewhere ( git config, zsh, etc )
   - theme:
     - provides a selection of themes that we can get colors for
     - theme: {<shell-colors...>, <vscode-theme>, ...}
