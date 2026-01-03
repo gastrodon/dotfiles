@@ -1,5 +1,4 @@
 { config, pkgs, ... }:
-<<<<<<< HEAD
 let
   # Solarized Dark color palette
   colors = {
@@ -30,8 +29,6 @@ let
     green = "#859900";
   };
 in
-=======
->>>>>>> 60de063 (tidy x11 + i3)
 {
   services.xserver = {
     enable = true;
@@ -43,7 +40,7 @@ in
 
     displayManager = {
       lightdm = {
-        enable = true;        # LightDM detects i3 from services.xserver.windowManager.i3
+        enable = true; # LightDM detects i3 from services.xserver.windowManager.i3
       };
 
       sessionCommands = ''
@@ -164,18 +161,18 @@ in
   # Install X11 related packages
   environment.systemPackages = with pkgs; [
     # X11 utilities
-    xorg.xrdb        # X resources database
-    xorg.xmodmap     # Keyboard mapping
-    xorg.xinit       # X initialization
-    xorg.xrandr      # Display configuration
-    xclip            # Clipboard utility
+    xorg.xrdb # X resources database
+    xorg.xmodmap # Keyboard mapping
+    xorg.xinit # X initialization
+    xorg.xrandr # Display configuration
+    xclip # Clipboard utility
 
     # Iosevka fonts (multiple variants)
     (iosevka-bin.override { variant = "SS04"; })
-    iosevka-bin      # Base iosevka
+    iosevka-bin # Base iosevka
 
     # URL launcher for URxvt
-    xfce.exo         # Provides exo-open
+    xfce.exo # Provides exo-open
 
     # URxvt with perl extensions
     rxvt-unicode-unwrapped
