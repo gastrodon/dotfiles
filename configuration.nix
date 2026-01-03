@@ -1,11 +1,15 @@
 { config, lib, pkgs, ... }:
-
+let
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./module/i3
+      ./module/home-manager
       ./module/x11.nix
+      (import "${home-manager}/nixos")
     ];
 
   # Use the systemd-boot EFI boot loader.
