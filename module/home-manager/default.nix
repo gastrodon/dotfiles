@@ -11,6 +11,10 @@
     useUserPackages = true;
 
     users.eva = {
+      imports = [
+        ./vscodium
+      ];
+
       home.stateVersion = "25.11";
 
       # The home.packages option allows you to install Nix packages into your environment

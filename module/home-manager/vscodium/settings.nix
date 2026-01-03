@@ -1,0 +1,81 @@
+{
+  "accessibility.verbosity.inlineChat" = false;
+  "debug.terminal.clearBeforeReusing" = true;
+  "editor.codeLensFontFamily" = "Fira Code Light";
+  "editor.find.seedSearchStringFromSelection" = "never";
+  "editor.fontFamily" = "Fira Code";
+  "editor.fontLigatures" = true;
+  "editor.fontSize" = 13;
+  "editor.formatOnSave" = true;
+  "editor.inlineSuggest.enabled" = false;
+  "editor.rulers" = [ 96 120 ];
+  "editor.tabSize" = 2;
+  "editor.unicodeHighlight.allowedCharacters" = {
+    "σ" = true;
+  };
+  "explorer.confirmDelete" = false;
+  "explorer.confirmDragAndDrop" = false;
+  "files.associations" = {
+    "*.nomad" = "hcl";
+    "*.psy" = "hcl";
+    "apply" = "shellscript";
+  };
+  "files.insertFinalNewline" = true;
+  "files.readonlyInclude" = {
+    "**/.cargo/registry/src/**/*.rs" = true;
+    "**/lib/rustlib/src/rust/library/**/*.rs" = true;
+  };
+  "files.trimTrailingWhitespace" = true;
+  "github.copilot.advanced" = {
+    useLanguageServer = true;
+  };
+  "github.copilot.editor.enableAutoCompletions" = false;
+  "github.copilot.chat.byok.ollamaEndpoint" = "http://stone:11434";
+  "github.copilot.chat.scopeSelection" = true;
+  "github.copilot.chat.codesearch.enabled" = true;
+  "github.copilot.chat.completionContext.typescript.mode" = "on";
+  "github.copilot.chat.editor.temporalContext.enabled" = true;
+  "hexeditor.columnWidth" = 16;
+  "hexeditor.defaultEndianness" = "little";
+  "hexeditor.inspectorType" = "aside";
+  "hexeditor.showDecodedText" = false;
+  "inlineChat.lineNaturalLanguageHint" = false;
+  "lldb.suppressUpdateNotifications" = true;
+  "rust-analyzer.check.command" = "clippy";
+  "rust-analyzer.checkOnSave" = true;
+  "rust-analyzer.debug.engineSettings" = {
+    terminal = null;
+  };
+  "rust-analyzer.inlayHints.typeHints.enable" = false;
+  "rust-analyzer.rustfmt.rangeFormatting.enable" = true;
+  "rust-analyzer.typing.autoClosingAngleBrackets.enable" = true;
+  "rust-client.rustupPath" = "/Users/eva/.cargo/bin/rustup";
+  "rust.clippy_preference" = "on";
+  "security.promptForLocalFileProtocolHandling" = false;
+  "security.workspace.trust.untrustedFiles" = "open";
+  "terraform.experimentalFeatures.validateOnSave" = true;
+  "window.closeWhenEmpty" = true;
+  "window.confirmSaveUntitledWorkspace" = false;
+  "window.menuBarVisibility" = "hidden";
+  "window.restoreWindows" = "none";
+  "window.zoomLevel" = 1;
+  "workbench.colorTheme" = "Solarized Dark";
+  "workbench.editor.enablePreview" = false;
+  "workbench.editorAssociations" = {
+    "*.gene" = "hexEditor.hexedit";
+  };
+  "workbench.preferredDarkColorTheme" = "Solarized Dark";
+  "workbench.preferredLightColorTheme" = "Solarized Light";
+  "workbench.startupEditor" = "none";
+  "zig.zls.enabled" = "on";
+  "typescript.updateImportsOnFileMove.enabled" = "always";
+  "chat.editing.confirmEditRequestRemoval" = false;
+  "roo-cline.allowedCommands" = [
+    "git log"
+    "git diff"
+    "git show"
+  ];
+  "roo-cline.deniedCommands" = [];
+  "diffEditor.renderSideBySide" = false;
+  "terminal.integrated.stickyScroll.enabled" = false;
+}
