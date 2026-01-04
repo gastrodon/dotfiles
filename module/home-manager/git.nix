@@ -29,6 +29,11 @@
         color = {
           ui = true;
         };
+        url = {
+          "git@github.com:" = {
+            insteadOf = "https://github.com/";
+          };
+        };
       };
 
       ignores = [
