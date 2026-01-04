@@ -1,4 +1,4 @@
-{ ... }:
+{ username }:
 {
   config = ''
     # i3 config file (v4)
@@ -318,7 +318,7 @@
 
     bar {
         font pango: Noto Sans Regular 10
-        status_command i3blocks -c /etc/i3/i3blocks.conf
+        status_command i3blocks -c /home/${username}/.config/i3/i3blocks.conf
         position bottom
         tray_padding 0
 

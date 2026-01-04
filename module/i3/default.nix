@@ -2,7 +2,7 @@
 let
   scripts = import ./scripts.nix { inherit pkgs; };
   blocks = import ./blocks.nix { inherit pkgs; };
-  keybinds = import ./keybinds.nix { };
+  keybinds = import ./keybinds.nix { username = config.identity.username; };
 in
 {
   services.xserver.windowManager.i3 = {
@@ -16,34 +16,56 @@ in
   };
 
   # Install i3 and essential desktop packages
-  environment.systemPackages = with pkgs; [
-    rofi    # application finder
-    ghostty # terminal emulator
+  environment.systemPackages =
+    with pkgs;
+    [
+      rofi # application finder
+      ghostty # terminal emulator
 
-    feh              # Wallpaper setter
-    scrot            # Screenshot utility
-    imagemagick      # For blur effects in lock script
+      feh # Wallpaper setter
+      scrot # Screenshot utility
+      imagemagick # For blur effects in lock script
 
-    pavucontrol           # Volume control GUI
-    networkmanagerapplet  # NetworkManager system tray applet
-    xorg.xbacklight       # Brightness control
+      pavucontrol # Volume control GUI
+      networkmanagerapplet # NetworkManager system tray applet
+      xorg.xbacklight # Brightness control
 
-    autotiling   # switches tiling directions
-    xclip        # clipboard
-    dunst        # notifier
-    libnotify    # notification daemon
-    playerctl    # media control
-    polkit_gnome # gui authenticator
-    dex          # xdg-open
-    xss-lock     # screen locker
+      autotiling # switches tiling directions
+      xclip # clipboard
+      dunst # notifier
+      libnotify # notification daemon
+      playerctl # media control
+      polkit_gnome # gui authenticator
+      dex # xdg-open
+      xss-lock # screen locker
 
-    acpi              # For battery status
-    iproute2          # For network interface info
-    alsa-utils        # For amixer volume control
-  ] ++ scripts.scripts ++ blocks.scripts;
+      acpi # For battery status
+      iproute2 # For network interface info
+      alsa-utils # For amixer volume control
+    ]
+    ++ scripts.scripts
+    ++ blocks.scripts;
 
-  environment.etc."i3/config".text = keybinds.config;
-  environment.etc."i3/i3blocks.conf".text = blocks.config;
+  # Write i3 config files to user's home directory
+  systemd.tmpfiles.rules = [
+    "d /home/${config.identity.username}/.config/i3 0755 ${config.identity.username} users - -"
+    "f /home/${config.identity.username}/.config/i3/config 0644 ${config.identity.username} users - -"
+    "f /home/${config.identity.username}/.config/i3/i3blocks.conf 0644 ${config.identity.username} users - -"
+  ];
+
+  environment.etc."i3-config-source".text = keybinds.config;
+  environment.etc."i3blocks-config-source".text = blocks.config;
+
+  system.activationScripts.i3config = ''
+    cp ${
+      config.environment.etc."i3-config-source".source
+    } /home/${config.identity.username}/.config/i3/config
+    cp ${
+      config.environment.etc."i3blocks-config-source".source
+    } /home/${config.identity.username}/.config/i3/i3blocks.conf
+    chown ${config.identity.username}:users /home/${config.identity.username}/.config/i3/config
+    chown ${config.identity.username}:users /home/${config.identity.username}/.config/i3/i3blocks.conf
+  '';
 
   environment.variables = {
     TERMINAL = "ghostty";
