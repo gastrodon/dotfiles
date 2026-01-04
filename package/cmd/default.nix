@@ -36,15 +36,6 @@ let
     "white!" = "97";
     "white-bg!" = "107";
   };
-
-  # Generate a color script for each color
-  colorScripts = lib.mapAttrs (
-    name: code:
-    pkgs.writeShellScriptBin name ''
-      echo -e "\e[${code}m$*\e[0m"
-    ''
-  ) colors;
-
 in
 {
   fe = pkgs.writeShellScriptBin "fe" ''
@@ -79,4 +70,9 @@ in
     fi
   '';
 }
-// colorScripts
+// lib.mapAttrs (
+  name: code:
+  pkgs.writeShellScriptBin name ''
+    echo -e "\e[${code}m$*\e[0m"
+  ''
+) colors

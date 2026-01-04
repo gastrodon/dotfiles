@@ -6,6 +6,7 @@
 }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
+  local = import ./package { inherit pkgs lib; };
 in
 {
   imports = [
@@ -33,11 +34,14 @@ in
   programs.firefox.enable = true;
 
   # https://search.nixos.org/ to find more packages (and options).
-  environment.systemPackages = with pkgs; [
-    vim
-    curl
-    git
-  ];
+  environment.systemPackages =
+    with pkgs;
+    [
+      vim
+      curl
+      git
+    ]
+    ++ local.pkgs;
 
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
