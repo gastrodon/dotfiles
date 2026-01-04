@@ -36,6 +36,19 @@ in
         ++ (builtins.attrValues cmdPackages);
 
       programs.home-manager.enable = true;
+
+      programs.zsh = {
+        enable = true;
+        enableCompletion = true;
+
+        initExtra = ''
+          setopt rm_star_silent
+        '';
+
+        sessionVariables = {
+          EDITOR = "vim";
+        };
+      };
     };
   };
 }
