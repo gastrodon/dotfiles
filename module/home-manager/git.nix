@@ -1,15 +1,15 @@
 { config, pkgs, ... }:
 
 {
-  home-manager.users.eva = {
+  home-manager.users.${config.identity.username} = {
     programs.git = {
       enable = true;
 
       settings = {
         user = {
-          name = "eva";
-          email = "mail@gastrodon.io";
-          signingKey = "mail@gastrodon.io";
+          name = config.identity.name;
+          email = config.identity.email;
+          signingKey = config.identity.email;
         };
 
         core = {

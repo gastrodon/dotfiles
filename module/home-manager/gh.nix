@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 {
-  home-manager.users.eva = {
+  home-manager.users.${config.identity.username} = {
     programs.gh = {
       enable = true;
 

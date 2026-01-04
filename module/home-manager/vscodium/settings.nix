@@ -49,7 +49,7 @@
   "rust-analyzer.inlayHints.typeHints.enable" = false;
   "rust-analyzer.rustfmt.rangeFormatting.enable" = true;
   "rust-analyzer.typing.autoClosingAngleBrackets.enable" = true;
-  "rust-client.rustupPath" = "/Users/eva/.cargo/bin/rustup";
+  "rust-client.rustupPath" = "~/.cargo/bin/rustup";
   "rust.clippy_preference" = "on";
   "security.promptForLocalFileProtocolHandling" = false;
   "security.workspace.trust.untrustedFiles" = "open";

@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 {
-  users.users.eva = {
+  users.users.${config.identity.username} = {
     isNormalUser = true;
-    description = "eva";
+    description = config.identity.name;
 
     extraGroups = [
       "wheel"          # Enable sudo

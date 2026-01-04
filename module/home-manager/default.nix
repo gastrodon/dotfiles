@@ -11,7 +11,7 @@
     useGlobalPkgs = true;
     useUserPackages = true;
 
-    users.eva = {
+    users.${config.identity.username} = {
       imports = [
         ./vscodium
       ];

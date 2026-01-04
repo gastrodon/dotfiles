@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./hardware-configuration.nix
+    ./module/identity.nix
     ./module/i3
     ./module/home-manager
     ./module/users.nix
