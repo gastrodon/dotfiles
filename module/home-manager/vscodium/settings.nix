@@ -8,7 +8,10 @@
   "editor.fontSize" = 13;
   "editor.formatOnSave" = true;
   "editor.inlineSuggest.enabled" = false;
-  "editor.rulers" = [ 96 120 ];
+  "editor.rulers" = [
+    96
+    120
+  ];
   "editor.tabSize" = 2;
   "editor.unicodeHighlight.allowedCharacters" = {
     "σ" = true;
@@ -75,7 +78,7 @@
     "git diff"
     "git show"
   ];
-  "roo-cline.deniedCommands" = [];
+  "roo-cline.deniedCommands" = [ ];
   "diffEditor.renderSideBySide" = false;
   "terminal.integrated.stickyScroll.enabled" = false;
 }

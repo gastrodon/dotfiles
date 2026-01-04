@@ -5,10 +5,10 @@
     description = config.identity.name;
 
     extraGroups = [
-      "wheel"          # Enable sudo
+      "wheel" # Enable sudo
       "networkmanager" # Manage network connections
-      "video"          # Access video devices (brightness control)
-      "audio"          # Access audio devices
+      "video" # Access video devices (brightness control)
+      "audio" # Access audio devices
     ];
 
     # Set a real password with `sudo passwd eva`
