@@ -36,7 +36,7 @@
         enable = true;
         enableCompletion = true;
 
-        initExtra = ''
+        initContent = ''
           setopt rm_star_silent
         '';
 
