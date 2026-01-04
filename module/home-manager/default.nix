@@ -24,11 +24,6 @@
         ripgrep
       ];
 
-      home.sessionVariables = {
-        SSH_AUTH_SOCK = "$(gpgconf --list-dirs agent-ssh-socket)";
-        GPG_TTY = "$(tty)";
-      };
-
       programs.home-manager.enable = true;
     };
   };

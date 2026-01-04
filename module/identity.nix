@@ -29,7 +29,6 @@ in
 
     sshPubKey = lib.mkOption {
       type = lib.types.str;
-      description = "GPG public key identifier (optional)";
       default = sshPubKey;
       description = "SSH public key content";
     };

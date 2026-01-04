@@ -37,21 +37,7 @@ in
     vim
     curl
     git
-    pinentry-curses
   ];
-
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-    pinentryPackage = pkgs.pinentry-curses;
-
-    extraConfig = ''
-      default-cache-ttl 3600
-      max-cache-ttl 86400
-      default-cache-ttl-ssh 3600
-      max-cache-ttl-ssh 86400
-    '';
-  };
 
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];

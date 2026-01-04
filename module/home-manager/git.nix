@@ -9,7 +9,6 @@
         user = {
           name = config.identity.name;
           email = config.identity.email;
-          signingKey = config.identity.email;
         };
 
         core = {
@@ -20,10 +19,6 @@
         };
         commit = {
           verbose = true;
-          gpgSign = true;
-        };
-        gpg = {
-          format = "openpgp";
         };
         diff = {
           wsErrorHighlight = "context,old";
