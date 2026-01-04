@@ -1,5 +1,13 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
+let
+  cmdPackages = import ../../package/cmd { inherit pkgs lib; };
+in
 {
   imports = [
     ./git.nix
@@ -18,11 +26,14 @@
 
       home.stateVersion = "25.11";
 
-      home.packages = with pkgs; [
-        bottom
-        tldr
-        ripgrep
-      ];
+      home.packages =
+        (with pkgs; [
+          bottom
+          tldr
+          ripgrep
+          coreutils
+        ])
+        ++ (builtins.attrValues cmdPackages);
 
       programs.home-manager.enable = true;
     };
