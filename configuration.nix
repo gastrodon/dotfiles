@@ -6,6 +6,7 @@
 }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
+  nur = builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz";
   local = import ./package { inherit pkgs lib; };
 in
 {
@@ -19,6 +20,12 @@ in
     (import "${home-manager}/nixos")
   ];
 
+  nixpkgs.overlays = [
+    (final: prev: {
+      nur = import nur { pkgs = prev; };
+    })
+  ];
+
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
@@ -30,8 +37,6 @@ in
   networking.networkmanager.enable = true;
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
-
-  programs.firefox.enable = true;
 
   # https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages =
