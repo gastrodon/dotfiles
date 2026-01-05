@@ -21,6 +21,7 @@
         ./ssh.nix
         ./firefox.nix
         ./vscodium
+        ./zsh
       ];
 
       home.stateVersion = "25.11";
@@ -33,19 +34,6 @@
       ];
 
       programs.home-manager.enable = true;
-
-      programs.zsh = {
-        enable = true;
-        enableCompletion = true;
-
-        initContent = ''
-          setopt rm_star_silent
-        '';
-
-        sessionVariables = {
-          EDITOR = "vim";
-        };
-      };
     };
   };
 }

@@ -1,8 +1,11 @@
 { config, pkgs, ... }:
 {
+  programs.zsh.enable = true;
+
   users.users.${config.identity.username} = {
     isNormalUser = true;
     description = config.identity.name;
+    shell = pkgs.zsh;
 
     extraGroups = [
       "wheel" # Enable sudo
