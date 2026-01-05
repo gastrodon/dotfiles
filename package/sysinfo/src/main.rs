@@ -1,8 +1,7 @@
 mod cmd;
-mod lib;
 
 use clap::{Parser, Subcommand};
-use lib::OutputFormat;
+use sysinfo::OutputFormat;
 
 #[derive(Parser, Debug)]
 #[command(name = "sysinfo")]

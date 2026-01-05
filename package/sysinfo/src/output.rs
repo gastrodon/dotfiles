@@ -1,7 +1,7 @@
 use clap::ValueEnum;
 use serde::Serialize;
 
-use super::kv_ser;
+use crate::kv_ser;
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum OutputFormat {

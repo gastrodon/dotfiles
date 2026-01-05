@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::collections::HashMap;
-use crate::lib::{Output, OutputFormat};
+use sysinfo::{Output, OutputFormat};
 
 #[derive(Debug, Serialize)]
 pub struct FlagInfo {
