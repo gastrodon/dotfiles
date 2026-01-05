@@ -44,7 +44,7 @@ let
     "workbench.action.quickOpen" = {
       key = "ctrl+o";
     };
-    "workbench.action.createTerminalEditor" = {
+    "workbench.action.files.newUntitledFile" = {
       key = "ctrl+t";
     };
     "workbench.action.remote.showMenu" = {
@@ -106,6 +106,9 @@ let
     "roo-cline.focusInput" = {
       key = "ctrl+shift+b";
       when = "editorFocus || terminalFocus || !textInputFocus";
+    };
+    "roo-cline.newTask" = {
+      key = "ctrl+l";
     };
   };
 in
