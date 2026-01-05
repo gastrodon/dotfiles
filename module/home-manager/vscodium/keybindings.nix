@@ -50,9 +50,6 @@ let
     "workbench.action.remote.showMenu" = {
       key = "ctrl+shift+alt+o";
     };
-    "workbench.panel.chat.view.copilot.focus" = {
-      key = "ctrl+shift+/";
-    };
     "workbench.action.zoomReset" = {
       key = "ctrl+0";
       replaces = "workbench.action.focusSideBar";
@@ -92,6 +89,23 @@ let
     };
     "merge-conflict.previous" = {
       key = "alt+pageup";
+    };
+
+    "workbench.action.togglePanel" = {
+      key = "ctrl+j";
+      when = "panelFocus";
+    };
+    "workbench.action.terminal.focus" = {
+      key = "ctrl+j";
+      when = "!panelFocus";
+    };
+    "workbench.action.toggleAuxiliaryBar" = {
+      key = "ctrl+shift+b";
+      when = "roo-cline.SidebarProvider.active && !editorFocus && !terminalFocus";
+    };
+    "roo-cline.focusInput" = {
+      key = "ctrl+shift+b";
+      when = "editorFocus || terminalFocus || !textInputFocus";
     };
   };
 in
