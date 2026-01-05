@@ -6,18 +6,19 @@
 }:
 
 {
-  imports = [
-    ./git.nix
-    ./gh.nix # I'm not 100% I actually use this
-    ./ssh.nix
-  ];
-
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
 
+    extraSpecialArgs = {
+      identity = config.identity;
+    };
+
     users.${config.identity.username} = {
       imports = [
+        ./git.nix
+        ./gh.nix # I'm not 100% I actually use this
+        ./ssh.nix
         ./vscodium
       ];
 
