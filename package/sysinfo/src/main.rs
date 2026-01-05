@@ -1,20 +1,27 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use upower_dbus::{BatteryState, DeviceProxy};
 use std::fmt;
 
-/// System information utility
 #[derive(Parser, Debug)]
 #[command(name = "sysinfo")]
 #[command(about = "System information utility", long_about = None)]
 struct Cli {
+    #[arg(long, value_enum, default_value = "text")]
+    format: OutputFormat,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
 
+#[derive(Debug, Clone, ValueEnum)]
+enum OutputFormat {
+    Text,
+    Json,
+}
+
 #[derive(Subcommand, Debug)]
 enum Commands {
-    /// Display battery information
     Battery,
 }
 
@@ -394,28 +401,31 @@ impl fmt::Display for BatteryInfo {
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
-
-    match cli.command {
-        Some(Commands::Battery) => {
-            if let Err(e) = cmd_battery().await {
-                eprintln!("Error: {}", e);
-                std::process::exit(1);
-            }
-        }
+    let cmd = match cli.command {
+        Some(Commands::Battery) => cmd_battery,
         None => {
             eprintln!("Not implemented");
             std::process::exit(1);
         }
+    };
+
+    match cmd().await {
+        Ok(t) => match cli.format {
+            OutputFormat::Text => println!("{t}"),
+            OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&t).unwrap()),
+        }
+        Err(err) => {
+            eprintln!("Error running cmd: {err}");
+            std::process::exit(1);
+        }
     }
+
 }
 
-async fn cmd_battery() -> Result<(), Box<dyn std::error::Error>> {
+async fn cmd_battery() -> Result<BatteryInfo, Box<dyn std::error::Error>> {
     let connection = zbus::Connection::system().await?;
     let upower = upower_dbus::UPowerProxy::new(&connection).await?;
     let device = upower.get_display_device().await?;
 
-    let info = BatteryInfo::from_device(&device).await?;
-    println!("{}", info);
-
-    Ok(())
+    Ok(BatteryInfo::from_device(&device).await?)
 }
