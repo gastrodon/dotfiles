@@ -401,31 +401,23 @@ impl fmt::Display for BatteryInfo {
 #[tokio::main]
 async fn main() {
     let cli = Cli::parse();
-    let cmd = match cli.command {
-        Some(Commands::Battery) => cmd_battery,
-        None => {
-            eprintln!("Not implemented");
-            std::process::exit(1);
-        }
+    let fmt = move |t: Box<dyn Serialize>| match cli.format {
+        OutputFormat::Text => println!("{t}"),
+        OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&t).unwrap()),
     };
 
-    match cmd().await {
-        Ok(t) => match cli.format {
-            OutputFormat::Text => println!("{t}"),
-            OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&t).unwrap()),
-        }
-        Err(err) => {
-            eprintln!("Error running cmd: {err}");
-            std::process::exit(1);
-        }
-    }
-
+     match cli.command {
+        Some(Commands::Battery) => cmd_battery(fmt).await.unwrap(),
+        None => todo!(),
+    };
 }
 
-async fn cmd_battery() -> Result<BatteryInfo, Box<dyn std::error::Error>> {
+async fn cmd_battery<S: Serialize>(fmt: impl FnOnce(Box<S>)) -> Result<(), Box<dyn std::error::Error>> {
     let connection = zbus::Connection::system().await?;
     let upower = upower_dbus::UPowerProxy::new(&connection).await?;
     let device = upower.get_display_device().await?;
 
-    Ok(BatteryInfo::from_device(&device).await?)
+    fmt(Box::from(BatteryInfo::from_device(&device).await?));
+
+    Ok(())
 }
