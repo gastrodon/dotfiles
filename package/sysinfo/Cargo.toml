@@ -1,0 +1,15 @@
+[package]
+name = "sysinfo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+upower_dbus = "0.3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+zbus = "3"
+serde = { version = "1.0", features = ["derive"] }
+
+[[bin]]
+name = "sysinfo"
+path = "src/main.rs"

@@ -1,3 +1,5 @@
 .local/bin/bright
-result
 
+# build output directories
+result
+target
