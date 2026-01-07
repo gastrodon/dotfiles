@@ -1,13 +1,17 @@
-{ username, wallpaper }:
+{
+  pkgs,
+  username,
+  wallpaper,
+}:
 let
   exec = [
-    "xss-lock -l blur-lock"
-    "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-    "dex --autostart --environment i3"
-    "feh --bg-tile ${wallpaper}"
-    "xset s 480 dpms 600 600 600"
-    "/usr/bin/dunst"
-    "autotiling"
+    "${pkgs.autotiling}/bin/autotiling"
+    "${pkgs.dex}/bin/dex --autostart --environment i3"
+    "${pkgs.dunst}/bin/dunst"
+    "${pkgs.feh}/bin/feh --bg-tile ${wallpaper}"
+    "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
+    "${pkgs.xorg.xset}/bin/xset s 480 dpms 600 600 600"
+    "${pkgs.xss-lock}/bin/xss-lock -l blur-lock"
   ];
 
   mkExecLine = x: "exec --no-startup-id ${x}";

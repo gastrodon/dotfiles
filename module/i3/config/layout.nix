@@ -1,4 +1,4 @@
-{ username, wallpaper }:
+{ username, ... }:
 {
   config = ''
     # i3 config file (v4)

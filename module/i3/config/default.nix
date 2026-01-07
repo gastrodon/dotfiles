@@ -13,7 +13,7 @@ let
   configs = map
     (file:
       let
-        module = import (configDir + "/${file}") { inherit username wallpaper; };
+        module = import (configDir + "/${file}") { inherit pkgs username wallpaper; };
       in
       module.config
     )

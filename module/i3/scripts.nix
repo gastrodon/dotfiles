@@ -126,7 +126,7 @@ let
             ${blur-lock}/bin/blur-lock
             ;;
         $logout)
-            i3-msg exit
+            ${pkgs.i3}/bin/i3-msg exit
             ;;
     esac
   '';
@@ -135,22 +135,22 @@ let
   empty-workspace = pkgs.writeScriptBin "empty_workspace" ''
     #!/usr/bin/env bash
     MAX_DESKTOPS=20
-    WORKSPACES=$(seq -s '\n' 1 1 $MAX_DESKTOPS)
+    WORKSPACES=$(${pkgs.coreutils}/bin/seq -s '\n' 1 1 $MAX_DESKTOPS)
 
-    EMPTY_WORKSPACE=$( (i3-msg -t get_workspaces | tr ',' '\n' | grep num | awk -F:  '{print int($2)}' ; \
-                echo -e $WORKSPACES ) | sort -n | uniq -u | head -n 1)
+    EMPTY_WORKSPACE=$( (${pkgs.i3}/bin/i3-msg -t get_workspaces | ${pkgs.coreutils}/bin/tr ',' '\n' | ${pkgs.gnugrep}/bin/grep num | ${pkgs.gawk}/bin/awk -F:  '{print int($2)}' ; \
+                echo -e $WORKSPACES ) | ${pkgs.coreutils}/bin/sort -n | ${pkgs.coreutils}/bin/uniq -u | ${pkgs.coreutils}/bin/head -n 1)
 
-    i3-msg workspace $EMPTY_WORKSPACE
+    ${pkgs.i3}/bin/i3-msg workspace $EMPTY_WORKSPACE
   '';
 
   # Keyhint script
   keyhint = pkgs.writeScriptBin "keyhint-2" ''
     #!/usr/bin/env bash
     I3_CONFIG=/etc/i3/config
-    mod_key=$(sed -nre 's/^set \$mod (.*)/\1/p' $I3_CONFIG)
-    grep "^bindsym\|^bindcode" $I3_CONFIG \
-        | sed "s/-\(-\w\+\)\+//g;s/\$mod/$mod_key/g;s/Mod1/Alt/g;s/exec //;s/bindsym //;s/bindcode //;s/^\s\+//;s/^\([^ ]\+\) \(.\+\)$/\2: \1/;s/^\s\+//" \
-        | tr -s ' ' \
+    mod_key=$(${pkgs.gnused}/bin/sed -nre 's/^set \$mod (.*)/\1/p' $I3_CONFIG)
+    ${pkgs.gnugrep}/bin/grep "^bindsym\|^bindcode" $I3_CONFIG \
+        | ${pkgs.gnused}/bin/sed "s/-\(-\w\+\)\+//g;s/\$mod/$mod_key/g;s/Mod1/Alt/g;s/exec //;s/bindsym //;s/bindcode //;s/^\s\+//;s/^\([^ ]\+\) \(.\+\)$/\2: \1/;s/^\s\+//" \
+        | ${pkgs.coreutils}/bin/tr -s ' ' \
         | ${pkgs.rofi}/bin/rofi -dmenu -theme ~/.config/rofi/rofikeyhint.rasi
   '';
 
@@ -171,13 +171,13 @@ let
 
     case $selected in
         $performance)
-            powerprofilesctl set performance 2>/dev/null || echo "power-profiles-daemon not available"
+            ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set performance 2>/dev/null || echo "power-profiles-daemon not available"
             ;;
         $balanced)
-            powerprofilesctl set balanced 2>/dev/null || echo "power-profiles-daemon not available"
+            ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced 2>/dev/null || echo "power-profiles-daemon not available"
             ;;
         $powersaver)
-            powerprofilesctl set power-saver 2>/dev/null || echo "power-profiles-daemon not available"
+            ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver 2>/dev/null || echo "power-profiles-daemon not available"
             ;;
     esac
   '';

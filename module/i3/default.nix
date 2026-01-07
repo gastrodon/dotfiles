@@ -87,6 +87,6 @@ in
   '';
 
   environment.variables = {
-    TERMINAL = "ghostty";
+    TERMINAL = "${pkgs.ghostty}/bin/ghostty";
   };
 }

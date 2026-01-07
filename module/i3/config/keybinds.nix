@@ -1,4 +1,4 @@
-{ username, wallpaper }:
+{ pkgs, ... }:
 {
   config = ''
     ######################################
@@ -10,7 +10,7 @@
     bindsym $mod+Shift+Tab workspace prev
 
     # Start a terminal
-    bindsym $mod+Return exec --no-startup-id ghostty
+    bindsym $mod+Return exec --no-startup-id ${pkgs.ghostty}/bin/ghostty
 
     # Kill focused window
     bindsym $mod+q kill
@@ -84,15 +84,15 @@
     bindsym XF86AudioMute exec --no-startup-id volume_brightness.sh volume_mute
 
     # Mic mute toggle
-    bindsym XF86AudioMicMute exec amixer sset Capture toggle
+    bindsym XF86AudioMicMute exec ${pkgs.alsa-utils}/bin/amixer sset Capture toggle
 
     # Audio control
-    bindsym XF86AudioPlay exec --no-startup-id playerctl play-pause
-    bindsym XF86AudioNext exec --no-startup-id playerctl next
-    bindsym XF86AudioPrev exec --no-startup-id playerctl previous
+    bindsym XF86AudioPlay exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause
+    bindsym XF86AudioNext exec --no-startup-id ${pkgs.playerctl}/bin/playerctl next
+    bindsym XF86AudioPrev exec --no-startup-id ${pkgs.playerctl}/bin/playerctl previous
 
     # Screenshot
-    bindsym Print exec --no-startup-id scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && notify-send "Screenshot saved" "~/Pictures/scrot/$(date +"%Y-%m-%d-%T").png"
+    bindsym Print exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send "Screenshot saved" "~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +"%Y-%m-%d-%T").png"
 
     # Power Profiles menu switcher (rofi)
     bindsym $mod+Shift+p exec --no-startup-id power-profiles
@@ -203,11 +203,11 @@
     #####################################
 
     # Rofi bindings fancy application menu
-    bindsym $mod+space exec --no-startup-id rofi -modi drun -show drun \
+    bindsym $mod+space exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun \
             -config ~/.config/rofi/rofidmenu.rasi
 
     # Rofi bindings for window menu
-    bindsym $mod+t exec --no-startup-id rofi -show window \
+    bindsym $mod+t exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window \
             -config ~/.config/rofi/rofidmenu.rasi
   '';
 }

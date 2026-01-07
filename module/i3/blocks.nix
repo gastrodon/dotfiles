@@ -55,7 +55,7 @@ let
     iface="''${iface:-$(default_interface)}"
     while [ -z "$iface" ]; do
         echo No default interface
-        sleep "$dt"
+        ${pkgs.coreutils}/bin/sleep "$dt"
         iface=$(default_interface)
     done
 
@@ -72,7 +72,7 @@ let
     esac
 
     scalar=$((bytes_per_unit * dt))
-    init_line=$(cat /proc/net/dev | grep "^[ ]*$iface:")
+    init_line=$(${pkgs.coreutils}/bin/cat /proc/net/dev | ${pkgs.gnugrep}/bin/grep "^[ ]*$iface:")
     if [ -z "$init_line" ]; then
         echo Interface not found in /proc/net/dev: "$iface"
         exit 1
@@ -81,8 +81,8 @@ let
     init_received=$(${pkgs.gawk}/bin/awk '{print $2}' <<< $init_line)
     init_sent=$(${pkgs.gawk}/bin/awk '{print $10}' <<< $init_line)
 
-    (while true; do cat /proc/net/dev; sleep "$dt"; done) |\
-        ${pkgs.coreutils}/bin/stdbuf -oL grep "^[ ]*$iface:" |\
+    (while true; do ${pkgs.coreutils}/bin/cat /proc/net/dev; ${pkgs.coreutils}/bin/sleep "$dt"; done) |\
+        ${pkgs.coreutils}/bin/stdbuf -oL ${pkgs.gnugrep}/bin/grep "^[ ]*$iface:" |\
         ${pkgs.gawk}/bin/awk -v scalar="$scalar" -v unit="$unit" -v iface="$iface" '
     BEGIN{old_received='"$init_received"';old_sent='"$init_sent"'}
     {
@@ -195,20 +195,20 @@ let
   i3blocks-volume = pkgs.writeScriptBin "i3blocks-volume" ''
     #!/usr/bin/env bash
     MIXER="default"
-    if command -v pulseaudio >/dev/null 2>&1 && pulseaudio --check ; then
+    if ${pkgs.coreutils}/bin/test -x "$(command -v ${pkgs.pulseaudio}/bin/pulseaudio)" && ${pkgs.pulseaudio}/bin/pulseaudio --check ; then
         if ${pkgs.alsa-utils}/bin/amixer -D pulse info >/dev/null 2>&1 ; then
             MIXER="pulse"
         fi
     fi
 
     SCONTROL="''${BLOCK_INSTANCE:-$(${pkgs.alsa-utils}/bin/amixer -D $MIXER scontrols |
-                      sed -n "s/Simple mixer control '\([^']*\)',0/\1/p" |
-                      head -n1
+                      ${pkgs.gnused}/bin/sed -n "s/Simple mixer control '\([^']*\)',0/\1/p" |
+                      ${pkgs.coreutils}/bin/head -n1
                     )}"
 
     capability() {
       ${pkgs.alsa-utils}/bin/amixer -D $MIXER get $SCONTROL |
-        sed -n "s/  Capabilities:.*cvolume.*/Capture/p"
+        ${pkgs.gnused}/bin/sed -n "s/  Capabilities:.*cvolume.*/Capture/p"
     }
 
     volume() {
@@ -274,7 +274,7 @@ in
 
     [pavucontrol]
     full_text=
-    command=pavucontrol
+    command=${pkgs.pavucontrol}/bin/pavucontrol
 
     [volume-pulseaudio]
     command=i3blocks-volume
@@ -286,7 +286,7 @@ in
     command=keyhint-2
 
     [time]
-    command=date '+%a %d %b %H:%M:%S'
+    command=${pkgs.coreutils}/bin/date '+%a %d %b %H:%M:%S'
     interval=1
 
     [shutdown_menu]
