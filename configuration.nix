@@ -48,6 +48,36 @@ in
     ]
     ++ local.pkgs;
 
+  fonts.packages = with pkgs; [
+    fira-code
+    fira-code-symbols
+    font-awesome
+    noto-fonts
+    (iosevka-bin.override { variant = "SS04"; })
+  ];
+
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
+
+  systemd.user.services.polkit-gnome = {
+    description = "Polkit GNOME Authentication Agent";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+      TimeoutStopSec = 10;
+    };
+  };
+
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
 

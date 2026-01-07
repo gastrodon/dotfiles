@@ -1,41 +1,13 @@
-{ username }:
+{ username, wallpaper }:
 {
   config = ''
-    # i3 config file (v4)
-    # Font for window titles
-    font iosevka term ss04
-
-    # Set the mod key to the winkey:
-    set $mod Mod4
-
-    #####################
-    # workspace layout: #
-    #####################
-
-    # Default i3 tiling mode:
-    workspace_layout default
-
-    ##############################
-    # extra options for windows: #
-    ##############################
-
-    # Border indicator on windows:
-    new_window pixel 1
-
-    # Set inner/outer gaps
-    gaps inner 6
-    gaps outer 3
-
-    # Use Mouse+$mod to drag floating windows
-    floating_modifier $mod
+    ######################################
+    # keybindings for different actions: #
+    ######################################
 
     # Switch/iterate between workspaces
     bindsym $mod+Tab workspace next
     bindsym $mod+Shift+Tab workspace prev
-
-    ######################################
-    # keybindings for different actions: #
-    ######################################
 
     # Start a terminal
     bindsym $mod+Return exec --no-startup-id ghostty
@@ -45,9 +17,6 @@
 
     # Exit-menu
     bindsym $mod+Shift+e exec --no-startup-id powermenu
-
-    # Lock with blur effect
-    exec --no-startup-id xss-lock -l blur-lock
 
     # Reload the configuration file
     bindsym $mod+Shift+c reload
@@ -127,22 +96,6 @@
 
     # Power Profiles menu switcher (rofi)
     bindsym $mod+Shift+p exec --no-startup-id power-profiles
-
-    ##########################################
-    # configuration for workspace behaviour: #
-    ##########################################
-
-    # Define names for default workspaces
-    set $ws1 "1:"
-    set $ws2 "2:"
-    set $ws3 "3"
-    set $ws4 "4"
-    set $ws5 "5"
-    set $ws6 "6"
-    set $ws7 "7"
-    set $ws8 "8"
-    set $ws9 "9"
-    set $ws10 "10"
 
     # Switch to workspace with number keys
     bindcode $mod+10    workspace  $ws1
@@ -244,97 +197,6 @@
     }
 
     bindsym $mod+r mode "resize"
-
-    #############################################
-    # autostart applications/services on login: #
-    #############################################
-
-    # Polkit authentication agent
-    exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-
-    # Dex autostart
-    exec --no-startup-id dex --autostart --environment i3
-
-    # Display setup script
-    exec --no-startup-id ~/.screenlayout/monitor.sh
-
-    # Set wallpaper
-    exec_always --no-startup-id killall feh; feh --bg-tile ~/Pictures/wall.jpg
-
-    # Set power savings for display
-    exec --no-startup-id xset s 480 dpms 600 600 600
-
-    # Desktop notifications
-    exec --no-startup-id /usr/bin/dunst
-
-    # Autotiling
-    exec_always --no-startup-id autotiling
-
-    ##################
-    # floating rules #
-    ##################
-
-    # Set floating (nontiling) for apps needing it
-    for_window [class="Yad" instance="yad"] floating enable
-    for_window [class="Galculator" instance="galculator"] floating enable
-    for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
-
-    # Set floating (nontiling) for special apps
-    for_window [class="Xsane" instance="xsane"] floating enable
-    for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
-    for_window [class="qt5ct" instance="qt5ct"] floating enable
-    for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
-    for_window [class="Bluetooth-sendto" instance="bluetooth-sendto"] floating enable
-    for_window [class="Pamac-manager"] floating enable
-    for_window [window_role="About"] floating enable
-
-    ######################################
-    # color settings for bar and windows #
-    ######################################
-
-    # Define colors variables:
-    set $darkbluetrans	#08052be6
-    set $darkblue		#08052b
-    set $lightblue		#5294e2
-    set $urgentred		#e53935
-    set $white		#ffffff
-    set $black		#000000
-    set $purple		#e345ff
-    set $darkgrey		#383c4a
-    set $grey		#b0b5bd
-    set $mediumgrey		#8b8b8b
-    set $yellowbrown	#e1b700
-
-    # Define colors for windows:
-    #class		        	border		bground		text		indicator	child_border
-    client.focused		    	$lightblue	$darkblue	$white		$mediumgrey	$mediumgrey
-    client.unfocused	    	$darkblue	$darkblue	$grey		$darkgrey	$darkgrey
-    client.focused_inactive		$darkblue	$darkblue	$grey		$black		$black
-    client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
-
-    ############################################
-    # bar settings (input comes from i3blocks) #
-    ############################################
-
-    bar {
-        font pango: Noto Sans Regular 10
-        status_command i3blocks -c /home/${username}/.config/i3/i3blocks.conf
-        position bottom
-        tray_padding 0
-
-        strip_workspace_numbers yes
-
-        colors {
-            separator          $purple
-            background         $darkgrey
-            statusline         $white
-            #                          		border 		        bg		txt		indicator
-            focused_workspace	$mediumgrey	   	$grey		$darkgrey	$purple
-            active_workspace	$lightblue      	$mediumgrey	$darkgrey	$purple
-            inactive_workspace	$darkgrey   		$darkgrey	$grey		$purple
-            urgent_workspace	$urgentred	    	$urgentred	$white		$purple
-        }
-    }
 
     #####################################
     # Application menu handled by rofi: #
