@@ -17,7 +17,7 @@
     users.${config.identity.username} = {
       imports = [
         ./git.nix
-        ./gh.nix # I'm not 100% I actually use this
+        ./gh.nix
         ./ssh.nix
         ./firefox.nix
         ./vscodium
