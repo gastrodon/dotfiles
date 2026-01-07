@@ -49,11 +49,6 @@ let
           nix
         ];
       };
-      roo-cline = {
-        enable = true;
-        extensions = [ rooveterinaryinc.roo-cline ];
-        packages = [ ];
-      };
     };
 
   bundles = lib.filterAttrs (n: v: v.enable) (defaultBundles // cfg.bundles);
@@ -61,6 +56,14 @@ let
   packages = lib.flatten (lib.mapAttrsToList (n: v: v.packages) bundles);
 in
 {
+  imports = [
+    ./module/roo-code.nix
+
+    ./module/go.nix
+    ./module/rust.nix
+    ./module/terraform.nix
+  ];
+
   options.programs.vscodium = {
     bundles = lib.mkOption {
       type = lib.types.attrsOf bundleType;
