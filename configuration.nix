@@ -8,15 +8,40 @@ let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
   nur = builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz";
   local = import ./package { inherit pkgs lib; };
+
+  # Solarized Dark
+  palette = {
+    black = "#073642";
+    red = "#dc322f";
+    green = "#859900";
+    yellow = "#b58900";
+    blue = "#268bd2";
+    magenta = "#d33682";
+    cyan = "#2aa198";
+    white = "#eee8d5";
+
+    brightBlack = "#586e75";
+    brightRed = "#cb4b16";
+    brightGreen = "#586e75";
+    brightYellow = "#657b83";
+    brightBlue = "#839496";
+    brightMagenta = "#6c71c4";
+    brightCyan = "#93a1a1";
+    brightWhite = "#fdf6e3";
+
+    background = "#002b36";
+    foreground = "#839496";
+  };
+
 in
 {
   imports = [
     ./hardware-configuration.nix
     ./module/identity.nix
-    ./module/i3
+    (import ./module/i3 { inherit palette; })
     ./module/home-manager
     ./module/users.nix
-    ./module/x11.nix
+    (import ./module/x11.nix { inherit palette; })
     (import "${home-manager}/nixos")
   ];
 

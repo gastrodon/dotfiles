@@ -1,4 +1,4 @@
-{ username, ... }:
+{ username, palette, ... }:
 {
   config = ''
     # i3 config file (v4)
@@ -46,25 +46,29 @@
     # color settings for bar and windows #
     ######################################
 
-    # Define colors variables:
-    set $darkbluetrans	#08052be6
-    set $darkblue		#08052b
-    set $lightblue		#5294e2
-    set $urgentred		#e53935
-    set $white		#ffffff
-    set $black		#000000
-    set $purple		#e345ff
-    set $darkgrey		#383c4a
-    set $grey		#b0b5bd
-    set $mediumgrey		#8b8b8b
-    set $yellowbrown	#e1b700
+    set $background     ${palette.background}
+    set $foreground     ${palette.foreground}
+    set $black          ${palette.black}
+    set $red            ${palette.red}
+    set $green          ${palette.green}
+    set $yellow         ${palette.yellow}
+    set $blue           ${palette.blue}
+    set $magenta        ${palette.magenta}
+    set $cyan           ${palette.cyan}
+    set $white          ${palette.white}
+    set $brightBlack    ${palette.brightBlack}
+    set $brightRed      ${palette.brightRed}
+    set $brightYellow   ${palette.brightYellow}
+    set $brightBlue     ${palette.brightBlue}
+    set $brightMagenta  ${palette.brightMagenta}
+    set $brightCyan     ${palette.brightCyan}
+    set $brightWhite    ${palette.brightWhite}
 
-    # Define colors for windows:
-    #class		        	border		bground		text		indicator	child_border
-    client.focused		    	$lightblue	$darkblue	$white		$mediumgrey	$mediumgrey
-    client.unfocused	    	$darkblue	$darkblue	$grey		$darkgrey	$darkgrey
-    client.focused_inactive		$darkblue	$darkblue	$grey		$black		$black
-    client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
+    # class                 border       bground      text          indicator     child_border
+    client.focused          $blue        $background  $brightWhite  $brightBlack  $brightBlack
+    client.unfocused        $background  $background  $brightBlack  $black        $black
+    client.focused_inactive $background  $background  $brightBlack  $black        $black
+    client.urgent           $red         $red         $brightWhite  $yellow       $yellow
 
     ############################################
     # bar settings (input comes from i3blocks) #
@@ -79,14 +83,15 @@
         strip_workspace_numbers yes
 
         colors {
-            separator          $purple
-            background         $darkgrey
-            statusline         $white
-            #                          		border 		        bg		txt		indicator
-            focused_workspace	$mediumgrey	   	$grey		$darkgrey	$purple
-            active_workspace	$lightblue      	$mediumgrey	$darkgrey	$purple
-            inactive_workspace	$darkgrey   		$darkgrey	$grey		$purple
-            urgent_workspace	$urgentred	    	$urgentred	$white		$purple
+            separator          $magenta
+            background         $black
+            statusline         $brightWhite
+
+            # class              border        bg            txt           indicator
+            focused_workspace    $brightBlack  $brightBlack  $black        $magenta
+            active_workspace     $blue         $brightBlack  $black        $magenta
+            inactive_workspace   $black        $black        $brightBlack  $magenta
+            urgent_workspace     $red          $red          $brightWhite  $magenta
         }
     }
   '';

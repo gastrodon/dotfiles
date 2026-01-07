@@ -1,4 +1,4 @@
-{ pkgs, username, wallpaper }:
+{ pkgs, username, wallpaper, palette }:
 
 let
   lib = pkgs.lib;
@@ -13,7 +13,7 @@ let
   configs = map
     (file:
       let
-        module = import (configDir + "/${file}") { inherit pkgs username wallpaper; };
+        module = import (configDir + "/${file}") { inherit pkgs username wallpaper palette; };
       in
       module.config
     )

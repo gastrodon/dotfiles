@@ -1,34 +1,9 @@
-{ config, pkgs, ... }:
-let
-  # Solarized Dark color palette
-  colors = {
-    background = {
-      dark = "#002b36";
-      light = "#fdf6e3";
-    };
-
-    highlight = {
-      dark = "#073642";
-      light = "#eee8d5";
-    };
-
-    content = {
-      primary = "#657b83";
-      emphasis = "#839496";
-      secondary = "#586e75";
-      muted = "#93a1a1";
-    };
-
-    yellow = "#b58900";
-    orange = "#cb4b16";
-    red = "#dc322f";
-    magenta = "#d33682";
-    violet = "#6c71c4";
-    blue = "#268bd2";
-    cyan = "#2aa198";
-    green = "#859900";
-  };
-in
+{ palette }:
+{
+  config,
+  pkgs,
+  ...
+}:
 {
   services.xserver = {
     enable = true;
@@ -54,37 +29,37 @@ in
   services.libinput.enable = true;
 
   environment.etc."X11/Xresources.d/00-colors".text = ''
-    *background: ${colors.background.dark}
-    *foreground: ${colors.content.emphasis}
-    *fadeColor: ${colors.background.dark}
-    *cursorColor: ${colors.content.muted}
-    *pointerColorBackground: ${colors.content.secondary}
-    *pointerColorForeground: ${colors.content.muted}
+    *background: ${palette.background}
+    *foreground: ${palette.brightBlue}
+    *fadeColor: ${palette.background}
+    *cursorColor: ${palette.brightCyan}
+    *pointerColorBackground: ${palette.brightBlack}
+    *pointerColorForeground: ${palette.brightCyan}
 
     ! Black + DarkGrey
-    *color0:  ${colors.highlight.dark}
-    *color8:  ${colors.background.dark}
+    *color0:  ${palette.black}
+    *color8:  ${palette.background}
     ! DarkRed + Red
-    *color1:  ${colors.red}
-    *color9:  ${colors.orange}
+    *color1:  ${palette.red}
+    *color9:  ${palette.brightRed}
     ! DarkGreen + Green
-    *color2:  ${colors.green}
-    *color10: ${colors.content.secondary}
+    *color2:  ${palette.green}
+    *color10: ${palette.brightBlack}
     ! DarkYellow + Yellow
-    *color3:  ${colors.yellow}
-    *color11: ${colors.content.primary}
+    *color3:  ${palette.yellow}
+    *color11: ${palette.brightYellow}
     ! DarkBlue + Blue
-    *color4:  ${colors.blue}
-    *color12: ${colors.content.emphasis}
+    *color4:  ${palette.blue}
+    *color12: ${palette.brightBlue}
     ! DarkMagenta + Magenta
-    *color5:  ${colors.magenta}
-    *color13: ${colors.violet}
+    *color5:  ${palette.magenta}
+    *color13: ${palette.brightMagenta}
     ! DarkCyan + Cyan
-    *color6:  ${colors.cyan}
-    *color14: ${colors.content.muted}
+    *color6:  ${palette.cyan}
+    *color14: ${palette.brightCyan}
     ! LightGrey + White
-    *color7:  ${colors.highlight.light}
-    *color15: ${colors.background.light}
+    *color7:  ${palette.white}
+    *color15: ${palette.brightWhite}
   '';
 
   # Cursor configuration
@@ -103,12 +78,12 @@ in
     rofi.separator-style: solid
 
     ! Format: background, border, separator
-    rofi.color-window: ${colors.background.dark}, ${colors.blue}, ${colors.background.dark}
+    rofi.color-window: ${palette.background}, ${palette.blue}, ${palette.background}
 
     ! Format: bg, fg, bg-alt, highlight-bg, highlight-fg
-    rofi.color-normal: ${colors.background.dark}, ${colors.content.emphasis}, ${colors.highlight.dark}, ${colors.blue}, ${colors.background.light}
-    rofi.color-urgent: ${colors.background.dark}, ${colors.red}, ${colors.highlight.dark}, ${colors.red}, ${colors.background.light}
-    rofi.color-active: ${colors.background.dark}, ${colors.blue}, ${colors.highlight.dark}, ${colors.blue}, ${colors.background.light}
+    rofi.color-normal: ${palette.background}, ${palette.brightBlue}, ${palette.black}, ${palette.blue}, ${palette.brightWhite}
+    rofi.color-urgent: ${palette.background}, ${palette.red}, ${palette.black}, ${palette.red}, ${palette.brightWhite}
+    rofi.color-active: ${palette.background}, ${palette.blue}, ${palette.black}, ${palette.blue}, ${palette.brightWhite}
     rofi.kb-cancel: Escape,Alt+F1
   '';
 
@@ -131,7 +106,7 @@ in
     URxvt*termName: rxvt-256color
     URxvt*iso14755: false
     URxvt*depth: 32
-    URxvt*background: [95]${colors.background.dark}
+    URxvt*background: [95]${palette.background}
     URxvt*scrollBar: false
     URxvt*scrollBar_right: false
     URxvt*internalBorder: 15

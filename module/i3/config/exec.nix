@@ -2,6 +2,7 @@
   pkgs,
   username,
   wallpaper,
+  palette,
 }:
 let
   exec = [
