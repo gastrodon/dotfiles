@@ -1,5 +1,5 @@
 use serde::Serialize;
-use sysinfo::{Output, OutputFormat};
+use sys::{Output, OutputFormat};
 use upower_dbus::{BatteryState, DeviceProxy};
 
 fn serialize_battery_state<S>(state: &BatteryState, serializer: S) -> Result<S::Ok, S::Error>

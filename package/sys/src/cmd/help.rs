@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::collections::HashMap;
-use sysinfo::{Output, OutputFormat};
+use sys::{Output, OutputFormat};
 
 #[derive(Debug, Serialize)]
 pub struct FlagInfo {
@@ -35,7 +35,7 @@ pub async fn cmd_help(fmt: OutputFormat) -> Result<(), Box<dyn std::error::Error
     );
 
     HelpInfo {
-        name: "sysinfo".to_string(),
+        name: "sys".to_string(),
         version: env!("CARGO_PKG_VERSION").to_string(),
         summary: "A tool to provide information about the system".to_string(),
         tools,

@@ -1,12 +1,12 @@
 { pkgs, lib, ... }:
 let
   cmd = import ./cmd { inherit pkgs lib; };
-  sysinfo = import ./sysinfo { inherit pkgs lib; };
+  sys = import ./sys { inherit pkgs lib; };
 in
 {
-  pkgs = builtins.attrValues cmd ++ [ sysinfo ];
+  pkgs = builtins.attrValues cmd ++ [ sys ];
   inherit
     cmd
-    sysinfo
+    sys
     ;
 }

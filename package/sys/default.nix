@@ -1,7 +1,7 @@
 { pkgs, lib, ... }:
 
 pkgs.rustPlatform.buildRustPackage {
-  pname = "sysinfo";
+  pname = "sys";
   version = "0.1.0";
 
   src = ./.;

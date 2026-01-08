@@ -1,10 +1,10 @@
 mod cmd;
 
 use clap::{Parser, Subcommand};
-use sysinfo::OutputFormat;
+use sys::OutputFormat;
 
 #[derive(Parser, Debug)]
-#[command(name = "sysinfo")]
+#[command(name = "sys")]
 #[command(about = "System information utility", long_about = None)]
 struct Cli {
     #[arg(long, value_enum, default_value = "text")]
