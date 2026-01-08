@@ -89,6 +89,8 @@ in
     jack.enable = true;
   };
 
+  services.upower.enable = true;
+
   systemd.user.services.polkit-gnome = {
     description = "Polkit GNOME Authentication Agent";
     wantedBy = [ "graphical-session.target" ];
