@@ -10,6 +10,8 @@ pkgs.rustPlatform.buildRustPackage {
     lockFile = ./Cargo.lock;
   };
 
+  nativeBuildInputs = [ pkgs.gcc ];
+
   meta = with lib; {
     description = "System information utility";
     license = licenses.mit;
