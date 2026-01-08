@@ -10,27 +10,14 @@ where
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct BatteryInfo {
+struct BatteryInfo {
     energy: f64,
-    energy_full: f64,
+    energy_cap: f64,
+    percent: f64,
     voltage: f64,
     #[serde(serialize_with = "serialize_battery_state")]
     state: BatteryState,
-    percentage: f64,
     is_present: bool,
-}
-
-impl BatteryInfo {
-    pub async fn from_device(device: &DeviceProxy<'_>) -> Result<Self, Box<dyn std::error::Error>> {
-        Ok(Self {
-            energy: device.energy().await?,
-            energy_full: device.energy_full().await?,
-            voltage: device.voltage().await?,
-            state: device.state().await?,
-            percentage: device.percentage().await?,
-            is_present: device.is_present().await?,
-        })
-    }
 }
 
 pub async fn cmd_battery(fmt: OutputFormat) -> Result<(), Box<dyn std::error::Error>> {
@@ -38,6 +25,15 @@ pub async fn cmd_battery(fmt: OutputFormat) -> Result<(), Box<dyn std::error::Er
     let upower = upower_dbus::UPowerProxy::new(&connection).await?;
     let device = upower.get_display_device().await?;
 
-    BatteryInfo::from_device(&device).await?.render(fmt);
+    BatteryInfo {
+        energy: device.energy().await?,
+        energy_cap: device.energy_full().await?,
+        percent: device.percentage().await?,
+        voltage: device.voltage().await?,
+        state: device.state().await?,
+        is_present: device.is_present().await?,
+    }
+    .render(fmt);
+
     Ok(())
 }

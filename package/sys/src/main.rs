@@ -24,7 +24,8 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Battery) => cmd::cmd_battery(cli.format).await.unwrap(),
-        None => cmd::cmd_help(cli.format).await.unwrap(),
-    };
+        Some(Commands::Battery) => cmd::cmd_battery(cli.format).await,
+        None => cmd::cmd_help(cli.format).await,
+    }
+    .unwrap();
 }
