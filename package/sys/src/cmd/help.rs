@@ -29,7 +29,7 @@ pub async fn cmd_help(fmt: OutputFormat) -> Result<(), Box<dyn std::error::Error
         "battery".to_string(),
         ToolInfo {
             name: "battery".to_string(),
-            summary: "Display battery information from UPower".to_string(),
+            summary: "Display battery information from UPower (energy, energy_cap, percent, voltage, state, is_present)".to_string(),
             flags: HashMap::new(),
         },
     );
