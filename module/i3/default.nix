@@ -35,7 +35,6 @@ in
   environment.systemPackages =
     with pkgs;
     [
-      rofi # application finder
       ghostty # terminal emulator
 
       feh # Wallpaper setter

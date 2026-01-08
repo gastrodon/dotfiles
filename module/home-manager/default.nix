@@ -1,3 +1,4 @@
+{ palette }:
 {
   config,
   pkgs,
@@ -12,6 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
+      inherit palette;
     };
 
     users.${config.identity.username} = {
@@ -20,6 +22,7 @@
         ./gh.nix
         ./ssh.nix
         ./firefox.nix
+        ./rofi.nix
         ./vscodium
         ./zsh
       ];

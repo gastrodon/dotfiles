@@ -68,25 +68,6 @@
     Xcursor.size: 18
   '';
 
-  environment.etc."X11/Xresources.d/10-rofi".text = ''
-    ! Rofi configuration (Solarized Dark theme)
-    rofi.font: iosevka ss04 12
-    rofi.padding: 20
-    rofi.line-padding: 2
-    rofi.color-enabled: true
-    rofi.hide-scrollbar: true
-    rofi.separator-style: solid
-
-    ! Format: background, border, separator
-    rofi.color-window: ${palette.background}, ${palette.blue}, ${palette.background}
-
-    ! Format: bg, fg, bg-alt, highlight-bg, highlight-fg
-    rofi.color-normal: ${palette.background}, ${palette.brightBlue}, ${palette.black}, ${palette.blue}, ${palette.brightWhite}
-    rofi.color-urgent: ${palette.background}, ${palette.red}, ${palette.black}, ${palette.red}, ${palette.brightWhite}
-    rofi.color-active: ${palette.background}, ${palette.blue}, ${palette.black}, ${palette.blue}, ${palette.brightWhite}
-    rofi.kb-cancel: Escape,Alt+F1
-  '';
-
   environment.etc."X11/Xresources.d/10-xterm".text = ''
     ! XTerm configuration
     xterm*termName: xterm-256color
