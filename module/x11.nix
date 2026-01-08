@@ -99,40 +99,6 @@
     xterm*eightBitInput: false
   '';
 
-  # URxvt configuration
-  environment.etc."X11/Xresources.d/10-urxvt".text = ''
-    ! URxvt configuration
-    URxvt*saveline: 15000
-    URxvt*termName: rxvt-256color
-    URxvt*iso14755: false
-    URxvt*depth: 32
-    URxvt*background: [95]${palette.background}
-    URxvt*scrollBar: false
-    URxvt*scrollBar_right: false
-    URxvt*internalBorder: 15
-    URxvt*externalBorder: 0
-    URxvt*letterSpace: -1
-    URxvt.font: xft:iosevka term ss04:size=13:antialias=true
-    URxvt.boldFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
-    URxvt.italicFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
-    URxvt.boldItalicFont: xft:Iosevka Term ss04:size=13:antialias=true:hinting=slight
-    URxvt.intensityStyles: false
-    URxvt.perl-ext-common: default,clipboard,url-select,keyboard-select
-    URxvt.copyCommand: xclip -i -selection clipboard
-    URxvt.pasteCommand: xclip -o -selection clipboard
-    URxvt.keysym.m-c: perl:clipboard:copy
-    URxvt.keysym.m-v: perl:clipboard:paste
-    URxvt.urlLauncher: exo-open
-    URxvt.underlineURLs: true
-    URxvt.urlButton: 1
-    URxvt.geometry: 400x400
-    URxvt.tabbed.tabbar-fg: 4
-    URxvt.tabbed.tabbar-bg: 16
-    URxvt.tabbed.tab-fg: 15
-    URxvt.tabbed.tab-bg: 4
-    URxvt*buffered: false
-  '';
-
   # Install X11 related packages
   environment.systemPackages = with pkgs; [
     # X11 utilities
