@@ -89,10 +89,6 @@
     xorg.xrandr # Display configuration
     xclip # Clipboard utility
 
-    # Iosevka fonts (multiple variants)
-    (iosevka-bin.override { variant = "SS04"; })
-    iosevka-bin # Base iosevka
-
     # URL launcher for URxvt
     xfce.exo # Provides exo-open
 
