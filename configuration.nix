@@ -39,7 +39,7 @@ in
     ./hardware-configuration.nix
     ./module/identity.nix
     (import ./module/i3 { inherit palette; })
-    ./module/home-manager
+    (import ./module/home-manager { inherit palette; })
     ./module/users.nix
     (import ./module/x11.nix { inherit palette; })
     (import "${home-manager}/nixos")
