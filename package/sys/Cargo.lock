@@ -1067,7 +1067,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sysinfo"
+name = "sys"
 version = "0.1.0"
 dependencies = [
  "clap",
