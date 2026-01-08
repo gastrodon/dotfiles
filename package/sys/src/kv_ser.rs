@@ -40,7 +40,7 @@ impl Default for KVSerializer {
     }
 }
 
-impl<'a> serde::Serializer for &'a mut KVSerializer {
+impl serde::Serializer for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -151,11 +151,7 @@ impl<'a> serde::Serializer for &'a mut KVSerializer {
         Ok(())
     }
 
-    fn serialize_newtype_struct<T>(
-        self,
-        _name: &'static str,
-        value: &T,
-    ) -> Result<(), Self::Error>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize,
     {
@@ -170,7 +166,7 @@ impl<'a> serde::Serializer for &'a mut KVSerializer {
         _value: &T,
     ) -> Result<(), Self::Error>
     where
-        T: ?Sized + Serialize
+        T: ?Sized + Serialize,
     {
         self.add_value(variant);
         Ok(())
@@ -225,7 +221,7 @@ impl<'a> serde::Serializer for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeSeq for &'a mut KVSerializer {
+impl serde::ser::SerializeSeq for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -241,7 +237,7 @@ impl<'a> serde::ser::SerializeSeq for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeTuple for &'a mut KVSerializer {
+impl serde::ser::SerializeTuple for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -257,7 +253,7 @@ impl<'a> serde::ser::SerializeTuple for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeTupleStruct for &'a mut KVSerializer {
+impl serde::ser::SerializeTupleStruct for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -273,7 +269,7 @@ impl<'a> serde::ser::SerializeTupleStruct for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeTupleVariant for &'a mut KVSerializer {
+impl serde::ser::SerializeTupleVariant for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -289,7 +285,7 @@ impl<'a> serde::ser::SerializeTupleVariant for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeMap for &'a mut KVSerializer {
+impl serde::ser::SerializeMap for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -312,7 +308,7 @@ impl<'a> serde::ser::SerializeMap for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeStruct for &'a mut KVSerializer {
+impl serde::ser::SerializeStruct for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
@@ -330,7 +326,7 @@ impl<'a> serde::ser::SerializeStruct for &'a mut KVSerializer {
     }
 }
 
-impl<'a> serde::ser::SerializeStructVariant for &'a mut KVSerializer {
+impl serde::ser::SerializeStructVariant for &mut KVSerializer {
     type Ok = ();
     type Error = fmt::Error;
 
