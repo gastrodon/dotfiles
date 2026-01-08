@@ -25,6 +25,23 @@ pub struct HelpInfo {
 pub async fn cmd_help(fmt: OutputFormat) -> Result<(), Box<dyn std::error::Error>> {
     let mut tools = HashMap::new();
 
+    let mut backlight_flags = HashMap::new();
+    backlight_flags.insert(
+        "-w, --write".to_string(),
+        FlagInfo {
+            summary: "Write brightness percentage: n (set to n%), +n (increase by n%), -n (decrease by n%)".to_string(),
+        },
+    );
+
+    tools.insert(
+        "backlight".to_string(),
+        ToolInfo {
+            name: "backlight".to_string(),
+            summary: "Display backlight information (bright, bright_cap, percentage)".to_string(),
+            flags: backlight_flags,
+        },
+    );
+
     tools.insert(
         "battery".to_string(),
         ToolInfo {

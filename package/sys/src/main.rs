@@ -16,6 +16,7 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    Backlight(cmd::BacklightArgs),
     Battery,
 }
 
@@ -24,6 +25,7 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Some(Commands::Backlight(args)) => cmd::cmd_backlight(cli.format, args.write).await,
         Some(Commands::Battery) => cmd::cmd_battery(cli.format).await,
         None => cmd::cmd_help(cli.format).await,
     }
