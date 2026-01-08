@@ -18,6 +18,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    home.sessionVariables = {
+      RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+    };
+
     programs.vscodium.bundles.rust = {
       enable = true;
       extensions = with pkgs.vscode-extensions; [
@@ -37,6 +41,7 @@ in
     programs.vscode.profiles.default.userSettings = {
       "rust-analyzer.check.command" = "clippy";
       "rust-analyzer.checkOnSave" = true;
+      "rust-analyzer.rustc.source" = "${pkgs.rustPlatform.rustLibSrc}";
       "rust-analyzer.debug.engineSettings" = {
         terminal = null;
       };
