@@ -1,12 +1,7 @@
 { pkgs, lib, ... }:
-let
+rec {
   cmd = import ./cmd { inherit pkgs lib; };
   sys = import ./sys { inherit pkgs lib; };
-in
-{
-  pkgs = builtins.attrValues cmd ++ [ sys ];
-  inherit
-    cmd
-    sys
-    ;
+  rend = import ./rend { inherit pkgs lib; };
+  packages = builtins.attrValues cmd ++ [ sys rend ];
 }
