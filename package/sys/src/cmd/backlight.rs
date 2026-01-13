@@ -90,9 +90,8 @@ async fn cmd_backlight_write(
     fs::write(
         format!("{}/brightness", BACKLIGHT_PATH),
         format!("{}", brightness as u64),
-    )?;
-
-    cmd_backlight_stat(fmt).await
+    )
+    .map_err(Into::into)
 }
 
 pub async fn cmd_backlight(
