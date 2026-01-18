@@ -71,7 +71,7 @@ in
       curl
       git
     ]
-    ++ local.pkgs;
+    ++ local.packages;
 
   fonts.packages = with pkgs; [
     fira-code
