@@ -27,6 +27,14 @@
       };
 
       Preferences = {
+        "browser.newtabpage.activity-stream.enabled" = {
+          Value = false;
+          Status = "locked";
+        };
+        "browser.newtabpage.enabled" = {
+          Value = false;
+          Status = "locked";
+        };
         "browser.newtabpage.activity-stream.showSponsored" = {
           Value = false;
           Status = "locked";
@@ -49,6 +57,11 @@
     profiles.${identity.username} = {
       isDefault = true;
 
+      search = {
+        force = true;
+        default = "ddg";
+      };
+
       extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
         adnauseam
         darkreader
@@ -58,6 +71,8 @@
       settings = {
         "privacy.trackingprotection.enabled" = true;
         "privacy.trackingprotection.socialtracking.enabled" = true;
+        "browser.newtabpage.activity-stream.enabled" = false;
+        "browser.newtabpage.enabled" = false;
         "browser.newtabpage.activity-stream.showSponsored" = false;
         "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
         "dom.security.https_only_mode" = true;
