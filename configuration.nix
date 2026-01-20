@@ -51,6 +51,8 @@ in
     })
   ];
 
+  nixpkgs.config.allowUnfree = true;
+
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
