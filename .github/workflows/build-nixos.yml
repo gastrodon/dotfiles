@@ -2,7 +2,7 @@ name: Validate NixOS Modules
 
 on:
   push:
-    branches: [ main, copilot/create-nix-module-documentation ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
