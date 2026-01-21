@@ -12,6 +12,10 @@
     enable = true;
     enableCompletion = true;
 
+    shellAliases = {
+      code = "codium";
+    };
+
     autosuggestion = {
       enable = true;
     };
