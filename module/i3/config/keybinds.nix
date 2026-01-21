@@ -97,6 +97,9 @@
     # Power Profiles menu switcher (rofi)
     bindsym $mod+Shift+p exec --no-startup-id power-profiles
 
+    # Theme toggle (light/dark)
+    bindsym $mod+Shift+t exec --no-startup-id theme-toggle
+
     # Switch to workspace with number keys
     bindcode $mod+10    workspace  $ws1
     bindcode $mod+11    workspace  $ws2
