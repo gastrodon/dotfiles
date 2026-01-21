@@ -10,24 +10,21 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    container:
-      image: nixos/nix:latest
-      options: --user root
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure Nix
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-25.11
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Configure Nix channels
         run: |
-          echo "Configuring Nix for NixOS 25.11..."
-          mkdir -p ~/.config/nix
-          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+          echo "Configuring Nix channels for NixOS 25.11..."
           nix-channel --add https://nixos.org/channels/nixos-25.11 nixpkgs
           nix-channel --update
 
