@@ -31,4 +31,4 @@ jobs:
       - name: Build NixOS configuration
         run: |
           echo "Building NixOS configuration..."
-          sudo nix build --show-trace
+          nix build --show-trace
