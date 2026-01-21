@@ -13,11 +13,16 @@ jobs:
     container:
       image: nixos/nix:latest
       options: --user root
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Configure Nix
         run: |
           echo "Configuring Nix for NixOS 25.11..."
@@ -25,14 +30,14 @@ jobs:
           echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
           nix-channel --add https://nixos.org/channels/nixos-25.11 nixpkgs
           nix-channel --update
-      
+
       - name: Verify module syntax
         run: |
           echo "Verifying Nix module syntax..."
-          
+
           module_count=0
           error_count=0
-          
+
           for module in ./module/*.nix; do
             if [ -f "$module" ]; then
               echo "Checking $module"
@@ -46,25 +51,25 @@ jobs:
               fi
             fi
           done
-          
+
           echo ""
           echo "Validation complete:"
           echo "- Valid modules: $module_count"
           echo "- Modules with errors: $error_count"
-          
+
           if [ $error_count -gt 0 ]; then
             echo "❌ Validation failed!"
             exit 1
           else
             echo "✅ All modules are valid!"
           fi
-      
+
       - name: Validation summary
         if: always()
         run: |
           echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           module_count=$(find ./module -name "*.nix" -type f | wc -l)
           echo "### NixOS Modules" >> $GITHUB_STEP_SUMMARY
           echo "- **Total modules**: $module_count" >> $GITHUB_STEP_SUMMARY
