@@ -262,11 +262,16 @@ in
     command=i3blocks-bandwidth
     interval=persist
 
+    [brightness]
+    command=brightness-block
+    interval=5
+    markup=pango
+
     # Battery indicator
     [battery]
-    command=i3blocks-battery
-    label=
+    command=battery-block
     interval=30
+    markup=pango
 
     [simple-2]
     full_text=: :
