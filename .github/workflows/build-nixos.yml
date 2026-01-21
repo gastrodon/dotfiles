@@ -1,4 +1,4 @@
-name: Validate NixOS Modules
+name: Build NixOS Configuration
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,56 +28,7 @@ jobs:
           nix-channel --add https://nixos.org/channels/nixos-25.11 nixpkgs
           nix-channel --update
 
-      - name: Verify module syntax
+      - name: Build NixOS configuration
         run: |
-          echo "Verifying Nix module syntax..."
-
-          module_count=0
-          error_count=0
-
-          for module in ./module/*.nix; do
-            if [ -f "$module" ]; then
-              echo "Checking $module"
-              if nix-instantiate --parse "$module" > /dev/null 2>&1; then
-                echo "✓ $module is valid"
-                ((module_count++))
-              else
-                echo "✗ $module has syntax errors"
-                nix-instantiate --parse "$module"
-                ((error_count++))
-              fi
-            fi
-          done
-
-          echo ""
-          echo "Validation complete:"
-          echo "- Valid modules: $module_count"
-          echo "- Modules with errors: $error_count"
-
-          if [ $error_count -gt 0 ]; then
-            echo "❌ Validation failed!"
-            exit 1
-          else
-            echo "✅ All modules are valid!"
-          fi
-
-      - name: Validation summary
-        if: always()
-        run: |
-          echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          module_count=$(find ./module -name "*.nix" -type f | wc -l)
-          echo "### NixOS Modules" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total modules**: $module_count" >> $GITHUB_STEP_SUMMARY
-          echo "- **NixOS version**: 25.11" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Available modules:**" >> $GITHUB_STEP_SUMMARY
-          for module in ./module/*.nix; do
-            if [ -f "$module" ]; then
-              module_name=$(basename "$module")
-              echo "- \`$module_name\`" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All modules passed syntax validation" >> $GITHUB_STEP_SUMMARY
+          echo "Building NixOS configuration..."
+          sudo nix build --show-trace
