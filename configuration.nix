@@ -33,6 +33,30 @@ let
     foreground = "#839496";
   };
 
+  # Solarized Light
+  palette-light = {
+    black = "#eee8d5";
+    red = "#dc322f";
+    green = "#859900";
+    yellow = "#b58900";
+    blue = "#268bd2";
+    magenta = "#d33682";
+    cyan = "#2aa198";
+    white = "#073642";
+    
+    brightBlack = "#93a1a1";
+    brightRed = "#cb4b16";
+    brightGreen = "#93a1a1";
+    brightYellow = "#839496";
+    brightBlue = "#657b83";
+    brightMagenta = "#6c71c4";
+    brightCyan = "#586e75";
+    brightWhite = "#002b36";
+    
+    background = "#fdf6e3";
+    foreground = "#657b83";
+  };
+
 in
 {
   imports = [
