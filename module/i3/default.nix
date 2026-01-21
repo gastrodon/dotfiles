@@ -57,6 +57,7 @@ in
       acpi # For battery status
       iproute2 # For network interface info
       alsa-utils # For amixer volume control
+      jq # JSON processor for i3blocks
     ]
     ++ scripts.scripts
     ++ blocks.scripts;
