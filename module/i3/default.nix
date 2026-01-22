@@ -1,7 +1,7 @@
-{ palette }:
+{ palette, local }:
 { config, pkgs, ... }:
 let
-  scripts = import ./scripts.nix { inherit pkgs; };
+  scripts = import ./scripts.nix { inherit pkgs local; };
   blocks = import ./blocks.nix { inherit pkgs; };
 
   wallpaper =
@@ -15,7 +15,12 @@ let
       '';
 
   i3config = import ./config {
-    inherit pkgs palette;
+    inherit
+      pkgs
+      palette
+      local
+      scripts
+      ;
     username = config.identity.username;
     wallpaper = "${wallpaper}/wall.jpg";
   };

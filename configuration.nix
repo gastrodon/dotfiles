@@ -38,7 +38,7 @@ in
   imports = [
     ./hardware-configuration.nix
     ./module/identity.nix
-    (import ./module/i3 { inherit palette; })
+    (import ./module/i3 { inherit palette local; })
     (import ./module/home-manager { inherit palette; })
     ./module/users.nix
     (import ./module/x11.nix { inherit palette; })

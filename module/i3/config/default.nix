@@ -1,25 +1,36 @@
-{ pkgs, username, wallpaper, palette }:
+{
+  pkgs,
+  username,
+  wallpaper,
+  palette,
+  scripts,
+  ...
+}:
 
 let
   lib = pkgs.lib;
 
-  # Get all .nix files in this directory except default.nix
   configDir = ./.;
-  nixFiles = builtins.filter
-    (name: name != "default.nix" && lib.hasSuffix ".nix" name)
-    (builtins.attrNames (builtins.readDir configDir));
+  nixFiles = builtins.filter (name: name != "default.nix" && lib.hasSuffix ".nix" name) (
+    builtins.attrNames (builtins.readDir configDir)
+  );
 
-  # Import each config file and extract its .config property
-  configs = map
-    (file:
-      let
-        module = import (configDir + "/${file}") { inherit pkgs username wallpaper palette; };
-      in
-      module.config
-    )
-    nixFiles;
+  configs = map (
+    file:
+    let
+      module = import (configDir + "/${file}") {
+        inherit
+          pkgs
+          username
+          wallpaper
+          palette
+          scripts
+          ;
+      };
+    in
+    module.config
+  ) nixFiles;
 
-  # Merge all configs together as a single string
   mergedConfig = lib.concatStringsSep "\n" configs;
 in
 {
