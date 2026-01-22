@@ -181,6 +181,59 @@ let
             ;;
     esac
   '';
+
+  # Battery block script using sys/rend pipeline
+  battery-block = pkgs.writeScriptBin "battery-block" ''
+    #!/usr/bin/env bash
+    battery_json=$(${pkgs.local.sys}/bin/sys --format json battery)
+    percent=$(echo "$battery_json" | ${pkgs.jq}/bin/jq .percent)
+    state=$(echo "$battery_json" | ${pkgs.jq}/bin/jq -r .state)
+
+    if [ "$state" = "charging" ] || [ "$state" = "full" ]; then
+        icon=""
+    else
+        icon=""
+    fi
+
+    echo "$icon $(echo "$percent" | ${pkgs.local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+  '';
+
+  # Brightness block script for i3blocks
+  brightness-block = pkgs.writeScriptBin "brightness-block" ''
+    #!/usr/bin/env bash
+    case $BLOCK_BUTTON in
+        4)
+            ${pkgs.local.sys}/bin/sys backlight --write +5
+            ;;
+        5)
+            current=$(${pkgs.local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
+            if (( $(echo "$current > 10" | ${pkgs.bc}/bin/bc -l) )); then
+                ${pkgs.local.sys}/bin/sys backlight --write -5
+            fi
+            ;;
+    esac
+
+    echo " $(${pkgs.local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${pkgs.local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+  '';
+
+  # Brightness adjust script for keyboard controls
+  brightness-adjust = pkgs.writeScriptBin "brightness-adjust" ''
+    #!/usr/bin/env bash
+    case $1 in
+        up)
+            ${pkgs.local.sys}/bin/sys backlight --write +5
+            ;;
+        down)
+            current=$(${pkgs.local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
+            if (( $(echo "$current > 10" | ${pkgs.bc}/bin/bc -l) )); then
+                ${pkgs.local.sys}/bin/sys backlight --write -5
+            fi
+            ;;
+    esac
+
+    brightness=$(${pkgs.local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
+    ${pkgs.dunst}/bin/dunstify -t 1000 -r 2594 -u normal "Brightness $brightness%"
+  '';
 in
 {
   scripts = [
@@ -190,5 +243,8 @@ in
     empty-workspace
     keyhint
     power-profiles
+    battery-block
+    brightness-block
+    brightness-adjust
   ];
 }

@@ -18,6 +18,9 @@
     # Exit-menu
     bindsym $mod+Shift+e exec --no-startup-id powermenu
 
+    # Screen lock
+    bindsym $mod+Escape exec --no-startup-id ${pkgs.blur-lock}/bin/blur-lock
+
     # Reload the configuration file
     bindsym $mod+Shift+c reload
 
@@ -28,8 +31,8 @@
     bindsym F1 exec --no-startup-id keyhint-2
 
     # Backlight control
-    bindsym XF86MonBrightnessUp exec --no-startup-id volume_brightness.sh brightness_up
-    bindsym XF86MonBrightnessDown exec --no-startup-id volume_brightness.sh brightness_down
+    bindsym XF86MonBrightnessUp exec --no-startup-id brightness-adjust up
+    bindsym XF86MonBrightnessDown exec --no-startup-id brightness-adjust down
 
     # Change focus
     bindsym $mod+j focus left
