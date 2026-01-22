@@ -237,7 +237,17 @@ let
 in
 {
   # Individual script references for absolute path usage
-  inherit blur-lock volume-brightness powermenu empty-workspace keyhint power-profiles brightness-adjust battery-block brightness-block;
+  inherit
+    blur-lock
+    volume-brightness
+    powermenu
+    empty-workspace
+    keyhint
+    power-profiles
+    brightness-adjust
+    battery-block
+    brightness-block
+    ;
 
   # Array for systemPackages (backwards compatibility)
   scripts = [
