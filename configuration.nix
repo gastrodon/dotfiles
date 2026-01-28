@@ -41,6 +41,7 @@ in
     (import ./module/i3 { inherit palette; })
     (import ./module/home-manager { inherit palette; })
     ./module/users.nix
+    ./module/qdrant
     (import ./module/x11.nix { inherit palette; })
     (import "${home-manager}/nixos")
   ];
