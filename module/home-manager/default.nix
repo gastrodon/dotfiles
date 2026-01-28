@@ -25,6 +25,7 @@
         ./rofi.nix
         ./vscodium
         ./zsh
+        ./ghostty.nix
       ];
 
       programs.obsidian = {

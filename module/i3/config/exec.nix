@@ -3,6 +3,7 @@
   username,
   wallpaper,
   palette,
+  ...
 }:
 let
   exec = [

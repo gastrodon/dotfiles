@@ -1,4 +1,10 @@
-{ pkgs, palette, ... }:
+{
+  pkgs,
+  palette,
+  scripts,
+  local,
+  ...
+}:
 {
   config = ''
     ######################################
@@ -16,7 +22,10 @@
     bindsym $mod+q kill
 
     # Exit-menu
-    bindsym $mod+Shift+e exec --no-startup-id powermenu
+    bindsym $mod+Shift+e exec --no-startup-id ${scripts.powermenu}/bin/powermenu
+
+    # Screen lock
+    bindsym $mod+Escape exec --no-startup-id ${scripts.blur-lock}/bin/blur-lock
 
     # Reload the configuration file
     bindsym $mod+Shift+c reload
@@ -25,11 +34,11 @@
     bindsym $mod+Shift+r restart
 
     # Keybinding hint in rofi
-    bindsym F1 exec --no-startup-id keyhint-2
+    bindsym F1 exec --no-startup-id ${scripts.keyhint}/bin/keyhint-2
 
     # Backlight control
-    bindsym XF86MonBrightnessUp exec --no-startup-id volume_brightness.sh brightness_up
-    bindsym XF86MonBrightnessDown exec --no-startup-id volume_brightness.sh brightness_down
+    bindsym XF86MonBrightnessUp exec --no-startup-id ${local.sys}/bin/sys backlight -w '+5'
+    bindsym XF86MonBrightnessDown exec --no-startup-id ${local.sys}/bin/sys backlight -w '-5'
 
     # Change focus
     bindsym $mod+j focus left
@@ -72,16 +81,16 @@
     bindsym $mod+d focus child
 
     # Open new empty workspace
-    bindsym $mod+Shift+n exec --no-startup-id empty_workspace
+    bindsym $mod+Shift+n exec --no-startup-id ${scripts.empty-workspace}/bin/empty_workspace
 
     # Multimedia Keys
 
     # Volume
-    bindsym XF86AudioRaiseVolume exec --no-startup-id volume_brightness.sh volume_up
-    bindsym XF86AudioLowerVolume exec --no-startup-id volume_brightness.sh volume_down
+    bindsym XF86AudioRaiseVolume exec --no-startup-id ${scripts.volume-brightness}/bin/volume_brightness.sh volume_up
+    bindsym XF86AudioLowerVolume exec --no-startup-id ${scripts.volume-brightness}/bin/volume_brightness.sh volume_down
 
     # Mute
-    bindsym XF86AudioMute exec --no-startup-id volume_brightness.sh volume_mute
+    bindsym XF86AudioMute exec --no-startup-id ${scripts.volume-brightness}/bin/volume_brightness.sh volume_mute
 
     # Mic mute toggle
     bindsym XF86AudioMicMute exec ${pkgs.alsa-utils}/bin/amixer sset Capture toggle
@@ -95,7 +104,7 @@
     bindsym Print exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send "Screenshot saved" "~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +"%Y-%m-%d-%T").png"
 
     # Power Profiles menu switcher (rofi)
-    bindsym $mod+Shift+p exec --no-startup-id power-profiles
+    bindsym $mod+Shift+p exec --no-startup-id ${scripts.power-profiles}/bin/power-profiles
 
     # Switch to workspace with number keys
     bindcode $mod+10    workspace  $ws1

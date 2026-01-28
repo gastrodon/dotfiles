@@ -1,6 +1,34 @@
-{ pkgs, ... }:
+/*
+  # i3 Window Manager Scripts Collection
+
+  This module provides utility scripts for i3wm functionality:
+
+  `blur-lock`
+  Screen lock with blur effect using i3lock
+
+  `volume-brightness`
+  Volume and brightness control with dunst notifications
+
+  `powermenu`
+  Rofi-based power menu (shutdown, reboot, suspend, etc.)
+
+  `empty-workspace`
+  Find and switch to the first empty workspace
+
+  `keyhint`
+  Display i3 keybindings in rofi
+
+  `power-profiles`
+  Rofi menu for switching power profiles (performance/balanced/power-saver)
+
+  `battery-block`
+  i3blocks battery indicator using sys/rend pipeline
+
+  `brightness-block`
+  i3blocks brightness indicator with scroll wheel support
+*/
+{ pkgs, local, ... }:
 let
-  # Blur-lock script for i3lock with blur effect
   blur-lock = pkgs.writeScriptBin "blur-lock" ''
     #!/bin/sh
     ${pkgs.scrot}/bin/scrot /tmp/screenshot.png
@@ -9,7 +37,6 @@ let
     rm /tmp/screenshot.png /tmp/screenshotblur.png
   '';
 
-  # Volume and brightness control script
   volume-brightness = pkgs.writeScriptBin "volume_brightness.sh" ''
     #!/bin/bash
     bar_color="#7f7fff"
@@ -91,7 +118,6 @@ let
     esac
   '';
 
-  # Power menu script
   powermenu = pkgs.writeScriptBin "powermenu" ''
     #!/usr/bin/env bash
 
@@ -131,7 +157,6 @@ let
     esac
   '';
 
-  # Empty workspace script
   empty-workspace = pkgs.writeScriptBin "empty_workspace" ''
     #!/usr/bin/env bash
     MAX_DESKTOPS=20
@@ -143,7 +168,6 @@ let
     ${pkgs.i3}/bin/i3-msg workspace $EMPTY_WORKSPACE
   '';
 
-  # Keyhint script
   keyhint = pkgs.writeScriptBin "keyhint-2" ''
     #!/usr/bin/env bash
     I3_CONFIG=/etc/i3/config
@@ -154,7 +178,6 @@ let
         | ${pkgs.rofi}/bin/rofi -dmenu -theme ~/.config/rofi/rofikeyhint.rasi
   '';
 
-  # Power profiles script
   power-profiles = pkgs.writeScriptBin "power-profiles" ''
     #!/usr/bin/env bash
 
@@ -181,8 +204,52 @@ let
             ;;
     esac
   '';
+
+  battery-block = pkgs.writeScriptBin "battery-block" ''
+    #!/usr/bin/env bash
+    battery_json=$(${local.sys}/bin/sys --format json battery)
+    percent=$(echo "$battery_json" | ${pkgs.jq}/bin/jq .percent)
+    state=$(echo "$battery_json" | ${pkgs.jq}/bin/jq -r .state)
+
+    if [ "$state" = "charging" ] || [ "$state" = "full" ]; then
+        icon=""
+    else
+        icon=""
+    fi
+
+    echo "$icon $(echo "$percent" | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+  '';
+
+  brightness-block = pkgs.writeScriptBin "brightness-block" ''
+    #!/usr/bin/env bash
+    case $BLOCK_BUTTON in
+        4)
+            ${local.sys}/bin/sys backlight --write +5
+            ;;
+        5)
+            current=$(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
+            if (( $(echo "$current > 10" | ${pkgs.bc}/bin/bc -l) )); then
+                ${local.sys}/bin/sys backlight --write -5
+            fi
+            ;;
+    esac
+
+    echo " $(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+  '';
+
 in
 {
+  inherit
+    blur-lock
+    volume-brightness
+    powermenu
+    empty-workspace
+    keyhint
+    power-profiles
+    battery-block
+    brightness-block
+    ;
+
   scripts = [
     blur-lock
     volume-brightness
@@ -190,5 +257,7 @@ in
     empty-workspace
     keyhint
     power-profiles
+    battery-block
+    brightness-block
   ];
 }
