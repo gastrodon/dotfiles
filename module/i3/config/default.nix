@@ -4,6 +4,7 @@
   wallpaper,
   palette,
   scripts,
+  local,
   ...
 }:
 
@@ -25,6 +26,7 @@ let
           wallpaper
           palette
           scripts
+          local
           ;
       };
     in

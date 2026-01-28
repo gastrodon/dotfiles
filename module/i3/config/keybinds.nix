@@ -1,4 +1,10 @@
-{ pkgs, palette, scripts, ... }:
+{
+  pkgs,
+  palette,
+  scripts,
+  local,
+  ...
+}:
 {
   config = ''
     ######################################
@@ -31,8 +37,8 @@
     bindsym F1 exec --no-startup-id ${scripts.keyhint}/bin/keyhint-2
 
     # Backlight control
-    bindsym XF86MonBrightnessUp exec --no-startup-id ${scripts.brightness-adjust}/bin/brightness-adjust up
-    bindsym XF86MonBrightnessDown exec --no-startup-id ${scripts.brightness-adjust}/bin/brightness-adjust down
+    bindsym XF86MonBrightnessUp exec --no-startup-id ${local.sys}/bin/sys backlight -w '+5'
+    bindsym XF86MonBrightnessDown exec --no-startup-id ${local.sys}/bin/sys backlight -w '-5'
 
     # Change focus
     bindsym $mod+j focus left

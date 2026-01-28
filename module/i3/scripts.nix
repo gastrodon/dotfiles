@@ -26,9 +26,6 @@
 
   `brightness-block`
   i3blocks brightness indicator with scroll wheel support
-
-  `brightness-adjust`
-  Keyboard-triggered brightness adjustment with notifications
 */
 { pkgs, local, ... }:
 let
@@ -240,23 +237,6 @@ let
     echo " $(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
   '';
 
-  brightness-adjust = pkgs.writeScriptBin "brightness-adjust" ''
-    #!/usr/bin/env bash
-    case $1 in
-        up)
-            ${local.sys}/bin/sys backlight --write +5
-            ;;
-        down)
-            current=$(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
-            if (( $(echo "$current > 10" | ${pkgs.bc}/bin/bc -l) )); then
-                ${local.sys}/bin/sys backlight --write -5
-            fi
-            ;;
-    esac
-
-    brightness=$(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
-    ${pkgs.dunst}/bin/dunstify -t 1000 -r 2594 -u normal "Brightness $brightness%"
-  '';
 in
 {
   inherit
@@ -266,7 +246,6 @@ in
     empty-workspace
     keyhint
     power-profiles
-    brightness-adjust
     battery-block
     brightness-block
     ;
@@ -278,7 +257,6 @@ in
     empty-workspace
     keyhint
     power-profiles
-    brightness-adjust
     battery-block
     brightness-block
   ];
