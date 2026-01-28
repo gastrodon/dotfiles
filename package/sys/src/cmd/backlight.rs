@@ -6,7 +6,7 @@ use sys::{Output, OutputFormat};
 
 #[derive(Args, Debug)]
 pub struct BacklightArgs {
-    #[arg(short = 'w', long)]
+    #[arg(short = 'w', long, allow_hyphen_values = true)]
     pub write: Option<String>,
 }
 
