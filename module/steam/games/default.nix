@@ -2,6 +2,6 @@
 {
   imports = [
     # Add game-specific modules here
-    # ./game-name.nix
+    ./factorio.nix
   ];
 }
