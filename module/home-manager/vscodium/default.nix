@@ -36,6 +36,11 @@ let
     with pkgs;
     with vscode-extensions;
     {
+      rich-text = {
+        enable = true;
+        extensions = [ bierner.markdown-mermaid ];
+        packages = [];
+      };
       nix-ide = {
         enable = true;
         extensions = [ jnoortheen.nix-ide ];
