@@ -1,4 +1,4 @@
-{ palette }:
+{ palette, claude-code-nix }:
 {
   config,
   pkgs,
@@ -13,7 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
-      inherit palette;
+      inherit palette claude-code-nix;
     };
 
     users.${config.identity.username} = {
@@ -87,6 +87,7 @@
         tldr
         ripgrep
         coreutils
+        claude-code-nix.packages.${pkgs.system}.claude-code-bun
       ];
 
       programs.home-manager.enable = true;

@@ -7,6 +7,7 @@
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
   nur = builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz";
+  claude-code-nix = builtins.getFlake "github:sadjow/claude-code-nix";
   local = import ./package { inherit pkgs lib; };
 
   # Solarized Dark
@@ -39,7 +40,7 @@ in
     ./hardware-configuration.nix
     ./module/identity.nix
     (import ./module/i3 { inherit palette local; })
-    (import ./module/home-manager { inherit palette; })
+    (import ./module/home-manager { inherit palette claude-code-nix; })
     ./module/steam
     ./module/users.nix
     (import ./module/x11.nix { inherit palette; })
@@ -53,6 +54,7 @@ in
   ];
 
   nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
