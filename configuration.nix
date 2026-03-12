@@ -51,11 +51,11 @@ in
   ];
   nix.settings.sandbox = "relaxed";
 
-  boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
-    device = "nodev";
-    efiSupport = true;
+    device = "/dev/nvme0n1";
+    timeout = 0;
+    timeoutStyle = "hidden";
   };
 
   networking.hostName = "twink";
