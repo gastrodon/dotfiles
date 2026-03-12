@@ -51,10 +51,15 @@ in
   ];
   nix.settings.sandbox = "relaxed";
 
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
+  boot.loader.timeout = 0;
   boot.loader.grub = {
     enable = true;
     device = "/dev/nvme0n1";
-    timeout = 0;
     timeoutStyle = "hidden";
   };
 
