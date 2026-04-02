@@ -99,17 +99,6 @@ let
       key = "ctrl+j";
       when = "!panelFocus";
     };
-    "workbench.action.toggleAuxiliaryBar" = {
-      key = "ctrl+shift+b";
-      when = "roo-cline.SidebarProvider.active && !editorFocus && !terminalFocus";
-    };
-    "roo-cline.focusInput" = {
-      key = "ctrl+shift+b";
-      when = "editorFocus || terminalFocus || !textInputFocus";
-    };
-    "roo-cline.newTask" = {
-      key = "ctrl+l";
-    };
   };
 in
 mkKeybindings keybindingData

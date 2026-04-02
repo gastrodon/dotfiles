@@ -62,8 +62,6 @@ let
 in
 {
   imports = [
-    ./module/roo-code.nix
-
     ./module/go.nix
     ./module/rust.nix
     ./module/terraform.nix
