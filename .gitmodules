@@ -1,0 +1,3 @@
+[submodule "ext/free-code"]
+	path = ext/free-code
+	url = git@github.com:gastrodon/free-code.git
