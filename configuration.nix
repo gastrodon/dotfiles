@@ -5,9 +5,6 @@
   ...
 }:
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz";
-  nur = builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz";
-  free-code = if builtins.pathExists ./ext/free-code then builtins.getFlake "path:${toString ./ext/free-code}" else null;
   local = import ./package { inherit pkgs lib; };
 
   # Solarized Dark
@@ -44,13 +41,6 @@ in
     ./module/steam
     ./module/users.nix
     (import ./module/x11.nix { inherit palette; })
-    (import "${home-manager}/nixos")
-  ];
-
-  nixpkgs.overlays = [
-    (final: prev: {
-      nur = import nur { pkgs = prev; };
-    })
   ];
 
   nixpkgs.config.allowUnfree = true;

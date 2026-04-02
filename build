@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export NIXPKGS_ALLOW_UNFREE=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 case "${1:-build}" in
   build)
-    nixos-rebuild build -I nixos-config="$SCRIPT_DIR/configuration.nix"
+    nixos-rebuild build --flake "$SCRIPT_DIR#twink" --impure
     ;;
   switch)
-    cp -r "$SCRIPT_DIR"/{*.nix,module,package} /etc/nixos/
-    nixos-rebuild switch
+    nixos-rebuild switch --flake "$SCRIPT_DIR#twink" --impure
     ;;
   *)
     echo "Usage: sudo $0 [build|switch]"
