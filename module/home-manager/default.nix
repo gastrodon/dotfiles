@@ -1,4 +1,4 @@
-{ palette, claude-code-nix }:
+{ palette, free-code }:
 {
   config,
   pkgs,
@@ -13,7 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
-      inherit palette claude-code-nix;
+      inherit palette free-code;
     };
 
     users.${config.identity.username} = {
@@ -26,6 +26,7 @@
         ./vscodium
         ./zsh
         ./ghostty.nix
+        ./claude.nix
       ];
 
       programs.obsidian = {
@@ -87,7 +88,6 @@
         tldr
         ripgrep
         coreutils
-        claude-code-nix.packages.${pkgs.system}.claude-code-bun
       ];
 
       programs.home-manager.enable = true;
