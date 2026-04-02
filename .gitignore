@@ -1,8 +1,6 @@
 # external flakes
 ext/
 
-.local/bin/bright
-
 # build output directories
 result
 target
