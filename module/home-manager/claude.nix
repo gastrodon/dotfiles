@@ -1,11 +1,16 @@
-{ pkgs, lib, free-code, ... }:
 {
-  home.packages = lib.optionals (free-code != null) [
+  pkgs,
+  lib,
+  free-code,
+  ...
+}:
+{
+  home.packages = [
     free-code.packages.${pkgs.system}.dev
   ];
 
   programs.zsh = {
-    shellAliases = lib.optionalAttrs (free-code != null) {
+    shellAliases = {
       c = "claude";
     };
   };
