@@ -1,6 +1,10 @@
+ext/
+
 # build output directories
 result
 target
 
 # pre-commit
 .pre-commit-config.yaml
+
+.claude/*.local*
