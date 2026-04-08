@@ -1,4 +1,4 @@
-{ palette }:
+{ palette, free-code }:
 {
   config,
   pkgs,
@@ -13,7 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
-      inherit palette;
+      inherit palette free-code;
     };
 
     users.${config.identity.username} = {
