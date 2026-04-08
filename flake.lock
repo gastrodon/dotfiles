@@ -163,11 +163,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1775040883,
-        "narHash": "sha256-o0Cmde4drfgbWXXo1ebKTrhSLQuL9Yrj1InonVyC7Nc=",
+        "lastModified": 1775617467,
+        "narHash": "sha256-0iOpPFssABIEEBHM9ZXMCUe23DotXjltbduIXQ+D6Qk=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "c277ffa27759cd230089700da568864446528e80",
+        "rev": "f3b19068801716db2fdae61f67afdb8e7d5332f3",
         "type": "github"
       },
       "original": {
@@ -397,11 +397,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775107675,
-        "narHash": "sha256-WQJVpR2at6W29Bz3K2jXXpxiGku5Yug1387lOI6pTO8=",
+        "lastModified": 1775456401,
+        "narHash": "sha256-nnGRgxuuLryRB/3CV5+QU6T3svOMhMYK/YTakZyjAhg=",
         "ref": "refs/heads/main",
-        "rev": "285ded2a8a636e5814ab352609d4fe162e06e964",
-        "revCount": 1,
+        "rev": "718922347f863bec600520d679d9738d528b633e",
+        "revCount": 3,
         "type": "git",
         "url": "ssh://git@github.com/gastrodon/free-code"
       },
@@ -623,11 +623,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775077333,
-        "narHash": "sha256-OXcxobt7lBkh1B8AjwreU+24myhtKpqeLfAeIyNLFY8=",
+        "lastModified": 1775425411,
+        "narHash": "sha256-KY6HsebJHEe5nHOWP7ur09mb0drGxYSzE3rQxy62rJo=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "49ca96b2714c5931e17401eff87f3edd42d2b0f2",
+        "rev": "0d02ec1d0a05f88ef9e74b516842900c41f0f2fe",
         "type": "github"
       },
       "original": {
@@ -838,11 +838,11 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1775002709,
-        "narHash": "sha256-d3Yx83vSrN+2z/loBh4mJpyRqr9aAJqlke4TkpFmRJA=",
+        "lastModified": 1775305101,
+        "narHash": "sha256-/74n1oQPtKG52Yw41cbToxspxHbYz6O3vi+XEw16Qe8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "bcd464ccd2a1a7cd09aa2f8d4ffba83b761b1d0e",
+        "rev": "36a601196c4ebf49e035270e10b2d103fe39076b",
         "type": "github"
       },
       "original": {
@@ -854,11 +854,11 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1775036866,
-        "narHash": "sha256-ZojAnPuCdy657PbTq5V0Y+AHKhZAIwSIT2cb8UgAz/U=",
+        "lastModified": 1775423009,
+        "narHash": "sha256-vPKLpjhIVWdDrfiUM8atW6YkIggCEKdSAlJPzzhkQlw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+        "rev": "68d8aa3d661f0e6bd5862291b5bb263b2a6595c9",
         "type": "github"
       },
       "original": {
@@ -874,11 +874,11 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1775107800,
-        "narHash": "sha256-T966EqpNYPy35xalVbhRtGJQ/YRuM9jW/1jLDZFUess=",
+        "lastModified": 1775631588,
+        "narHash": "sha256-9FhEstRUqSJxTgzzeC7qpIiEOLfztOKrfmITXHy3IEw=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "b11e591eb95961f2e9d91bb1a35fd2a0defd116d",
+        "rev": "1b1d29f8e8719c99b1729823c1c69efb5cb41774",
         "type": "github"
       },
       "original": {
