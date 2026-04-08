@@ -11,9 +11,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "git+ssh://git@github.com/gastrodon/free-code";
-    free-code.inputs.nixpkgs.follows = "nixpkgs";
-
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
   };
@@ -24,7 +21,6 @@
       nixpkgs,
       home-manager,
       nur,
-      free-code,
       devenv,
       devenv-nixpkgs,
       ...
@@ -32,7 +28,6 @@
     {
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
         modules = [
           ./configuration.nix
           home-manager.nixosModules.home-manager

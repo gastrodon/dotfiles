@@ -8,6 +8,8 @@
 {
   home.file.".config/oh-my-zsh/themes/liner.zsh-theme".source = ./liner.zsh-theme;
 
+  home.sessionPath = [ "$HOME/.local/bin" ];
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;

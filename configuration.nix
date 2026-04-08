@@ -37,7 +37,7 @@ in
     ./hardware-configuration.nix
     ./module/identity.nix
     (import ./module/i3 { inherit palette local; })
-    (import ./module/home-manager { inherit palette free-code; })
+    (import ./module/home-manager { inherit palette; })
     ./module/steam
     ./module/users.nix
     (import ./module/x11.nix { inherit palette; })
