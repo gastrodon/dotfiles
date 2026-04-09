@@ -40,6 +40,7 @@ in
     (import ./module/home-manager { inherit palette free-code; })
     ./module/steam
     ./module/users.nix
+    ./module/qdrant
     (import ./module/x11.nix { inherit palette; })
   ];
 
