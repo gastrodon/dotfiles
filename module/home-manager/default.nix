@@ -13,6 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
+      hostname = config.networking.hostName;
       inherit palette free-code;
     };
 
