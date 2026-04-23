@@ -4,29 +4,7 @@ let
   scripts = import ./scripts.nix { inherit pkgs local; };
   blocks = import ./blocks.nix { inherit pkgs config; };
 
-  wallpaper =
-    pkgs.runCommand "wallpaper-scaled"
-      {
-        buildInputs = [ pkgs.imagemagick ];
-      }
-      ''
-        mkdir -p $out
-        convert ${./wall.jpg} -resize 50% $out/wall.jpg
-      '';
-
   hostname = config.networking.hostName;
-
-  i3config = import ./config {
-    inherit
-      pkgs
-      palette
-      local
-      scripts
-      hostname
-      ;
-    username = config.identity.username;
-    wallpaper = "${wallpaper}/wall.jpg";
-  };
 
   # Install i3 and essential desktop packages
   basePackages = with pkgs; [
@@ -65,6 +43,7 @@ let
       [ ];
 in
 {
+  # Enable i3 window manager at system level
   services.xserver.windowManager.i3 = {
     enable = true;
     package = pkgs.i3;
@@ -76,31 +55,6 @@ in
   };
 
   environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts ++ blocks.scripts;
-
-  # Write i3 config files to user's home directory
-  systemd.tmpfiles.rules = [
-    "d /home/${config.identity.username}/.config/i3 0755 ${config.identity.username} users - -"
-    "f /home/${config.identity.username}/.config/i3/config 0644 ${config.identity.username} users - -"
-    "f /home/${config.identity.username}/.config/i3/i3blocks.conf 0644 ${config.identity.username} users - -"
-  ];
-
-  environment.etc."i3-config-source".text = i3config.config;
-  environment.etc."i3blocks-config-source".text = blocks.config;
-
-  system.activationScripts.i3config = ''
-    cp \
-      ${config.environment.etc."i3-config-source".source} \
-      /home/${config.identity.username}/.config/i3/config
-
-    cp \
-      ${config.environment.etc."i3blocks-config-source".source} \
-      /home/${config.identity.username}/.config/i3/i3blocks.conf
-
-    chown \
-      ${config.identity.username}:users \
-      /home/${config.identity.username}/.config/i3/config \
-      /home/${config.identity.username}/.config/i3/i3blocks.conf
-  '';
 
   environment.variables = {
     TERMINAL = "${pkgs.ghostty}/bin/ghostty";
