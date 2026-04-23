@@ -36,12 +36,25 @@
           settings = {
             app = {
               promptDelete = false;
-              attachmentFolderPath = "./attachments";
+              alwaysUpdateLinks = true;
+              newFileLocation = "current";
+              attachmentFolderPath = "./";
+              pdfExportSettings = {
+                includeName = false;
+                pageSize = "Letter";
+                landscape = false;
+                margin = "0";
+                downscalePercent = 100;
+              };
               useMarkdownLinks = true;
+              showLineNumber = false;
+              openBehavior = "daily";
             };
             appearance = {
+              accentColor = "";
               baseFontSize = 16;
               theme = "obsidian";
+              monospaceFontFamily = "Fira Code";
               cssTheme = "Solarized";
             };
             themes = [
@@ -64,6 +77,7 @@
               "outgoing-link"
               "outline"
               "page-preview"
+              "sync"
               "switcher"
               "tag-pane"
               "templates"
