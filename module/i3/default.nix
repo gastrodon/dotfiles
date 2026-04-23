@@ -58,7 +58,7 @@ let
     if hostname == "twink" then
       with pkgs;
       [
-        xorg.xbacklight # Brightness control
+        xbacklight # Brightness control
         acpi # For battery status
       ]
     else
