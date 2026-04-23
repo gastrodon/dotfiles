@@ -4,17 +4,32 @@ set -euo pipefail
 export NIXPKGS_ALLOW_UNFREE=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Auto-detect hostname or use environment variable
+HOSTNAME="${NIXOS_HOSTNAME:-$(hostname)}"
+
+# Validate hostname
+if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" ]]; then
+  echo "Error: Unknown hostname '$HOSTNAME'"
+  echo "Set NIXOS_HOSTNAME=stone or NIXOS_HOSTNAME=twink to build for a specific host"
+  exit 1
+fi
+
 case "${1:-build}" in
   build)
-    nixos-rebuild build --flake "$SCRIPT_DIR#twink" --impure
+    echo "Building configuration for $HOSTNAME..."
+    nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
     ;;
   switch)
-    nixos-rebuild switch --flake "$SCRIPT_DIR#twink" --impure
+    echo "Switching to configuration for $HOSTNAME..."
+    nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+    i3-msg restart 2>/dev/null || true
     ;;
   *)
-    echo "Usage: sudo $0 [build|switch]"
+    echo "Usage: $0 [build|switch]"
     echo "  build  - Build configuration (default)"
-    echo "  switch - Copy files to /etc/nixos and switch"
+    echo "  switch - Switch to new configuration"
+    echo ""
+    echo "Building for: $HOSTNAME (override with NIXOS_HOSTNAME=stone or NIXOS_HOSTNAME=twink)"
     exit 1
     ;;
 esac

@@ -2,7 +2,7 @@
 { config, pkgs, ... }:
 let
   scripts = import ./scripts.nix { inherit pkgs local; };
-  blocks = import ./blocks.nix { inherit pkgs; };
+  blocks = import ./blocks.nix { inherit pkgs config; };
 
   wallpaper =
     pkgs.runCommand "wallpaper-scaled"
@@ -14,16 +14,55 @@ let
         convert ${./wall.jpg} -resize 50% $out/wall.jpg
       '';
 
+  hostname = config.networking.hostName;
+
   i3config = import ./config {
     inherit
       pkgs
       palette
       local
       scripts
+      hostname
       ;
     username = config.identity.username;
     wallpaper = "${wallpaper}/wall.jpg";
   };
+
+  # Install i3 and essential desktop packages
+  basePackages = with pkgs; [
+    ghostty # terminal emulator
+
+    feh # Wallpaper setter
+    scrot # Screenshot utility
+    imagemagick # For blur effects in lock script
+
+    pavucontrol # Volume control GUI
+    networkmanagerapplet # NetworkManager system tray applet
+
+    autotiling # switches tiling directions
+    xclip # clipboard
+    dunst # notifier
+    libnotify # notification daemon
+    playerctl # media control
+    polkit_gnome # gui authenticator
+    dex # xdg-open
+    xss-lock # screen locker
+
+    iproute2 # For network interface info
+    alsa-utils # For amixer volume control
+    jq # JSON processor for i3blocks
+  ];
+
+  # Laptop-only packages (brightness and battery)
+  laptopPackages =
+    if hostname == "twink" then
+      with pkgs;
+      [
+        xorg.xbacklight # Brightness control
+        acpi # For battery status
+      ]
+    else
+      [ ];
 in
 {
   services.xserver.windowManager.i3 = {
@@ -36,36 +75,7 @@ in
     ];
   };
 
-  # Install i3 and essential desktop packages
-  environment.systemPackages =
-    with pkgs;
-    [
-      ghostty # terminal emulator
-
-      feh # Wallpaper setter
-      scrot # Screenshot utility
-      imagemagick # For blur effects in lock script
-
-      pavucontrol # Volume control GUI
-      networkmanagerapplet # NetworkManager system tray applet
-      xorg.xbacklight # Brightness control
-
-      autotiling # switches tiling directions
-      xclip # clipboard
-      dunst # notifier
-      libnotify # notification daemon
-      playerctl # media control
-      polkit_gnome # gui authenticator
-      dex # xdg-open
-      xss-lock # screen locker
-
-      acpi # For battery status
-      iproute2 # For network interface info
-      alsa-utils # For amixer volume control
-      jq # JSON processor for i3blocks
-    ]
-    ++ scripts.scripts
-    ++ blocks.scripts;
+  environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts ++ blocks.scripts;
 
   # Write i3 config files to user's home directory
   systemd.tmpfiles.rules = [

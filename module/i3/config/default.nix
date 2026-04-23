@@ -5,6 +5,7 @@
   palette,
   scripts,
   local,
+  hostname,
   ...
 }:
 
@@ -27,6 +28,7 @@ let
           palette
           scripts
           local
+          hostname
           ;
       };
     in

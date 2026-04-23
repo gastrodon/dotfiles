@@ -30,11 +30,25 @@
       ...
     }@inputs:
     {
+      # Desktop build target (stone)
+      nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit free-code; };
+        modules = [
+          ./hosts/shared.nix
+          ./hosts/stone/configuration.nix
+          home-manager.nixosModules.home-manager
+          nur.modules.nixos.default
+        ];
+      };
+
+      # Laptop build target (twink)
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit free-code; };
         modules = [
-          ./configuration.nix
+          ./hosts/shared.nix
+          ./hosts/twink/configuration.nix
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
         ];

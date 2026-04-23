@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   # Disk usage block
   i3blocks-disk = pkgs.writeScriptBin "i3blocks-disk" ''
@@ -232,6 +232,30 @@ let
 
     volume | format
   '';
+  hostname = config.networking.hostName;
+  isLaptop = hostname == "twink";
+
+  # Laptop-only blocks (battery and brightness)
+  laptopBlocksConfig =
+    if isLaptop then
+      ''
+        [brightness]
+        command=brightness-block
+        interval=5
+        markup=pango
+
+        # Battery indicator
+        [battery]
+        command=battery-block
+        interval=30
+        markup=pango
+
+        [simple-2]
+        full_text=: :
+        color=#717171
+      ''
+    else
+      "";
 in
 {
   scripts = [
@@ -262,16 +286,7 @@ in
     command=i3blocks-bandwidth
     interval=persist
 
-    [brightness]
-    command=brightness-block
-    interval=5
-    markup=pango
-
-    # Battery indicator
-    [battery]
-    command=battery-block
-    interval=30
-    markup=pango
+    ${laptopBlocksConfig}
 
     [simple-2]
     full_text=: :

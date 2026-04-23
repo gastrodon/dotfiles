@@ -6,7 +6,7 @@
   ...
 }:
 let
-  local = import ./package { inherit pkgs lib; };
+  local = import ../package { inherit pkgs lib; };
 
   # Solarized Dark
   palette = {
@@ -35,30 +35,23 @@ let
 in
 {
   imports = [
-    ./hardware-configuration.nix
-    ./module/identity.nix
-    (import ./module/i3 { inherit palette local; })
-    (import ./module/home-manager { inherit palette free-code; })
-    ./module/steam
-    ./module/users.nix
-    (import ./module/x11.nix { inherit palette; })
+    ../module/identity.nix
+    (import ../module/i3 { inherit palette local; })
+    (import ../module/home-manager { inherit palette free-code; })
+    ../module/steam
+    ../module/users.nix
+    (import ../module/x11.nix { inherit palette; })
   ];
 
   nixpkgs.config.allowUnfree = true;
-  nix.settings.nix.settings.sandbox = "relaxed";
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  boot.loader.timeout = 0;
-  boot.loader.grub = {
-    enable = true;
-    device = "/dev/nvme0n1";
-    timeoutStyle = "hidden";
-  };
+  # Machine-specific boot config and hostname are defined in
+  # hosts/<hostname>/configuration.nix
 
-  networking.hostName = "twink";
   networking.networkmanager.enable = true;
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -89,12 +82,8 @@ in
     jack.enable = true;
   };
 
-  services.upower.enable = true;
-
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness"
-    ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
-  '';
+  # Machine-specific services (upower, backlight) are defined in
+  # hosts/<hostname>/configuration.nix
 
   systemd.user.services.polkit-gnome = {
     description = "Polkit GNOME Authentication Agent";
