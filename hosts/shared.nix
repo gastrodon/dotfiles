@@ -44,6 +44,7 @@ in
   ];
 
   nixpkgs.config.allowUnfree = true;
+  nix.settings.sandbox = "relaxed";
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"

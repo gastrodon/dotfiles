@@ -27,6 +27,7 @@
         ./zsh
         ./ghostty.nix
         ./claude.nix
+        ./i3blocks.nix
       ];
 
       programs.obsidian = {

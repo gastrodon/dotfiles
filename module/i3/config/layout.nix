@@ -76,7 +76,8 @@
 
     bar {
         font pango: Noto Sans Regular 10
-        status_command i3blocks -c /home/${username}/.config/i3/i3blocks.conf
+        # i3blocks config is now managed by Home Manager at ~/.config/i3blocks/config
+        status_command i3blocks -c /home/${username}/.config/i3blocks/config
         position bottom
         tray_padding 0
 
