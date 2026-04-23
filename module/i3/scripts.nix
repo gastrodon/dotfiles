@@ -53,7 +53,7 @@ let
     }
 
     function get_brightness {
-        ${pkgs.xbacklight}/bin/xbacklight | grep -Po '[0-9]{1,3}' | head -n 1
+        ${pkgs.xorg.xbacklight}/bin/xbacklight | grep -Po '[0-9]{1,3}' | head -n 1
     }
 
     function get_volume_icon {
@@ -107,12 +107,12 @@ let
         ;;
 
         brightness_up)
-        ${pkgs.xbacklight}/bin/xbacklight -inc $brightness_step -time 0
+        ${pkgs.xorg.xbacklight}/bin/xbacklight -inc $brightness_step -time 0
         show_brightness_notif
         ;;
 
         brightness_down)
-        ${pkgs.xbacklight}/bin/xbacklight -dec $brightness_step -time 0
+        ${pkgs.xorg.xbacklight}/bin/xbacklight -dec $brightness_step -time 0
         show_brightness_notif
         ;;
     esac
