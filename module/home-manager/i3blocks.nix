@@ -1,6 +1,7 @@
 {
   identity,
   palette,
+  hostname,
   pkgs,
   lib,
   config,
@@ -8,7 +9,6 @@
 }:
 
 let
-  hostname = config.networking.hostName;
   isLaptop = hostname == "twink";
 
   # Laptop-only blocks (brightness and battery)
