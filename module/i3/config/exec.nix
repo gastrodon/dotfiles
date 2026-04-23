@@ -12,9 +12,9 @@ let
   # twink (laptop): Enable power management - save battery
   xsetCmd =
     if hostname == "stone" then
-      "${pkgs.xorg.xset}/bin/xset s off -dpms"
+      "${pkgs.xset}/bin/xset s off -dpms"
     else
-      "${pkgs.xorg.xset}/bin/xset s 480 dpms 600 600 600";
+      "${pkgs.xset}/bin/xset s 480 dpms 600 600 600";
 
   exec = [
     "${pkgs.autotiling}/bin/autotiling"
