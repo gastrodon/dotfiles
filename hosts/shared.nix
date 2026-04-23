@@ -41,6 +41,7 @@ in
     ../module/steam
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })
+    ../module/podman.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
