@@ -1,4 +1,15 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  githubKeys = builtins.fetchurl {
+    url = "https://github.com/gastrodon.keys";
+    sha256 = "sha256-o46IPXKvUzgoNgSdLt9j3ThkeJbc6P5HGcFZKHH3Rhw=";
+  };
+in
 {
   programs.zsh.enable = true;
 
@@ -13,6 +24,8 @@
       "video" # Access video devices (brightness control)
       "audio" # Access audio devices
     ];
+
+    openssh.authorizedKeys.keyFiles = [ githubKeys ];
 
     # Set a real password with `sudo passwd eva`
     initialPassword = "foobar2000";
