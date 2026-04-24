@@ -424,15 +424,4 @@ in
     };
   };
 
-  # Create i3blocks config directory and file
-  home.file.".config/i3/i3blocks.conf".source =
-    let
-      blocks = import ../i3/blocks.nix {
-        inherit pkgs;
-        config = {
-          networking.hostName = hostname;
-        };
-      };
-    in
-    pkgs.writeText "i3blocks.conf" blocks.config;
 }
