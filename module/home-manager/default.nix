@@ -29,6 +29,7 @@
         ./ghostty.nix
         ./claude.nix
         ./i3.nix
+        ./xresources.nix
       ];
 
       programs.obsidian = {
