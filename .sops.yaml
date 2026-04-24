@@ -3,7 +3,7 @@ keys:
   - &stone age1swzurp0slgznhx7s8w9hjk3t6ncgguy8z7xumw8pcf5lrun8lycqct6yg5
 
 creation_rules:
-  - path_regex: secrets\.yaml$
+  - path_regex: '.+\.yaml$'
     key_groups:
       - age:
           - *eva

@@ -18,28 +18,27 @@
   sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../secrets.yaml) ../secrets.yaml;
 
   sops.secrets = lib.optionalAttrs (builtins.pathExists ../secrets.yaml) {
-    aichat-config = {
-      owner = config.identity.username;
-      path = "/home/${config.identity.username}/.config/aichat/config.yaml";
-    };
+    "aichat/model" = { };
+    "aichat/client_type" = { };
+    "aichat/client_name" = { };
+    "aichat/api_base" = { };
+    "aichat/api_key" = { };
+    "aichat/model_name" = { };
   };
 
-  system.activationScripts.sopsAgeKey = {
-    text =
-      let
-        keyFile = "/home/${config.identity.username}/.config/sops/age/keys.txt";
-        sshKey = "/home/${config.identity.username}/.ssh/id_ed25519";
-        user = config.identity.username;
-      in
-      ''
-        if [ ! -f "${keyFile}" ]; then
-          mkdir -p "$(dirname ${keyFile})"
-          ${pkgs.ssh-to-age}/bin/ssh-to-age -private-key < "${sshKey}" > "${keyFile}"
-          chmod 600 "${keyFile}"
-          chown ${user}:users "${keyFile}"
-        fi
-      '';
-    deps = [ ];
+  sops.templates."aichat-config" = lib.mkIf (builtins.pathExists ../secrets.yaml) {
+    owner = config.identity.username;
+    path = "/home/${config.identity.username}/.config/aichat/config.yaml";
+    content = ''
+      model: ${config.sops.placeholder."aichat/model"}
+      clients:
+      - type: ${config.sops.placeholder."aichat/client_type"}
+        name: ${config.sops.placeholder."aichat/client_name"}
+        api_base: ${config.sops.placeholder."aichat/api_base"}
+        api_key: ${config.sops.placeholder."aichat/api_key"}
+        models:
+        - name: ${config.sops.placeholder."aichat/model_name"}
+    '';
   };
 
   environment.systemPackages = with pkgs; [
