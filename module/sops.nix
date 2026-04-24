@@ -31,6 +31,7 @@
     path = "/home/${config.identity.username}/.config/aichat/config.yaml";
     content = ''
       model: ${config.sops.placeholder."aichat/model"}
+      save_session: false
       clients:
       - type: ${config.sops.placeholder."aichat/client_type"}
         name: ${config.sops.placeholder."aichat/client_name"}
