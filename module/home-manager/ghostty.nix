@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ ... }:
 
 let
   palette = {
@@ -25,11 +25,20 @@ in
 {
   programs.ghostty = {
     enable = true;
+    enableZshIntegration = true;
 
     settings = {
-      # Font configuration
       font-family = "Fira Code";
-      font-size = 13;
+      font-size = 10;
+
+      copy-on-select = true;
+      mouse-hide-while-typing = true;
+
+      window-decoration = false;
+      gtk-titlebar = false;
+      window-padding-x = 0;
+      window-padding-y = 0;
+      window-show-tab-bar = "auto";
 
       # Solarized Dark colors
       background = palette.background;
