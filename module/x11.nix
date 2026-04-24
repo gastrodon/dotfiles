@@ -25,14 +25,14 @@
   # Install X11 related packages
   environment.systemPackages = with pkgs; [
     # X11 utilities
-    xrdb # X resources database
+    xorg.xrdb # X resources database
     xmodmap # Keyboard mapping
-    xinit # X initialization
+    xorg.xinit # X initialization
     xrandr # Display configuration
     xclip # Clipboard utility
 
     # URL launcher for URxvt
-    xfce4-exo # Provides exo-open
+    xfce.exo # Provides exo-open
 
     # URxvt with perl extensions
     rxvt-unicode-unwrapped
