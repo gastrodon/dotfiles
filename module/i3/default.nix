@@ -2,7 +2,6 @@
 { config, pkgs, ... }:
 let
   scripts = import ./scripts.nix { inherit pkgs local; };
-  blocks = import ./blocks.nix { inherit pkgs config; };
 
   hostname = config.networking.hostName;
 
@@ -54,7 +53,7 @@ in
     ];
   };
 
-  environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts ++ blocks.scripts;
+  environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts;
 
   environment.variables = {
     TERMINAL = "${pkgs.ghostty}/bin/ghostty";

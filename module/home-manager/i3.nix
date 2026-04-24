@@ -190,6 +190,30 @@ in
 
       # Keybindings
       keybindings = lib.mkOptionDefault {
+        # Remove default bindsym $mod+N workspace binds — we use bindcode equivalents
+        # below to avoid duplicate keybinding errors (bindsym and bindcode resolve
+        # to the same key and i3 treats them as duplicates).
+        "${mod}+1" = null;
+        "${mod}+2" = null;
+        "${mod}+3" = null;
+        "${mod}+4" = null;
+        "${mod}+5" = null;
+        "${mod}+6" = null;
+        "${mod}+7" = null;
+        "${mod}+8" = null;
+        "${mod}+9" = null;
+        "${mod}+0" = null;
+        "${mod}+Shift+1" = null;
+        "${mod}+Shift+2" = null;
+        "${mod}+Shift+3" = null;
+        "${mod}+Shift+4" = null;
+        "${mod}+Shift+5" = null;
+        "${mod}+Shift+6" = null;
+        "${mod}+Shift+7" = null;
+        "${mod}+Shift+8" = null;
+        "${mod}+Shift+9" = null;
+        "${mod}+Shift+0" = null;
+
         # Workspace navigation
         "${mod}+Tab" = "workspace next";
         "${mod}+Shift+Tab" = "workspace prev";

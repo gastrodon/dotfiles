@@ -9,6 +9,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nur.url = "github:nix-community/NUR";
 
     free-code.url = "git+ssh://git@github.com/gastrodon/free-code";
@@ -23,6 +28,7 @@
       self,
       nixpkgs,
       home-manager,
+      sops-nix,
       nur,
       free-code,
       devenv,
@@ -39,6 +45,7 @@
           ./hosts/stone/configuration.nix
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
+          sops-nix.nixosModules.sops
         ];
       };
 
@@ -51,6 +58,7 @@
           ./hosts/twink/configuration.nix
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
+          sops-nix.nixosModules.sops
         ];
       };
 

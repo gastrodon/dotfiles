@@ -4,7 +4,9 @@
 
 When asked to install a package, change a setting, add a program, configure a service, or otherwise modify the system — **always make the change declaratively in the Nix config files**. Never run `apt`, `pip`, `npm -g`, shell one-liners, or any ad-hoc system mutation. The right answer is always a `.nix` file edit.
 
-**Never `sudo` anything. Never run `nixos-rebuild switch` or any privileged command.**
+**Never `sudo` anything. Never run `nixos-rebuild switch` or any privileged command. Never attempt to reload i3.**
+
+**Never leave removal comments in source.** When code is removed or migrated, delete it cleanly — no `# deprecated`, `# removed`, `# was here`, `# no longer`, or similar tombstone comments. If the context matters, it belongs in a git commit message, not the source file.
 
 ## Testing Changes
 
@@ -13,6 +15,8 @@ When asked to install a package, change a setting, add a program, configure a se
 ```
 
 Runs `nixos-rebuild build` (no switch, no root required). Emits `./result` which can be inspected to verify the built output. Eva applies changes to her live system herself.
+
+**Always run `./build` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
 
 ## Repo Structure
 

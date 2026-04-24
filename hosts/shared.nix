@@ -42,6 +42,7 @@ in
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })
     ../module/podman.nix
+    ../module/sops.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
