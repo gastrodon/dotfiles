@@ -13,6 +13,7 @@
 
     extraSpecialArgs = {
       identity = config.identity;
+      hostname = config.networking.hostName;
       inherit palette free-code;
     };
 
@@ -27,6 +28,7 @@
         ./zsh
         ./ghostty.nix
         ./claude.nix
+        ./i3.nix
       ];
 
       programs.obsidian = {
