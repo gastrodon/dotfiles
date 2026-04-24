@@ -53,6 +53,20 @@ package/
   obsidian-theme/solarized/  # Custom Obsidian Solarized theme package
 ```
 
+## Config File Generation
+
+Always generate program config files from Nix attrsets serialized to the target format — never write literal file content or template strings. Use `pkgs.formats.yaml`, `pkgs.formats.json`, `pkgs.formats.toml`, etc.:
+
+```nix
+let fmt = pkgs.formats.yaml { };
+in builtins.readFile (fmt.generate "config.yaml" {
+  some_option = true;
+  nested.value = "foo";
+})
+```
+
+This applies everywhere: `sops.templates`, `home.file`, activation scripts, anywhere a config file is produced.
+
 ## Key Patterns
 
 **Solarized Dark palette** — defined in `configuration.nix` and threaded into i3 and home-manager via module args. When adding color-aware modules, accept `{ palette, ... }` and pass it from `configuration.nix`.
