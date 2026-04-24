@@ -56,6 +56,25 @@ in
 
   environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts ++ blocks.scripts;
 
+  # Write i3 config files to user's home directory
+  # Note: i3blocks.conf is now managed by Home Manager (see module/home-manager/i3blocks.nix)
+  systemd.tmpfiles.rules = [
+    "d /home/${config.identity.username}/.config/i3 0755 ${config.identity.username} users - -"
+    "f /home/${config.identity.username}/.config/i3/config 0644 ${config.identity.username} users - -"
+  ];
+
+  environment.etc."i3-config-source".text = i3config.config;
+
+  system.activationScripts.i3config = ''
+    cp \
+      ${config.environment.etc."i3-config-source".source} \
+      /home/${config.identity.username}/.config/i3/config
+
+    chown \
+      ${config.identity.username}:users \
+      /home/${config.identity.username}/.config/i3/config
+  '';
+
   environment.variables = {
     TERMINAL = "${pkgs.ghostty}/bin/ghostty";
   };
