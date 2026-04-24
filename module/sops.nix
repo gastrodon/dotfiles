@@ -29,17 +29,25 @@
   sops.templates."aichat-config" = lib.mkIf (builtins.pathExists ../secrets.yaml) {
     owner = config.identity.username;
     path = "/home/${config.identity.username}/.config/aichat/config.yaml";
-    content = ''
-      model: ${config.sops.placeholder."aichat/model"}
-      save_session: false
-      clients:
-      - type: ${config.sops.placeholder."aichat/client_type"}
-        name: ${config.sops.placeholder."aichat/client_name"}
-        api_base: ${config.sops.placeholder."aichat/api_base"}
-        api_key: ${config.sops.placeholder."aichat/api_key"}
-        models:
-        - name: ${config.sops.placeholder."aichat/model_name"}
-    '';
+    content =
+      let
+        fmt = pkgs.formats.yaml { };
+      in
+      builtins.readFile (
+        fmt.generate "aichat-config.yaml" {
+          model = config.sops.placeholder."aichat/model";
+          save_session = false;
+          clients = [
+            {
+              type = config.sops.placeholder."aichat/client_type";
+              name = config.sops.placeholder."aichat/client_name";
+              api_base = config.sops.placeholder."aichat/api_base";
+              api_key = config.sops.placeholder."aichat/api_key";
+              models = [ { name = config.sops.placeholder."aichat/model_name"; } ];
+            }
+          ];
+        }
+      );
   };
 
   environment.systemPackages = with pkgs; [
