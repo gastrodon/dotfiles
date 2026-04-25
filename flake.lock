@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "aichat-flake": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1777126129,
+        "narHash": "sha256-ayUaPpbBSz7WkzyJsDa8scviLdVcnvFaVeZTLDc5XAk=",
+        "ref": "refs/heads/main",
+        "rev": "690dca419c854ee1117cbbe022f8457819b1a3e2",
+        "revCount": 7,
+        "type": "git",
+        "url": "ssh://git@github.com/gastrodon/aichat-flake"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/gastrodon/aichat-flake"
+      }
+    },
     "cachix": {
       "inputs": {
         "devenv": [
@@ -957,6 +977,7 @@
     },
     "root": {
       "inputs": {
+        "aichat-flake": "aichat-flake",
         "devenv": "devenv",
         "devenv-nixpkgs": "devenv-nixpkgs",
         "free-code": "free-code",

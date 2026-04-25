@@ -22,7 +22,7 @@
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
 
-    aichat-flake.url = "github:gastrodon/aichat-flake";
+    aichat-flake.url = "git+ssh://git@github.com/gastrodon/aichat-flake";
     aichat-flake.inputs.nixpkgs.follows = "nixpkgs";
   };
 
