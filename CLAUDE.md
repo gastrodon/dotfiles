@@ -67,6 +67,14 @@ in builtins.readFile (fmt.generate "config.yaml" {
 
 This applies everywhere: `sops.templates`, `home.file`, activation scripts, anywhere a config file is produced.
 
+## Flake Inputs
+
+Private GitHub repos must use the SSH URL scheme — never `github:`:
+
+```nix
+foo.url = "git+ssh://git@github.com/gastrodon/foo";
+```
+
 ## Key Patterns
 
 **Solarized Dark palette** — defined in `configuration.nix` and threaded into i3 and home-manager via module args. When adding color-aware modules, accept `{ palette, ... }` and pass it from `configuration.nix`.
