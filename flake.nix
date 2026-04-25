@@ -21,6 +21,9 @@
 
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+
+    aichat-flake.url = "github:gastrodon/aichat-flake";
+    aichat-flake.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -33,6 +36,7 @@
       free-code,
       devenv,
       devenv-nixpkgs,
+      aichat-flake,
       ...
     }@inputs:
     {
@@ -46,6 +50,7 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
+          aichat-flake.nixosModules.default
         ];
       };
 
@@ -59,6 +64,7 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
+          aichat-flake.nixosModules.default
         ];
       };
 
