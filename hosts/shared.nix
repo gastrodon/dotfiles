@@ -43,6 +43,7 @@ in
     (import ../module/x11.nix { inherit palette; })
     ../module/podman.nix
     ../module/sops.nix
+    ../module/aichat.nix
   ];
 
   nixpkgs.config.allowUnfree = true;

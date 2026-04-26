@@ -17,39 +17,6 @@
 
   sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../secrets.yaml) ../secrets.yaml;
 
-  sops.secrets = lib.optionalAttrs (builtins.pathExists ../secrets.yaml) {
-    "aichat/model" = { };
-    "aichat/client_type" = { };
-    "aichat/client_name" = { };
-    "aichat/api_base" = { };
-    "aichat/api_key" = { };
-    "aichat/model_name" = { };
-  };
-
-  sops.templates."aichat-config" = lib.mkIf (builtins.pathExists ../secrets.yaml) {
-    owner = config.identity.username;
-    path = "/home/${config.identity.username}/.config/aichat/config.yaml";
-    content =
-      let
-        fmt = pkgs.formats.yaml { };
-      in
-      builtins.readFile (
-        fmt.generate "aichat-config.yaml" {
-          model = config.sops.placeholder."aichat/model";
-          save_session = false;
-          clients = [
-            {
-              type = config.sops.placeholder."aichat/client_type";
-              name = config.sops.placeholder."aichat/client_name";
-              api_base = config.sops.placeholder."aichat/api_base";
-              api_key = config.sops.placeholder."aichat/api_key";
-              models = [ { name = config.sops.placeholder."aichat/model_name"; } ];
-            }
-          ];
-        }
-      );
-  };
-
   environment.systemPackages = with pkgs; [
     age
     sops
