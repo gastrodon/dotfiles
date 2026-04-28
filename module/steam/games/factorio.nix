@@ -23,18 +23,4 @@
     # factorio-headless  # Uncomment for dedicated server
   ];
 
-  # Factorio benefits from increased map_count for large factories
-  # This helps with performance when factories grow very large
-  boot.kernel.sysctl = {
-    "vm.max_map_count" = 262144;
-  };
-
-  # Ensure proper library paths for Steam games
-  hardware.opengl = {
-    enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
-  };
-
-  environment.sessionVariables = { };
 }

@@ -1,7 +1,12 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   imports = [
-    # Add game-specific modules here
     ./factorio.nix
+    ./black-ops.nix
   ];
 }
