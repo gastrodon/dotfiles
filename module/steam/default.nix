@@ -23,6 +23,13 @@
     "vm.max_map_count" = 262144;
   };
 
+  security.wrappers.bwrap = {
+    owner = "root";
+    group = "root";
+    source = "${pkgs.bubblewrap}/bin/bwrap";
+    setuid = true;
+  };
+
   programs.gamemode.enable = true;
   programs.gamescope.enable = true;
   environment.systemPackages = with pkgs; [

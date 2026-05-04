@@ -35,4 +35,5 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
   hardware.graphics.enable = true;
+  powerManagement.cpuFreqGovernor = "performance";
 }
