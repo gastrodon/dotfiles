@@ -12,6 +12,9 @@
 
   networking.hostName = "stone";
 
+  desktop.terminal = pkgs.ghostty;
+  desktop.hasPrivateKeys = true;
+
   # Desktop: Direct GRUB boot (no EFI, no separate /boot partition)
   boot.loader.timeout = 0;
   boot.loader.grub = {

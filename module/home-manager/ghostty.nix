@@ -1,4 +1,4 @@
-{ hostname, lib, ... }:
+{ desktop, lib, ... }:
 
 let
   palette = {
@@ -22,7 +22,7 @@ let
     brightWhite = "fdf6e3";
   };
 in
-lib.mkIf (hostname != "server") {
+lib.mkIf (desktop.terminal.pname == "ghostty") {
   programs.ghostty = {
     enable = true;
     enableZshIntegration = true;

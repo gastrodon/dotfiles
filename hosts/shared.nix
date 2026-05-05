@@ -34,6 +34,7 @@ let
 in
 {
   imports = [
+    ../module/terminal.nix
     ../module/identity.nix
     (import ../module/i3 { inherit palette local; })
     (import ../module/home-manager { inherit palette; })

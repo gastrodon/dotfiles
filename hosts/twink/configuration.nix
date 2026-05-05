@@ -12,6 +12,9 @@
 
   networking.hostName = "twink";
 
+  desktop.terminal = pkgs.ghostty;
+  desktop.hasPrivateKeys = true;
+
   # Laptop: EFI boot with separate /boot partition
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {

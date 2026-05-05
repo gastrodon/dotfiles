@@ -2,6 +2,7 @@
   identity,
   palette,
   hostname,
+  desktop,
   pkgs,
   lib,
   config,
@@ -221,9 +222,7 @@ in
         "${mod}+Shift+Tab" = "workspace prev";
 
         # Terminal
-        "${mod}+Return" = "exec --no-startup-id ${
-          if hostname == "server" then "${pkgs.xterm}/bin/xterm" else "${pkgs.ghostty}/bin/ghostty"
-        }";
+        "${mod}+Return" = "exec --no-startup-id ${desktop.terminal}/bin/${desktop.terminal.pname}";
 
         # Kill focused window
         "${mod}+q" = "kill";

@@ -14,6 +14,7 @@
     extraSpecialArgs = {
       identity = config.identity;
       hostname = config.networking.hostName;
+      desktop = config.desktop;
       inherit palette;
     };
 

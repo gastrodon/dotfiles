@@ -5,8 +5,7 @@ let
 
   hostname = config.networking.hostName;
 
-  terminalPkg = if hostname == "server" then pkgs.xterm else pkgs.ghostty;
-  terminalBin = if hostname == "server" then "xterm" else "ghostty";
+  terminalPkg = config.desktop.terminal;
 
   # Install i3 and essential desktop packages
   basePackages = with pkgs; [
@@ -59,6 +58,6 @@ in
   environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts;
 
   environment.variables = {
-    TERMINAL = "${terminalPkg}/bin/${terminalBin}";
+    TERMINAL = "${terminalPkg}/bin/${terminalPkg.pname}";
   };
 }

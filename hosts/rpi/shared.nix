@@ -27,6 +27,7 @@ let
 in
 {
   imports = [
+    ../../module/terminal.nix
     ../../module/identity.nix
     ../../module/users.nix
     (import ../../module/x11.nix { inherit palette; })

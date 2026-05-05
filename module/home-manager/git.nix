@@ -1,4 +1,10 @@
-{ pkgs, identity, ... }:
+{
+  pkgs,
+  identity,
+  desktop,
+  lib,
+  ...
+}:
 
 {
   programs.git = {
@@ -28,7 +34,7 @@
       color = {
         ui = true;
       };
-      url = {
+      url = lib.optionalAttrs desktop.hasPrivateKeys {
         "git@github.com:" = {
           insteadOf = "https://github.com/";
         };
