@@ -1,7 +1,6 @@
-{ device, ... }:
 {
   disko.devices.disk.main = {
-    device = device;
+    device = "/dev/sdc";
     type = "disk";
     content = {
       type = "gpt";

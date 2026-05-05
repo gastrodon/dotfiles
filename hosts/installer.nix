@@ -27,17 +27,11 @@ in
       ExecStart = pkgs.writeShellScript "autoinstall" ''
         set -euo pipefail
 
-        DEVICE=$(grep -oP 'disko\.device=\K\S+' /proc/cmdline || true)
-        if [[ -z "''${DEVICE}" ]]; then
-          echo "ERROR: no disko.device= found in kernel cmdline" >&2
-          exit 1
-        fi
-
         echo "=== autoinstall: 10s to power off and cancel ==="
         sleep 10
 
-        echo ">>> partitioning and formatting on ''${DEVICE}..."
-        disko --mode disko ${diskConfig} --arg device "\"''${DEVICE}\""
+        echo ">>> partitioning and formatting..."
+        disko --mode disko ${diskConfig}
 
         echo ">>> installing NixOS..."
         nixos-install --system ${targetTopLevel} --no-root-passwd
