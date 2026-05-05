@@ -24,6 +24,11 @@
 
     aichat-flake.url = "git+ssh://git@github.com/gastrodon/aichat-flake";
     aichat-flake.inputs.nixpkgs.follows = "nixpkgs";
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -37,8 +42,24 @@
       devenv,
       devenv-nixpkgs,
       aichat-flake,
+      disko,
       ...
     }@inputs:
+    let
+      mkInstaller =
+        { targetSystem, diskConfig }:
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit free-code targetSystem diskConfig;
+            diskoPkg = disko.packages.x86_64-linux.disko;
+          };
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+            ./hosts/installer.nix
+          ];
+        };
+    in
     {
       # Desktop build target (stone)
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
@@ -52,6 +73,27 @@
           sops-nix.nixosModules.sops
           aichat-flake.nixosModules.default
         ];
+      };
+
+      # Server build target (server)
+      nixosConfigurations.server = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit free-code; };
+        modules = [
+          ./hosts/shared.nix
+          ./hosts/server/configuration.nix
+          home-manager.nixosModules.home-manager
+          nur.modules.nixos.default
+          sops-nix.nixosModules.sops
+          aichat-flake.nixosModules.default
+          disko.nixosModules.disko
+        ];
+      };
+
+      # Server installer ISO
+      nixosConfigurations.server-installer = mkInstaller {
+        targetSystem = self.nixosConfigurations.server;
+        diskConfig = ./hosts/server/disks.nix;
       };
 
       # Laptop build target (twink)

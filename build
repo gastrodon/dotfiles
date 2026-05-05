@@ -4,13 +4,11 @@ set -euo pipefail
 export NIXPKGS_ALLOW_UNFREE=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Auto-detect hostname or use environment variable
-HOSTNAME="${NIXOS_HOSTNAME:-$(hostname)}"
+HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
 
-# Validate hostname
-if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" ]]; then
+if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
   echo "Error: Unknown hostname '$HOSTNAME'"
-  echo "Set NIXOS_HOSTNAME=stone or NIXOS_HOSTNAME=twink to build for a specific host"
+  echo "Set NIXOS_HOSTNAME=stone|twink|server to build for a specific host"
   exit 1
 fi
 
@@ -24,12 +22,18 @@ case "${1:-build}" in
     nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
     i3-msg restart 2>/dev/null || true
     ;;
+  iso)
+    echo "Building installer ISO for $HOSTNAME..."
+    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
+    echo "ISO at: $(readlink result)/iso/"
+    ;;
   *)
-    echo "Usage: $0 [build|switch]"
+    echo "Usage: $0 [build|switch|iso] [hostname]"
     echo "  build  - Build configuration (default)"
     echo "  switch - Switch to new configuration"
+    echo "  iso    - Build installer ISO for this host"
     echo ""
-    echo "Building for: $HOSTNAME (override with NIXOS_HOSTNAME=stone or NIXOS_HOSTNAME=twink)"
+    echo "Building for: $HOSTNAME (override with second arg or NIXOS_HOSTNAME=stone|twink|server)"
     exit 1
     ;;
 esac
