@@ -2,7 +2,7 @@
 {
   programs.rofi = {
     enable = true;
-    
+
     theme = {
       "*" = {
         background = palette.background;
@@ -117,7 +117,12 @@
         spacing = 0;
         text-color = "var(foreground)";
         padding = "2px";
-        children = [ "prompt" "textbox-prompt-sep" "entry" "case-indicator" ];
+        children = [
+          "prompt"
+          "textbox-prompt-sep"
+          "entry"
+          "case-indicator"
+        ];
       };
 
       "case-indicator, entry, prompt, button" = {

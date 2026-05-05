@@ -39,7 +39,7 @@ let
       rich-text = {
         enable = true;
         extensions = [ bierner.markdown-mermaid ];
-        packages = [];
+        packages = [ ];
       };
       nix-ide = {
         enable = true;
