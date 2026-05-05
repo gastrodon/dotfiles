@@ -78,10 +78,20 @@
         ];
       };
 
-      # Server installer ISO
+      # Installer ISOs
       nixosConfigurations.server-installer = mkInstaller {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
+      };
+
+      nixosConfigurations.stone-installer = mkInstaller {
+        targetSystem = self.nixosConfigurations.stone;
+        diskConfig = ./hosts/stone/disks.nix;
+      };
+
+      nixosConfigurations.twink-installer = mkInstaller {
+        targetSystem = self.nixosConfigurations.twink;
+        diskConfig = ./hosts/twink/disks.nix;
       };
 
       # Laptop build target (twink)
