@@ -29,7 +29,7 @@
   # NVIDIA RTX 2080 Super
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.deviceSection = ''
-    Option "ConnectedMonitor" "DP-0, DP-4"
+    Option "ConnectedMonitor" "DP-0, DP-4, HDMI-0"
   '';
   hardware.nvidia = {
     modesetting.enable = true;
