@@ -1,6 +1,6 @@
 {
   disko.devices.disk.main = {
-    device = "/dev/nvme0n1";
+    device = "/dev/sda";
     type = "disk";
     content = {
       type = "gpt";
