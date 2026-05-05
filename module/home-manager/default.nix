@@ -1,4 +1,4 @@
-{ palette, free-code }:
+{ palette }:
 {
   config,
   pkgs,
@@ -14,7 +14,7 @@
     extraSpecialArgs = {
       identity = config.identity;
       hostname = config.networking.hostName;
-      inherit palette free-code;
+      inherit palette;
     };
 
     users.${config.identity.username} = {
@@ -27,7 +27,6 @@
         ./vscodium
         ./zsh
         ./ghostty.nix
-        ./claude.nix
         ./i3.nix
         ./i3blocks.nix
         ./xresources.nix

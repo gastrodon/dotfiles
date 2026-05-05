@@ -391,45 +391,6 @@
         "type": "github"
       }
     },
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "free-code": {
-      "inputs": {
-        "flake-utils": "flake-utils",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775456401,
-        "narHash": "sha256-nnGRgxuuLryRB/3CV5+QU6T3svOMhMYK/YTakZyjAhg=",
-        "ref": "refs/heads/main",
-        "rev": "718922347f863bec600520d679d9738d528b633e",
-        "revCount": 3,
-        "type": "git",
-        "url": "ssh://git@github.com/gastrodon/free-code"
-      },
-      "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/gastrodon/free-code"
-      }
-    },
     "git-hooks": {
       "inputs": {
         "flake-compat": [
@@ -980,7 +941,6 @@
         "devenv": "devenv",
         "devenv-nixpkgs": "devenv-nixpkgs",
         "disko": "disko",
-        "free-code": "free-code",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_6",
         "nur": "nur",
@@ -1025,21 +985,6 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
-        "type": "github"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
         "type": "github"
       }
     },
