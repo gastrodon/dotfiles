@@ -16,6 +16,18 @@
   desktop.hasPrivateKeys = true;
   desktop.hasSpeaker = true;
 
+  desktop.extra.i3config = {
+    workspaceOutputAssign = [
+      { workspace = "10"; output = "DP-3"; }
+    ];
+    startup = [
+      {
+        command = "${pkgs.xorg.xrandr}/bin/xrandr --output DP-4 --auto --output DP-0 --auto --right-of DP-4 --output DP-3 --auto --above DP-0";
+        notification = false;
+      }
+    ];
+  };
+
   # Desktop: Direct GRUB boot (no EFI, no separate /boot partition)
   boot.loader.timeout = 0;
   boot.loader.grub = {
