@@ -38,7 +38,7 @@ in
         ${diskoPkg}/bin/disko --mode disko ${diskConfig} --arg device "\"''${DEVICE}\""
 
         echo ">>> installing NixOS..."
-        nixos-install --system ${targetTopLevel} --no-root-passwd
+        ${pkgs.nixos-install-tools}/bin/nixos-install --system ${targetTopLevel} --no-root-passwd
 
         echo ">>> done — rebooting in 5s"
         sleep 5
