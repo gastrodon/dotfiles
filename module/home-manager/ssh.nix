@@ -14,6 +14,7 @@
         identityFile = "~/.ssh/id_ed25519";
         identitiesOnly = true;
         addKeysToAgent = "yes";
+        extraOptions.SetEnv = "TERM=xterm";
       };
     };
   };
