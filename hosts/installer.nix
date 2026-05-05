@@ -11,15 +11,17 @@ in
 {
   isoImage.storeContents = [ targetTopLevel ];
 
-  environment.systemPackages = [
-    diskoPkg
-    pkgs.nixos-install-tools
-  ];
+  environment.systemPackages = [ diskoPkg ];
 
   systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
     after = [ "systemd-udev-settle.service" ];
+    path = [
+      diskoPkg
+      pkgs.nixos-install-tools
+      pkgs.nix
+    ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = pkgs.writeShellScript "autoinstall" ''
@@ -35,10 +37,10 @@ in
         sleep 10
 
         echo ">>> partitioning and formatting on ''${DEVICE}..."
-        ${diskoPkg}/bin/disko --mode disko ${diskConfig} --arg device "\"''${DEVICE}\""
+        disko --mode disko ${diskConfig} --arg device "\"''${DEVICE}\""
 
         echo ">>> installing NixOS..."
-        ${pkgs.nixos-install-tools}/bin/nixos-install --system ${targetTopLevel} --no-root-passwd
+        nixos-install --system ${targetTopLevel} --no-root-passwd
 
         echo ">>> done — rebooting in 5s"
         sleep 5
