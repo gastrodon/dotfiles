@@ -1,4 +1,4 @@
-{ palette, free-code }:
+{ palette }:
 {
   config,
   pkgs,
@@ -14,12 +14,11 @@
     extraSpecialArgs = {
       identity = config.identity;
       hostname = config.networking.hostName;
-      inherit palette free-code;
+      inherit palette;
     };
 
     users.${config.identity.username} = {
       imports = [
-        ./claude.nix
         ./git.nix
         ./gh.nix
         ./ssh.nix

@@ -16,8 +16,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "path:/home/eva/sources/free-code";
-
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
 
@@ -34,7 +32,6 @@
       home-manager,
       sops-nix,
       nur,
-      free-code,
       devenv,
       devenv-nixpkgs,
       disko,
@@ -59,7 +56,6 @@
       # Desktop build target (stone)
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -72,7 +68,6 @@
       # Server build target (server)
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -92,7 +87,6 @@
       # Laptop build target (twink)
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix
