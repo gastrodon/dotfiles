@@ -103,6 +103,11 @@ in
 
   programs.nix-ld.enable = true;
 
+  boot.binfmt.emulatedSystems = [
+    "aarch64-linux"
+    "armv7l-linux"
+  ];
+
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
 
