@@ -32,10 +32,31 @@ let
     };
   };
 
+  openRemoteSshVersion = "0.1.1";
+  openRemoteSshSha256 = "1r9h7pi5rhax370r10f5d3h9mafaz2vagbj09rmmr8zn8qs8fdh7";
+
   defaultBundles =
     with pkgs;
     with vscode-extensions;
     {
+      remote-ssh = {
+        enable = true;
+        extensions = [
+          (vscode-utils.buildVscodeMarketplaceExtension {
+            mktplcRef = {
+              publisher = "jeanp413";
+              name = "open-remote-ssh";
+              version = openRemoteSshVersion;
+            };
+            vsix = fetchurl {
+              name = "jeanp413-open-remote-ssh.zip";
+              url = "https://open-vsx.org/api/jeanp413/open-remote-ssh/${openRemoteSshVersion}/file/jeanp413.open-remote-ssh-${openRemoteSshVersion}.vsix";
+              sha256 = openRemoteSshSha256;
+            };
+          })
+        ];
+        packages = [ ];
+      };
       rich-text = {
         enable = true;
         extensions = [ bierner.markdown-mermaid ];
