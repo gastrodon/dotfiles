@@ -51,6 +51,22 @@
             ./hosts/installer.nix
           ];
         };
+
+      mkRpiImage =
+        {
+          system,
+          sdModule,
+          configPath,
+        }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
+            configPath
+            ./hosts/rpi/shared.nix
+            { nixpkgs.buildPlatform = "x86_64-linux"; }
+          ];
+        };
     in
     {
       # Desktop build target (stone)
@@ -104,6 +120,25 @@
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
         ];
+      };
+
+      # RPi SD card images
+      nixosConfigurations.rpi2b = mkRpiImage {
+        system = "armv7l-linux";
+        sdModule = "sd-image-armv7l-multiplatform.nix";
+        configPath = ./hosts/rpi2b/configuration.nix;
+      };
+
+      nixosConfigurations.rpi3b-plus = mkRpiImage {
+        system = "aarch64-linux";
+        sdModule = "sd-image-aarch64.nix";
+        configPath = ./hosts/rpi3b-plus/configuration.nix;
+      };
+
+      nixosConfigurations.rpi4b = mkRpiImage {
+        system = "aarch64-linux";
+        sdModule = "sd-image-aarch64.nix";
+        configPath = ./hosts/rpi4b/configuration.nix;
       };
 
       devShells.x86_64-linux.default = devenv.lib.mkShell {

@@ -6,34 +6,54 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
 
-if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
-  echo "Error: Unknown hostname '$HOSTNAME'"
-  echo "Set NIXOS_HOSTNAME=stone|twink|server to build for a specific host"
-  exit 1
-fi
-
 case "${1:-build}" in
   build)
+    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
+      echo "Error: Unknown hostname '$HOSTNAME'"
+      echo "Set NIXOS_HOSTNAME=stone|twink|server to build for a specific host"
+      exit 1
+    fi
     echo "Building configuration for $HOSTNAME..."
     nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
     ;;
   switch)
+    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
+      echo "Error: Unknown hostname '$HOSTNAME'"
+      echo "Set NIXOS_HOSTNAME=stone|twink|server to switch a specific host"
+      exit 1
+    fi
     echo "Switching to configuration for $HOSTNAME..."
     nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
     i3-msg restart 2>/dev/null || true
     ;;
   iso)
+    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
+      echo "Error: Unknown hostname '$HOSTNAME'"
+      echo "Set NIXOS_HOSTNAME=stone|twink|server to build an ISO for a specific host"
+      exit 1
+    fi
     echo "Building installer ISO for $HOSTNAME..."
     nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
     echo "ISO at: $(readlink result)/iso/"
     ;;
+  sdimage)
+    if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
+      echo "Error: Unknown hostname '$HOSTNAME'"
+      echo "Set NIXOS_HOSTNAME=rpi2b|rpi3b-plus|rpi4b to build an SD image for a specific target"
+      exit 1
+    fi
+    echo "Building SD image for $HOSTNAME..."
+    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}.config.system.build.sdImage" --impure
+    echo "SD image at: $(readlink result)/sd-image/"
+    ;;
   *)
-    echo "Usage: $0 [build|switch|iso] [hostname]"
-    echo "  build  - Build configuration (default)"
-    echo "  switch - Switch to new configuration"
-    echo "  iso    - Build installer ISO for this host"
+    echo "Usage: $0 [build|switch|iso|sdimage] [hostname]"
+    echo "  build    - Build configuration (default), hostname: stone|twink|server"
+    echo "  switch   - Switch to new configuration, hostname: stone|twink|server"
+    echo "  iso      - Build installer ISO, hostname: stone|twink|server"
+    echo "  sdimage  - Build SD card image, hostname: rpi2b|rpi3b-plus|rpi4b"
     echo ""
-    echo "Building for: $HOSTNAME (override with second arg or NIXOS_HOSTNAME=stone|twink|server)"
+    echo "Building for: $HOSTNAME (override with second arg or NIXOS_HOSTNAME=<hostname>)"
     exit 1
     ;;
 esac
