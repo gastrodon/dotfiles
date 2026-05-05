@@ -42,6 +42,16 @@
 
   environment.systemPackages = with pkgs; [ pciutils ];
 
+  desktop.extra.i3config = {
+    assigns."1:" = [ { class = "XTerm"; } ];
+    startup = [
+      {
+        command = "${pkgs.xterm}/bin/xterm -e ${pkgs.bottom}/bin/btm";
+        notification = false;
+      }
+    ];
+  };
+
   # Clone dotfiles on first boot if /etc/nixos has no git repo
   systemd.services.clone-dotfiles = {
     description = "Clone dotfiles to /etc/nixos";

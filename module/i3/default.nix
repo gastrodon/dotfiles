@@ -34,11 +34,11 @@ let
 
   # Laptop-only packages (brightness and battery)
   laptopPackages =
-    if hostname == "twink" then
+    if config.desktop.hasBattery then
       with pkgs;
       [
-        xbacklight # Brightness control
-        acpi # For battery status
+        xbacklight
+        acpi
       ]
     else
       [ ];

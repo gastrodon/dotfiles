@@ -1,7 +1,7 @@
 {
   identity,
   palette,
-  hostname,
+  desktop,
   pkgs,
   lib,
   config,
@@ -9,7 +9,7 @@
 }:
 
 let
-  isLaptop = hostname == "twink";
+  isLaptop = desktop.hasBattery;
 
   # Laptop-only blocks (brightness and battery)
   laptopBlocksConfig =
