@@ -105,7 +105,9 @@ in
       ];
 
       # Workspace assignments
-      assigns = { };
+      assigns = lib.optionalAttrs (hostname == "server") {
+        "${ws1}" = [ { class = "XTerm"; } ];
+      };
 
       # Colors
       colors = {
@@ -219,7 +221,9 @@ in
         "${mod}+Shift+Tab" = "workspace prev";
 
         # Terminal
-        "${mod}+Return" = "exec --no-startup-id ${pkgs.ghostty}/bin/ghostty";
+        "${mod}+Return" = "exec --no-startup-id ${
+          if hostname == "server" then "${pkgs.xterm}/bin/xterm" else "${pkgs.ghostty}/bin/ghostty"
+        }";
 
         # Kill focused window
         "${mod}+q" = "kill";
@@ -444,7 +448,11 @@ in
           command = "${pkgs.xss-lock}/bin/xss-lock -l blur-lock";
           notification = false;
         }
-      ];
+      ]
+      ++ lib.optional (hostname == "server") {
+        command = "${pkgs.xterm}/bin/xterm -e ${pkgs.bottom}/bin/btm";
+        notification = false;
+      };
     };
   };
 

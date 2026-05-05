@@ -1,4 +1,4 @@
-{ ... }:
+{ hostname, lib, ... }:
 
 let
   palette = {
@@ -22,7 +22,7 @@ let
     brightWhite = "fdf6e3";
   };
 in
-{
+lib.mkIf (hostname != "server") {
   programs.ghostty = {
     enable = true;
     enableZshIntegration = true;

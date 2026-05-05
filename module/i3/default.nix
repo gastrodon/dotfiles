@@ -5,9 +5,12 @@ let
 
   hostname = config.networking.hostName;
 
+  terminalPkg = if hostname == "server" then pkgs.xterm else pkgs.ghostty;
+  terminalBin = if hostname == "server" then "xterm" else "ghostty";
+
   # Install i3 and essential desktop packages
   basePackages = with pkgs; [
-    ghostty # terminal emulator
+    terminalPkg
 
     feh # Wallpaper setter
     scrot # Screenshot utility
@@ -56,6 +59,6 @@ in
   environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts;
 
   environment.variables = {
-    TERMINAL = "${pkgs.ghostty}/bin/ghostty";
+    TERMINAL = "${terminalPkg}/bin/${terminalBin}";
   };
 }
