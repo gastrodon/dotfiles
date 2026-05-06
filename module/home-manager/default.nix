@@ -106,6 +106,7 @@
         tldr
         ripgrep
         coreutils
+        tmux
       ];
 
       programs.home-manager.enable = true;
