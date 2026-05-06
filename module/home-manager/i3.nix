@@ -191,130 +191,130 @@ in
         ];
 
         # Keybindings
-        keybindings = lib.mkOptionDefault {
-          # Remove default bindsym $mod+N workspace binds — we use bindcode equivalents
-          # below to avoid duplicate keybinding errors (bindsym and bindcode resolve
-          # to the same key and i3 treats them as duplicates).
-          "${mod}+1" = null;
-          "${mod}+2" = null;
-          "${mod}+3" = null;
-          "${mod}+4" = null;
-          "${mod}+5" = null;
-          "${mod}+6" = null;
-          "${mod}+7" = null;
-          "${mod}+8" = null;
-          "${mod}+9" = null;
-          "${mod}+0" = null;
-          "${mod}+Shift+1" = null;
-          "${mod}+Shift+2" = null;
-          "${mod}+Shift+3" = null;
-          "${mod}+Shift+4" = null;
-          "${mod}+Shift+5" = null;
-          "${mod}+Shift+6" = null;
-          "${mod}+Shift+7" = null;
-          "${mod}+Shift+8" = null;
-          "${mod}+Shift+9" = null;
-          "${mod}+Shift+0" = null;
+        keybindings = lib.mkOptionDefault (
+          {
+            # Remove default bindsym $mod+N workspace binds — we use bindcode equivalents
+            # below to avoid duplicate keybinding errors (bindsym and bindcode resolve
+            # to the same key and i3 treats them as duplicates).
+            "${mod}+1" = null;
+            "${mod}+2" = null;
+            "${mod}+3" = null;
+            "${mod}+4" = null;
+            "${mod}+5" = null;
+            "${mod}+6" = null;
+            "${mod}+7" = null;
+            "${mod}+8" = null;
+            "${mod}+9" = null;
+            "${mod}+0" = null;
+            "${mod}+Shift+1" = null;
+            "${mod}+Shift+2" = null;
+            "${mod}+Shift+3" = null;
+            "${mod}+Shift+4" = null;
+            "${mod}+Shift+5" = null;
+            "${mod}+Shift+6" = null;
+            "${mod}+Shift+7" = null;
+            "${mod}+Shift+8" = null;
+            "${mod}+Shift+9" = null;
+            "${mod}+Shift+0" = null;
 
-          # Workspace navigation
-          "${mod}+Tab" = "workspace next";
-          "${mod}+Shift+Tab" = "workspace prev";
+            # Workspace navigation
+            "${mod}+Tab" = "workspace next";
+            "${mod}+Shift+Tab" = "workspace prev";
 
-          # Terminal
-          "${mod}+Return" = "exec --no-startup-id ${desktop.terminal}/bin/${desktop.terminal.pname}";
+            # Terminal
+            "${mod}+Return" = "exec --no-startup-id ${desktop.terminal}/bin/${desktop.terminal.pname}";
 
-          # Kill focused window
-          "${mod}+q" = "kill";
+            # Kill focused window
+            "${mod}+q" = "kill";
 
-          # Exit menu
-          "${mod}+Shift+e" = "exec --no-startup-id powermenu";
+            # Exit menu
+            "${mod}+Shift+e" = "exec --no-startup-id powermenu";
 
-          # Screen lock
-          "${mod}+Escape" = "exec --no-startup-id blur-lock";
+            # Screen lock
+            "${mod}+Escape" = "exec --no-startup-id blur-lock";
 
-          # Reload/restart
-          "${mod}+Shift+c" = "reload";
-          "${mod}+Shift+r" = "restart";
+            # Reload/restart
+            "${mod}+Shift+c" = "reload";
+            "${mod}+Shift+r" = "restart";
 
-          # Keybinding hint
-          "F1" = "exec --no-startup-id keyhint-2";
+            # Keybinding hint
+            "F1" = "exec --no-startup-id keyhint-2";
 
-          # Backlight
-          "XF86MonBrightnessUp" = "exec --no-startup-id sys backlight -w '+5'";
-          "XF86MonBrightnessDown" = "exec --no-startup-id sys backlight -w '-5'";
+            # Focus
+            "${mod}+j" = "focus left";
+            "${mod}+k" = "focus down";
+            "${mod}+l" = "focus up";
+            "${mod}+semicolon" = "focus right";
 
-          # Focus
-          "${mod}+j" = "focus left";
-          "${mod}+k" = "focus down";
-          "${mod}+l" = "focus up";
-          "${mod}+semicolon" = "focus right";
+            "${mod}+Left" = "focus left";
+            "${mod}+Down" = "focus down";
+            "${mod}+Up" = "focus up";
+            "${mod}+Right" = "focus right";
 
-          "${mod}+Left" = "focus left";
-          "${mod}+Down" = "focus down";
-          "${mod}+Up" = "focus up";
-          "${mod}+Right" = "focus right";
+            # Move
+            "${mod}+Shift+j" = "move left";
+            "${mod}+Shift+k" = "move down";
+            "${mod}+Shift+l" = "move up";
+            "${mod}+Shift+semicolon" = "move right";
 
-          # Move
-          "${mod}+Shift+j" = "move left";
-          "${mod}+Shift+k" = "move down";
-          "${mod}+Shift+l" = "move up";
-          "${mod}+Shift+semicolon" = "move right";
+            "${mod}+Shift+Left" = "move left";
+            "${mod}+Shift+Down" = "move down";
+            "${mod}+Shift+Up" = "move up";
+            "${mod}+Shift+Right" = "move right";
 
-          "${mod}+Shift+Left" = "move left";
-          "${mod}+Shift+Down" = "move down";
-          "${mod}+Shift+Up" = "move up";
-          "${mod}+Shift+Right" = "move right";
+            # Split
+            "${mod}+h" = "split h";
+            "${mod}+v" = "split v";
 
-          # Split
-          "${mod}+h" = "split h";
-          "${mod}+v" = "split v";
+            # Fullscreen
+            "${mod}+f" = "fullscreen toggle";
 
-          # Fullscreen
-          "${mod}+f" = "fullscreen toggle";
+            # Floating toggle
+            "${mod}+Shift+space" = "floating toggle";
 
-          # Floating toggle
-          "${mod}+Shift+space" = "floating toggle";
+            # Focus parent/child
+            "${mod}+a" = "focus parent";
+            "${mod}+d" = "focus child";
 
-          # Focus parent/child
-          "${mod}+a" = "focus parent";
-          "${mod}+d" = "focus child";
+            # Empty workspace
+            "${mod}+Shift+n" = "exec --no-startup-id empty_workspace";
 
-          # Empty workspace
-          "${mod}+Shift+n" = "exec --no-startup-id empty_workspace";
+            # Screenshot
+            "Print" =
+              "exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send \"Screenshot saved\" \"~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +\"%Y-%m-%d-%T\").png\"";
 
-          # Volume
-          "XF86AudioRaiseVolume" = "exec --no-startup-id volume_brightness.sh volume_up";
-          "XF86AudioLowerVolume" = "exec --no-startup-id volume_brightness.sh volume_down";
-          "XF86AudioMute" = "exec --no-startup-id volume_brightness.sh volume_mute";
-          "XF86AudioMicMute" = "exec ${pkgs.alsa-utils}/bin/amixer sset Capture toggle";
+            # Power profiles
+            "${mod}+Shift+p" = "exec --no-startup-id power-profiles";
 
-          # Media
-          "XF86AudioPlay" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";
-          "XF86AudioNext" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl next";
-          "XF86AudioPrev" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl previous";
+            # Rofi application launcher
+            "${mod}+space" =
+              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi";
 
-          # Screenshot
-          "Print" =
-            "exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send \"Screenshot saved\" \"~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +\"%Y-%m-%d-%T\").png\"";
+            # Rofi window switcher
+            "${mod}+t" =
+              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window -config ~/.config/rofi/rofidmenu.rasi";
 
-          # Power profiles
-          "${mod}+Shift+p" = "exec --no-startup-id power-profiles";
+            # Move workspace between monitors
+            "${mod}+Shift+greater" = "move workspace to output right";
+            "${mod}+Shift+less" = "move workspace to output left";
 
-          # Rofi application launcher
-          "${mod}+space" =
-            "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi";
-
-          # Rofi window switcher
-          "${mod}+t" =
-            "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window -config ~/.config/rofi/rofidmenu.rasi";
-
-          # Move workspace between monitors
-          "${mod}+Shift+greater" = "move workspace to output right";
-          "${mod}+Shift+less" = "move workspace to output left";
-
-          # Resize mode
-          "${mod}+r" = "mode \"resize\"";
-        };
+            # Resize mode
+            "${mod}+r" = "mode \"resize\"";
+          }
+          // lib.optionalAttrs desktop.hasBacklight {
+            "XF86MonBrightnessUp" = "exec --no-startup-id sys backlight -w '+5'";
+            "XF86MonBrightnessDown" = "exec --no-startup-id sys backlight -w '-5'";
+          }
+          // lib.optionalAttrs desktop.hasSpeaker {
+            "XF86AudioRaiseVolume" = "exec --no-startup-id volume_brightness.sh volume_up";
+            "XF86AudioLowerVolume" = "exec --no-startup-id volume_brightness.sh volume_down";
+            "XF86AudioMute" = "exec --no-startup-id volume_brightness.sh volume_mute";
+            "XF86AudioMicMute" = "exec ${pkgs.alsa-utils}/bin/amixer sset Capture toggle";
+            "XF86AudioPlay" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";
+            "XF86AudioNext" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl next";
+            "XF86AudioPrev" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl previous";
+          }
+        );
 
         # Keycode bindings for workspace switching (number row)
         keycodebindings = {

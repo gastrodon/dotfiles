@@ -11,34 +11,32 @@ let
   basePackages = with pkgs; [
     terminalPkg
 
-    feh # Wallpaper setter
-    scrot # Screenshot utility
-    imagemagick # For blur effects in lock script
+    feh
+    scrot
+    imagemagick
 
-    pavucontrol # Volume control GUI
-    networkmanagerapplet # NetworkManager system tray applet
+    networkmanagerapplet
+    autotiling
+    xclip
+    dunst
+    libnotify
+    polkit_gnome
+    dex
+    xss-lock
 
-    autotiling # switches tiling directions
-    xclip # clipboard
-    dunst # notifier
-    libnotify # notification daemon
-    playerctl # media control
-    polkit_gnome # gui authenticator
-    dex # xdg-open
-    xss-lock # screen locker
-
-    iproute2 # For network interface info
-    alsa-utils # For amixer volume control
-    jq # JSON processor for i3blocks
+    iproute2
+    jq
   ];
 
-  # Laptop-only packages (brightness and battery)
-  laptopPackages =
-    if config.desktop.hasBattery then
+  backlightPackages = if config.desktop.hasBacklight then with pkgs; [ xbacklight ] else [ ];
+  batteryPackages = if config.desktop.hasBattery then with pkgs; [ acpi ] else [ ];
+  speakerPackages =
+    if config.desktop.hasSpeaker then
       with pkgs;
       [
-        xbacklight
-        acpi
+        pavucontrol
+        alsa-utils
+        playerctl
       ]
     else
       [ ];
@@ -55,7 +53,8 @@ in
     ];
   };
 
-  environment.systemPackages = basePackages ++ laptopPackages ++ scripts.scripts;
+  environment.systemPackages =
+    basePackages ++ backlightPackages ++ batteryPackages ++ speakerPackages ++ scripts.scripts;
 
   environment.variables = {
     TERMINAL = "${terminalPkg}/bin/${terminalPkg.pname}";

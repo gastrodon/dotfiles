@@ -14,6 +14,7 @@
 
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;
+  desktop.hasSpeaker = true;
 
   # Desktop: Direct GRUB boot (no EFI, no separate /boot partition)
   boot.loader.timeout = 0;

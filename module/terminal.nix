@@ -8,7 +8,11 @@
 
     hasPrivateKeys = lib.mkEnableOption "redirect GitHub HTTPS to SSH in git config";
 
-    hasBattery = lib.mkEnableOption "battery and brightness controls";
+    hasBattery = lib.mkEnableOption "battery status";
+
+    hasBacklight = lib.mkEnableOption "backlight/brightness controls";
+
+    hasSpeaker = lib.mkEnableOption "speaker/volume controls";
 
     extra.i3config = lib.mkOption {
       type = lib.types.attrs;

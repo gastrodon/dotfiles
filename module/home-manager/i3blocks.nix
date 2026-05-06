@@ -9,29 +9,6 @@
 }:
 
 let
-  isLaptop = desktop.hasBattery;
-
-  # Laptop-only blocks (brightness and battery)
-  laptopBlocksConfig =
-    if isLaptop then
-      ''
-        [brightness]
-        command=brightness-block
-        interval=5
-        markup=pango
-
-        # Battery indicator
-        [battery]
-        command=battery-block
-        interval=30
-        markup=pango
-
-        [simple-2]
-        full_text=: :
-        color=#717171
-      ''
-    else
-      "";
 
   # Disk usage block
   i3blocks-disk = pkgs.writeScriptBin "i3blocks-disk" ''
@@ -297,16 +274,36 @@ in
     command=${i3blocks-bandwidth}/bin/i3blocks-bandwidth
     interval=persist
 
-    ${laptopBlocksConfig}
+    ${lib.optionalString desktop.hasBacklight ''
+      [brightness]
+      command=brightness-block
+      interval=5
+      markup=pango
+    ''}
 
-    [pavucontrol]
-    full_text=
-    command=${pkgs.pavucontrol}/bin/pavucontrol
+    ${lib.optionalString desktop.hasBattery ''
+      [battery]
+      command=battery-block
+      interval=30
+      markup=pango
+    ''}
 
-    [volume-pulseaudio]
-    command=${i3blocks-volume}/bin/i3blocks-volume
-    instance=Master
-    interval=1
+    ${lib.optionalString (desktop.hasBacklight || desktop.hasBattery) ''
+      [simple-2]
+      full_text=: :
+      color=#717171
+    ''}
+
+    ${lib.optionalString desktop.hasSpeaker ''
+      [pavucontrol]
+      full_text=
+      command=${pkgs.pavucontrol}/bin/pavucontrol
+
+      [volume-pulseaudio]
+      command=${i3blocks-volume}/bin/i3blocks-volume
+      instance=Master
+      interval=1
+    ''}
 
     [keybindings]
     full_text=

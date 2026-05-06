@@ -15,6 +15,8 @@
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;
   desktop.hasBattery = true;
+  desktop.hasBacklight = true;
+  desktop.hasSpeaker = true;
 
   # Laptop: EFI boot with separate /boot partition
   boot.loader.efi.canTouchEfiVariables = true;
