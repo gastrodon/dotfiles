@@ -201,6 +201,22 @@ let
         exit(33)
   '';
 
+  # Bluetooth block
+  i3blocks-bluetooth = pkgs.writeShellScriptBin "i3blocks-bluetooth" ''
+    connected=$(${pkgs.bluez}/bin/bluetoothctl devices Connected 2>/dev/null \
+      | ${pkgs.gnused}/bin/sed 's/^Device [A-F0-9:]\{17\} //')
+
+    if [ -z "$connected" ]; then
+      exit 0
+    fi
+
+    names=$(printf '%s' "$connected" \
+      | ${pkgs.coreutils}/bin/tr '\n' ',' \
+      | ${pkgs.gnused}/bin/sed 's/,$//' \
+      | ${pkgs.gnused}/bin/sed 's/,/, /g')
+    echo "<span font='FontAwesome'></span> $names"
+  '';
+
   # Volume block
   i3blocks-volume = pkgs.writeScriptBin "i3blocks-volume" ''
     #!/usr/bin/env bash
@@ -248,6 +264,7 @@ in
   home.packages = [
     i3blocks-disk
     i3blocks-bandwidth
+    i3blocks-bluetooth
     i3blocks-battery
     i3blocks-volume
   ];
@@ -273,6 +290,11 @@ in
     [bandwidth]
     command=${i3blocks-bandwidth}/bin/i3blocks-bandwidth
     interval=persist
+
+    [bluetooth]
+    command=${i3blocks-bluetooth}/bin/i3blocks-bluetooth
+    interval=5
+    markup=pango
 
     ${lib.optionalString desktop.hasBacklight ''
       [brightness]

@@ -8,6 +8,8 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../module/bluetooth.nix
+    ../../module/waydroid.nix
   ];
 
   networking.hostName = "twink";
