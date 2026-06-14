@@ -8,6 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../module/emu-dolphin.nix
   ];
 
   networking.hostName = "stone";
@@ -32,9 +33,6 @@
 
   # NVIDIA RTX 2080 Super
   services.xserver.videoDrivers = [ "nvidia" ];
-  services.xserver.deviceSection = ''
-    Option "ConnectedMonitor" "DP-0, DP-4, DP-3"
-  '';
   hardware.nvidia = {
     modesetting.enable = true;
     open = false; # Use proprietary drivers, not open kernel module
