@@ -8,7 +8,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../module/emu-dolphin.nix
   ];
 
   networking.hostName = "stone";
