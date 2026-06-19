@@ -16,7 +16,7 @@ let
   settingsFile = fmt.generate "claude-settings.json" cfg.settings;
 
   extraArgs = lib.concatStringsSep " " (
-    [ "--mcp-config ${mcpConfigFile}" ]
+    lib.optional (cfg.mcpServers != { }) "--mcp-config ${mcpConfigFile}"
     ++ lib.optional (cfg.settings != { }) "--settings ${settingsFile}"
     ++ lib.optional cfg.strictMcp "--strict-mcp-config"
   );
@@ -52,6 +52,20 @@ in
   };
 
   config = {
+    programs.claude.settings = {
+      model = "claude-sonnet-4-6";
+      effortLevel = "medium";
+      permissions.defaultMode = "bypassPermissions";
+      attribution = {
+        commit = "";
+        pr = "";
+      };
+      sandbox = {
+        enabled = true;
+        failIfUnavailable = true;
+      };
+    };
+
     home.packages = [ wrappedClaude ];
     programs.zsh.shellAliases.c = "claude";
   };
