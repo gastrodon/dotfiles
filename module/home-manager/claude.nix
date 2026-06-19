@@ -64,6 +64,8 @@ in
         enabled = true;
         failIfUnavailable = true;
       };
+      autoMemoryEnabled = true;
+      autoDreamEnabled = true;
     };
 
     home.packages = [ wrappedClaude ];
