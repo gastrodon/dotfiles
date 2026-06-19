@@ -58,7 +58,7 @@ in
       permissions.defaultMode = "bypassPermissions";
       attribution = {
         commit = "";
-        pr = "";
+        pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
       };
       sandbox = {
         enabled = true;
