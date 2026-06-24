@@ -8,3 +8,6 @@ target
 .pre-commit-config.yaml
 
 .claude/*.local*
+
+# personal agent definitions (contain inbox/sender details)
+module/home-manager/agents/

@@ -48,9 +48,6 @@ let
       obsidian = {
         command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
       };
-      email = {
-        command = "${emailMcpWrapper}/bin/email-mcp-wrapped";
-      };
     };
     settings = {
       model = "claude-sonnet-4-6";
@@ -68,12 +65,29 @@ let
       autoDreamEnabled = true;
     };
   };
+
+  claudeEmailBase = free-code.lib.mkClaude pkgs {
+    mcpServers = {
+      email = {
+        command = "${emailMcpWrapper}/bin/email-mcp-wrapped";
+      };
+    };
+    settings = {
+      permissions.defaultMode = "bypassPermissions";
+      agent = "email-monitor";
+    };
+  };
+
+  claudeEmail = pkgs.writeShellScriptBin "claude-email" ''
+    exec ${claudeEmailBase}/bin/claude "$@"
+  '';
 in
 {
   home.packages = [
     claude
+    claudeEmail
     pkgs.bubblewrap # sandbox runtime
     pkgs.socat # sandbox IPC
   ];
-  programs.zsh.shellAliases.c = "claude";
+
 }
