@@ -1,4 +1,4 @@
-{ palette }:
+{ palette, free-code }:
 {
   config,
   pkgs,
@@ -15,7 +15,7 @@
       identity = config.identity;
       hostname = config.networking.hostName;
       desktop = config.desktop;
-      inherit palette;
+      inherit palette free-code;
     };
 
     users.${config.identity.username} = {

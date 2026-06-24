@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  free-code,
   ...
 }:
 let
@@ -37,7 +38,7 @@ in
     ../module/terminal.nix
     ../module/identity.nix
     (import ../module/i3 { inherit palette local; })
-    (import ../module/home-manager { inherit palette; })
+    (import ../module/home-manager { inherit palette free-code; })
     ../module/steam
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })
