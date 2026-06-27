@@ -95,10 +95,7 @@ let
         commit = "";
         pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
       };
-      sandbox = {
-        enabled = true;
-        failIfUnavailable = true;
-      };
+      sandbox.enabled = false;
       autoMemoryEnabled = true;
       autoDreamEnabled = true;
     };
