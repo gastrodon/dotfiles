@@ -44,6 +44,7 @@
     ignores = [
       "result/*"
       ".ignore_*"
+      ".claude/"
     ];
   };
 }
