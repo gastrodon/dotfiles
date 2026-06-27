@@ -1,5 +1,39 @@
 { pkgs, free-code, ... }:
 let
+  # Available GitHub MCP toolsets:
+  #   context          - current user and teams
+  #   repos            - files, branches, commits, releases, search
+  #   issues           - issues CRUD, comments, sub-issues, labels
+  #   pull_requests    - PRs CRUD, reviews, merging
+  #   users            - user search
+  #   actions          - GitHub Actions, CI/CD, job logs
+  #   git              - low-level git (repo tree)
+  #   notifications    - notification management
+  #   orgs             - org search
+  #   stargazers       - star/unstar repos
+  #   projects         - projects CRUD
+  #   discussions      - discussions CRUD
+  #   gists            - gists CRUD
+  #   labels           - label management
+  #   copilot          - copilot issue assignment and reviews
+  #   dependabot       - dependabot alerts
+  #   code_security    - code scanning alerts
+  #   code_quality     - code quality findings
+  #   secret_protection     - secret scanning alerts
+  #   security_advisories   - global and repo security advisories
+  githubMcpToolsets = [
+    "context"
+    "repos"
+    "issues"
+    "pull_requests"
+    "users"
+    "actions"
+    "git"
+    "notifications"
+    "orgs"
+    "stargazers"
+  ];
+
   githubMcpWrapper = pkgs.writeShellApplication {
     name = "github-mcp-server-wrapped";
     runtimeInputs = [ pkgs.github-mcp-server ];
@@ -43,7 +77,11 @@ let
     mcpServers = {
       github = {
         command = "${githubMcpWrapper}/bin/github-mcp-server-wrapped";
-        args = [ "stdio" ];
+        args = [
+          "stdio"
+          "--toolsets"
+          (builtins.concatStringsSep "," githubMcpToolsets)
+        ];
       };
       obsidian = {
         command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
