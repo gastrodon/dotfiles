@@ -1,4 +1,9 @@
-{ pkgs, free-code, ... }:
+{
+  pkgs,
+  lib,
+  free-code,
+  ...
+}:
 let
   # Available GitHub MCP toolsets:
   #   context          - current user and teams
@@ -34,9 +39,19 @@ let
     "stargazers"
   ];
 
+  githubMcpPkg = pkgs.github-mcp-server.overrideAttrs (old: {
+    src = pkgs.fetchFromGitHub {
+      owner = "auto-patcher";
+      repo = "github-mcp-server";
+      rev = "v1.4.0-patch-1";
+      hash = "sha256-FfDqM+qHxBc+8CyF+fph3ZY603i0KchXHOMUnWGAPEc=";
+    };
+    vendorHash = "sha256-J1hC4hdEKLENXLJrsyV41TaJ9+2CuPz5KoIMm2mXvTE=";
+  });
+
   githubMcpWrapper = pkgs.writeShellApplication {
     name = "github-mcp-server-wrapped";
-    runtimeInputs = [ pkgs.github-mcp-server ];
+    runtimeInputs = [ githubMcpPkg ];
     text = ''
       GITHUB_PERSONAL_ACCESS_TOKEN="$(< /run/secrets/github/mcp-token)"
       export GITHUB_PERSONAL_ACCESS_TOKEN
