@@ -150,7 +150,10 @@
       devShells.x86_64-linux.default = devenv.lib.mkShell {
         inherit inputs;
         pkgs = devenv-nixpkgs.legacyPackages.x86_64-linux;
-        modules = [ ./devenv.nix ];
+        modules = [
+          ./devenv.nix
+          { devenv.root = builtins.toString ./.; }
+        ];
       };
     };
 }
