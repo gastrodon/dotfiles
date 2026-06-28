@@ -198,15 +198,16 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1781896495,
-        "narHash": "sha256-knF5W1dH5hZDt5wFKX9MUYdzMNE7OPC1ETQEjcM0fGY=",
-        "ref": "refs/heads/main",
-        "rev": "4fb9b39495b495c8bea8a8bd58448d5f268d24a6",
-        "revCount": 13,
+        "lastModified": 1782688273,
+        "narHash": "sha256-ldt2uSDDThw+BFcRl4lbgqhHGm0KCbcPLwPIgPOQ17A=",
+        "ref": "refs/tags/0.2.1",
+        "rev": "51e0feb854c19d740ed895104f45aa5144b91ff3",
+        "revCount": 28,
         "type": "git",
         "url": "ssh://git@github.com/gastrodon/free-code"
       },
       "original": {
+        "ref": "refs/tags/0.2.1",
         "type": "git",
         "url": "ssh://git@github.com/gastrodon/free-code"
       }
