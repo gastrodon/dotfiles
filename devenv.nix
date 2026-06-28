@@ -37,6 +37,7 @@
   git-hooks.hooks = {
     rustfmt.enable = true;
     clippy.enable = true;
+    nixfmt.enable = true;
   };
 
   # See full reference at https://devenv.sh/reference/options/
