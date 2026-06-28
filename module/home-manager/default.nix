@@ -32,6 +32,7 @@
         ./i3blocks.nix
         ./xresources.nix
         ./claude.nix
+        ./passage.nix
       ];
 
       programs.obsidian = {
