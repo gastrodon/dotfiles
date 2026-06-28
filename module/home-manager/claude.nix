@@ -103,9 +103,13 @@ let
       };
     };
     settings = {
-      model = "claude-sonnet-4-6";
+      model = {
+        default = "claude-haiku-4-5";
+        plan = "claude-opus-4-6";
+      };
       effortLevel = "medium";
       permissions.defaultMode = "bypassPermissions";
+      skipDangerousModePermissionPrompt = true;
       attribution = {
         commit = "";
         pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
@@ -124,6 +128,7 @@ let
     };
     settings = {
       permissions.defaultMode = "bypassPermissions";
+      skipDangerousModePermissionPrompt = true;
       agent = "email-monitor";
     };
   };
