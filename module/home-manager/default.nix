@@ -97,12 +97,6 @@
                 };
               }
             ];
-            plugins = [
-              {
-                enable = true;
-                pkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
-              }
-            ];
           };
         };
       };
