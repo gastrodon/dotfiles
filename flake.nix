@@ -46,6 +46,7 @@
       devenv-nixpkgs,
       disko,
       free-code,
+      obsidian-local-rest-api,
       ...
     }@inputs:
     let

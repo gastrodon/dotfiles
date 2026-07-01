@@ -60,6 +60,7 @@ let
     '';
   };
 
+  # Build mcp-obsidian from source
   obsidianLocalRestApiPkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
 
   obsidianMcpWrapper = pkgs.writeShellApplication {
