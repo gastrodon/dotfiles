@@ -1,4 +1,4 @@
-{ palette, free-code }:
+{ palette, free-code, obsidian-local-rest-api }:
 {
   config,
   pkgs,
@@ -15,7 +15,7 @@
       identity = config.identity;
       hostname = config.networking.hostName;
       desktop = config.desktop;
-      inherit palette free-code;
+      inherit palette free-code obsidian-local-rest-api;
     };
 
     users.${config.identity.username} = {
@@ -95,6 +95,12 @@
                   folder = "daily";
                   autorun = true;
                 };
+              }
+            ];
+            plugins = [
+              {
+                enable = true;
+                pkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
               }
             ];
           };
