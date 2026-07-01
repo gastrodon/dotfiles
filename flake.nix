@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,6 +26,12 @@
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    obsidian-local-rest-api = {
+      url = "github:auto-patcher/obsidian-local-rest-api";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
   };
 
@@ -75,7 +83,7 @@
       # Desktop build target (stone)
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
+        specialArgs = { inherit free-code obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -88,7 +96,7 @@
       # Server build target (server)
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
+        specialArgs = { inherit free-code obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -118,7 +126,7 @@
       # Laptop build target (twink)
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code; };
+        specialArgs = { inherit free-code obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix

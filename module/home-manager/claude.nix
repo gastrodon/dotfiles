@@ -2,6 +2,7 @@
   pkgs,
   lib,
   free-code,
+  obsidian-local-rest-api,
   ...
 }:
 let
@@ -59,13 +60,15 @@ let
     '';
   };
 
+  obsidianLocalRestApiPkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
+
   obsidianMcpWrapper = pkgs.writeShellApplication {
     name = "obsidian-mcp-server-wrapped";
-    runtimeInputs = [ pkgs.nodejs ];
+    runtimeInputs = [ obsidianLocalRestApiPkg ];
     text = ''
       OBSIDIAN_API_KEY="$(< /run/secrets/obsidian/api-key)"
       export OBSIDIAN_API_KEY
-      exec npx -y obsidian-mcp-server "$@"
+      exec mcp-obsidian "$@"
     '';
   };
 
@@ -108,8 +111,6 @@ let
         plan = "claude-opus-4-6";
       };
       effortLevel = "medium";
-      permissions.defaultMode = "bypassPermissions";
-      skipDangerousModePermissionPrompt = true;
       attribution = {
         commit = "";
         pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
@@ -127,8 +128,6 @@ let
       };
     };
     settings = {
-      permissions.defaultMode = "bypassPermissions";
-      skipDangerousModePermissionPrompt = true;
       agent = "email-monitor";
     };
   };
