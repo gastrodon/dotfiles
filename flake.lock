@@ -511,11 +511,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782861353,
-        "narHash": "sha256-fb18xr/YCOA1+x9tvWuRupbat/M2SvAgSkK+rZk62M0=",
+        "lastModified": 1782879509,
+        "narHash": "sha256-fl0PwqaboAtfyAGp7dloTBqmgM0YWZ36UbPUQ3o3YyA=",
         "owner": "auto-patcher",
         "repo": "obsidian-local-rest-api",
-        "rev": "760a149b808e26bf8e6b4ec39451a7826fb5eec5",
+        "rev": "2327e1803d7e77c957684ada35ca110e2e709eac",
         "type": "github"
       },
       "original": {
