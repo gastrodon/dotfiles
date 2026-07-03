@@ -68,6 +68,7 @@ in
       vim
       curl
       git
+      xdotool
     ]
     ++ local.packages;
 

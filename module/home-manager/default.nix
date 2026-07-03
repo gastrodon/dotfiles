@@ -33,6 +33,7 @@
         ./xresources.nix
         ./claude.nix
         ./passage.nix
+        ./3d-print.nix
       ];
 
       programs.obsidian = {
