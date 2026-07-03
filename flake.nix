@@ -18,7 +18,7 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.2";
+    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=main";
 
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
