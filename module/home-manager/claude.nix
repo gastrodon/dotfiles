@@ -108,8 +108,18 @@ let
     };
     settings = {
       model = {
-        default = "best";
-        plan = "claude-opus-4-6";
+        default = "opus";
+        agent = "haiku";
+        plan = "best";
+        advisor = "best";
+        fallback = {
+          claude-fable-5 = [
+            "opus-4-8"
+            "opus-4-7"
+            "opus-4-6"
+            "sonnet-5"
+          ];
+        };
       };
       effortLevel = "low";
       enabledPlugins = {
