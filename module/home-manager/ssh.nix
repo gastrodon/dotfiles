@@ -16,6 +16,10 @@
         addKeysToAgent = "yes";
         extraOptions.SetEnv = "TERM=xterm-256color";
       };
+
+      stone.hostname = "192.168.0.77";
+      server.hostname = "192.168.0.116";
+      twink.hostname = "192.168.0.122";
     };
   };
 

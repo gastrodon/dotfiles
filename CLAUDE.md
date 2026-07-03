@@ -8,6 +8,27 @@ When asked to install a package, change a setting, add a program, configure a se
 
 **Never leave removal comments in source.** When code is removed or migrated, delete it cleanly — no `# deprecated`, `# removed`, `# was here`, `# no longer`, or similar tombstone comments. If the context matters, it belongs in a git commit message, not the source file.
 
+## Critical: The eva-ring — secret decryption is eva-only
+
+Claude does not have decrypt access to sops secrets. Only `eva` holds the age key (derived from `~/.ssh/id_ed25519`). This decryption boundary is the "eva-ring": secret plaintext stays inside it, and the `claude` user account (or anything it can reach) stays outside it.
+
+**In-ring (eva-only) activities:**
+- Building and applying the `stone`, `twink`, and `server` NixOS configs (`nixos-rebuild`, `sops` edit/decrypt). These hosts consume `secrets.yaml`, so their apply loop is eva-ring by definition.
+- Editing `secrets.yaml` / `.sops.yaml`.
+- Anything requiring the eva age key.
+
+**Rules Claude must follow:**
+- Never add an eva-age identity to the recipients in `.sops.yaml` (eva's age key).
+- Never wire eva's `sops.secrets.*` into `module/claude-user.nix` or any module a `claude`-scoped account consumes.
+- Claude's own secrets (age key, SSH key, credentials) belong in `secrets.claude.yaml`, encrypted with eva + claude's age keys. Nix can decrypt these at evaluation time (eva's system).
+- Never commit claude's age key or SSH privkey as plaintext — `secrets.claude.yaml` must always be encrypted.
+
+**How it works:**
+- `secrets.claude.yaml` is encrypted with both eva and claude's age keys, allowing eva to manage and update claude's credentials.
+- sops-nix decrypts `secrets.claude.yaml` at system evaluation time (on eva's machines) and makes the secrets available to modules (e.g., for openssh.authorizedKeys).
+- The `claude` user can decrypt `secrets.claude.yaml` using its own age key (stored at `/home/claude/.config/sops/age/keys.txt`) for local use.
+- Claude (the AI) never sees plaintext secrets — they flow through sops-nix only.
+
 ## Testing Changes
 
 ```bash

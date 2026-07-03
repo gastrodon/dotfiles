@@ -1,10 +1,8 @@
 { palette, free-code, obsidian-local-rest-api }:
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}:
+{ config, pkgs, lib, ... }:
+let
+  sshModule = import ./ssh.nix { inherit pkgs lib; };
+in
 
 {
   home-manager = {
@@ -101,6 +99,22 @@
           };
         };
       };
+
+      home.file.".claude/project.md".text =
+        let
+          hostnames = builtins.sort builtins.lessThan (builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.matchBlocks));
+          hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
+        in
+        ''
+          # SSH & Remote Access
+
+          **SSH as**: `claude@<hostname>` — available hosts: ${hostnamesList}
+
+          Uses eva's identity; claude user on remotes has authorized pubkey from `secrets.claude.yaml`.
+
+          **Secrets**: You can access `secrets.claude.yaml` (your keys/credentials). You cannot access `secrets.yaml` (eva-ring only).
+        '';
+
 
       home.stateVersion = "25.11";
 

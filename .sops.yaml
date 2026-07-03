@@ -1,8 +1,14 @@
 keys:
   - &eva age1l4ryz3p32ylrgf98s46d2hgj0q8plcdnxa74h5gda0msmu06zuds6xeyjc
   - &stone age1swzurp0slgznhx7s8w9hjk3t6ncgguy8z7xumw8pcf5lrun8lycqct6yg5
+  - &claude age18z7vvsrxhkxt7drrk8m7kjz2ume2308dacxu5jl0yhrkxkeccglqgrgr2m
 
 creation_rules:
+  - path_regex: '^secrets\.claude\.yaml$'
+    key_groups:
+      - age:
+          - *eva
+          - *claude
   - path_regex: '.+\.yaml$'
     key_groups:
       - age:

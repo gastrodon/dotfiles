@@ -9,6 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ./disks.nix
+    ../../module/claude-user.nix
   ];
 
   networking.hostName = "server";

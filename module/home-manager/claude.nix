@@ -63,15 +63,15 @@ let
   # Build mcp-obsidian from source
   obsidianLocalRestApiPkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
 
-  obsidianMcpWrapper = pkgs.writeShellApplication {
-    name = "obsidian-mcp-server-wrapped";
-    runtimeInputs = [ obsidianLocalRestApiPkg ];
-    text = ''
-      OBSIDIAN_API_KEY="$(< /run/secrets/obsidian/api-key)"
-      export OBSIDIAN_API_KEY
-      exec mcp-obsidian "$@"
-    '';
-  };
+  # obsidianMcpWrapper = pkgs.writeShellApplication {
+  #   name = "obsidian-mcp-server-wrapped";
+  #   runtimeInputs = [ obsidianLocalRestApiPkg ];
+  #   text = ''
+  #     OBSIDIAN_API_KEY="$(< /run/secrets/obsidian/api-key)"
+  #     export OBSIDIAN_API_KEY
+  #     exec mcp-obsidian "$@"
+  #   '';
+  # };
 
   emailMcpWrapper = pkgs.writeShellApplication {
     name = "email-mcp-wrapped";
@@ -102,16 +102,19 @@ let
           (builtins.concatStringsSep "," githubMcpToolsets)
         ];
       };
-      obsidian = {
-        command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
-      };
+      # obsidian = {
+      #   command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
+      # };
     };
     settings = {
       model = {
-        default = "claude-haiku-4-5";
+        default = "best";
         plan = "claude-opus-4-6";
       };
-      effortLevel = "medium";
+      effortLevel = "low";
+      enabledPlugins = {
+        "gopls-lsp@claude-plugins-official" = true;
+      };
       attribution = {
         commit = "";
         pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
