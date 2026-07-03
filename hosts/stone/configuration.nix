@@ -8,9 +8,12 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../module/avahi.nix
+    ../../module/nomad-client.nix
   ];
 
   networking.hostName = "stone";
+  services.nomadClient.datacenter = "stone";
 
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;

@@ -138,12 +138,6 @@
       };
 
       # RPi SD card images
-      nixosConfigurations.rpi2b = mkRpiImage {
-        system = "armv7l-linux";
-        sdModule = "sd-image-armv7l-multiplatform.nix";
-        configPath = ./hosts/rpi2b/configuration.nix;
-      };
-
       nixosConfigurations.rpi3b-plus = mkRpiImage {
         system = "aarch64-linux";
         sdModule = "sd-image-aarch64.nix";

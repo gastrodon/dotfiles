@@ -52,11 +52,6 @@
   };
 
   # Claude user secrets (only on hosts where claude user exists)
-  sops.secrets."claude/ssh_pubkey" = lib.mkIf (config.users.users ? claude) {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-  };
-
   sops.secrets."claude/ssh_privkey" = lib.mkIf (config.users.users ? claude) {
     sopsFile = ../secrets.claude.yaml;
     format = "yaml";

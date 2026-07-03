@@ -1,14 +1,12 @@
 # Unprivileged `claude` user for the Claude Code agent to SSH into.
-# No wheel, no sudo — pubkey is decrypted from sops.
-{ config, pkgs, lib, ... }
+# No wheel, no sudo — pubkey lives in ../keys/claude.pub (public by definition).
+{ pkgs, lib, ... }:
 {
   users.users.claude = {
     isNormalUser = true;
     description = "Claude Code agent";
     shell = pkgs.bash;
-    openssh.authorizedKeys.keys = [
-      (lib.strings.chomp (builtins.readFile config.sops.secrets."claude/ssh_pubkey".path))
-    ];
+    openssh.authorizedKeys.keyFiles = [ ../keys/claude.pub ];
   };
 
   # Create .ssh directory and set permissions
