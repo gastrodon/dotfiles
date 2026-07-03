@@ -35,5 +35,9 @@
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness"
     ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="049f", ATTRS{idProduct}=="505e", MODE="0660", GROUP="plugdev", TAG+="uaccess"
   '';
+
+  # Hantek DSO2C10 oscilloscope: USB-TMC class device, talks SCPI via /dev/usbtmc0
+  boot.kernelModules = [ "usbtmc" ];
 }
