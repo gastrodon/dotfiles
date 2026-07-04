@@ -129,6 +129,7 @@ let
         commit = "";
         pr = "🌴 Built with love in [South Carolina](https://sc.gov/visitors)";
       };
+      env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
       sandbox.enabled = false;
       autoMemoryEnabled = true;
       autoDreamEnabled = true;
