@@ -10,6 +10,7 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/nomad-client.nix
+    ../../module/waydroid.nix
   ];
 
   networking.hostName = "stone";
