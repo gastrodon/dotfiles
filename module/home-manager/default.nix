@@ -8,6 +8,7 @@ in
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
+    backupFileExtension = "old";
 
     extraSpecialArgs = {
       identity = config.identity;
