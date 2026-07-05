@@ -27,7 +27,7 @@
     ];
     startup = [
       {
-        command = "${pkgs.xorg.xrandr}/bin/xrandr --output DP-4 --auto --output DP-0 --auto --right-of DP-4 --output DP-3 --auto --above DP-0";
+        command = "${pkgs.xorg.xrandr}/bin/xrandr --output DP-4 --mode 2560x1440 --rotate right --pos 0x1080 --output DP-0 --primary --mode 1920x1080 --rotate normal --pos 880x0 --output DP-3 --mode 2560x1440 --rotate normal --pos 1440x1763";
         notification = false;
       }
     ];
