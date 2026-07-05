@@ -18,7 +18,7 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.4";
+    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.5";
 
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -32,6 +32,11 @@
       url = "github:auto-patcher/obsidian-local-rest-api";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
+    };
+
+    ifunny-re = {
+      url = "git+ssh://git@github.com/open-ifunny/app-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -91,6 +96,7 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
+          inputs.ifunny-re.nixosModules.waydroid
         ];
       };
 
@@ -134,6 +140,7 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
+          inputs.ifunny-re.nixosModules.waydroid
         ];
       };
 

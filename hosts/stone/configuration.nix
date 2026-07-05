@@ -10,8 +10,9 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/nomad-client.nix
-    ../../module/waydroid.nix
   ];
+
+  ifunnyRe.waydroidUser = config.identity.username;
 
   networking.hostName = "stone";
   services.nomadClient.datacenter = "stone";

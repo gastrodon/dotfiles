@@ -9,8 +9,9 @@
   imports = [
     ./hardware-configuration.nix
     ../../module/bluetooth.nix
-    ../../module/waydroid.nix
   ];
+
+  ifunnyRe.waydroidUser = config.identity.username;
 
   networking.hostName = "twink";
 
