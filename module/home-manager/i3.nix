@@ -150,7 +150,7 @@ in
         bars = [
           {
             position = "bottom";
-            statusCommand = "i3blocks -c ${config.home.homeDirectory}/.config/i3/i3blocks.conf";
+            statusCommand = "i3blocks -c ${config.home.homeDirectory}/.config/i3blocks/config";
             fonts = {
               names = [ "Noto Sans Regular" ];
               size = 10.0;
