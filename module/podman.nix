@@ -10,4 +10,6 @@
   virtualisation.containers.policy = {
     default = [ { type = "insecureAcceptAnything"; } ];
   };
+
+  environment.systemPackages = [ pkgs.podman-compose ];
 }
