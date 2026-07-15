@@ -12,6 +12,10 @@
     ../../module/nomad-client.nix
   ];
 
+  home-manager.users.${config.identity.username}.imports = [
+    ../../module/home-manager/claude.nix
+  ];
+
   ifunnyRe.waydroidUser = config.identity.username;
 
   networking.hostName = "stone";

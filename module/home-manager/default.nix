@@ -30,7 +30,6 @@ in
         ./i3.nix
         ./i3blocks.nix
         ./xresources.nix
-        ./claude.nix
         ./passage.nix
         ./3d-print.nix
       ];
