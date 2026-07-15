@@ -106,4 +106,12 @@
       size = 16 * 1024;
     }
   ];
+
+  environment.systemPackages = [
+    pkgs.prismlauncher
+    # Extra JDKs kept in the closure so Prism's Java auto-detect can pick them
+    # for modpacks that need something other than the launcher's bundled 21.
+    pkgs.jdk8
+    pkgs.jdk25
+  ];
 }

@@ -1,5 +1,35 @@
 {
   "nodes": {
+    "bun2nix": {
+      "inputs": {
+        "flake-parts": "flake-parts_2",
+        "nixpkgs": [
+          "ifunny-re",
+          "ifunny-cli",
+          "nixpkgs"
+        ],
+        "systems": [
+          "ifunny-re",
+          "ifunny-cli",
+          "systems"
+        ],
+        "treefmt-nix": "treefmt-nix_2"
+      },
+      "locked": {
+        "lastModified": 1782772816,
+        "narHash": "sha256-s9BuFv0mRuZx9C1MF8qPHRdcAK14ONi0A5m6E2wqOoM=",
+        "owner": "nix-community",
+        "repo": "bun2nix",
+        "rev": "5a39d717029e94163ac223aee8d5c9946cafed1c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "2.1.1",
+        "repo": "bun2nix",
+        "type": "github"
+      }
+    },
     "cachix": {
       "inputs": {
         "devenv": [
@@ -64,10 +94,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "narHash": "sha256-Fi7lW+sg1ChduOOQRBCK5JeA1cw4x5wSjIJcppRGGqQ=",
+        "lastModified": 1783461239,
+        "narHash": "sha256-O+rwg3jreOAOrYd0YrNoOsRu+8is6TCPCIBN3qJTJpM=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "e30eb49258bee68353bd9c619823f635f4afa86c",
+        "rev": "6222c499fe28b87665af2bb6c626da64179cee00",
         "type": "github"
       },
       "original": {
@@ -81,11 +112,11 @@
         "nixpkgs-src": "nixpkgs-src_2"
       },
       "locked": {
-        "lastModified": 1782924808,
-        "narHash": "sha256-tn2ahNv3ZNXyVHdPx/uw+N0xa7YSMtXUr6OEvu+s8ng=",
+        "lastModified": 1783345554,
+        "narHash": "sha256-LZhOm4kqjHUnwP4CNHpaqqEVcumGNd1PvOEOad8LkS0=",
         "owner": "cachix",
         "repo": "devenv-nixpkgs",
-        "rev": "e2c881cb8d5f1cac6cef9d71f0d450a55691b999",
+        "rev": "6004ea8c229fe9d41b21c6f4c76bf6c2e10771dd",
         "type": "github"
       },
       "original": {
@@ -155,6 +186,29 @@
     "flake-parts_2": {
       "inputs": {
         "nixpkgs-lib": [
+          "ifunny-re",
+          "ifunny-cli",
+          "bun2nix",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1777988971,
+        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "flake-parts_3": {
+      "inputs": {
+        "nixpkgs-lib": [
           "nur",
           "nixpkgs"
         ]
@@ -209,22 +263,40 @@
         "type": "github"
       }
     },
+    "flake-utils_3": {
+      "inputs": {
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "free-code": {
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1783128997,
-        "narHash": "sha256-Y63ymr0XwITB5I6fQmiqmhsG740ug24svH4+5FwMBZo=",
-        "ref": "refs/tags/0.2.4",
-        "rev": "f030057fffe2e81aefb474126fab2aab05766ee4",
-        "revCount": 91,
+        "lastModified": 1783148632,
+        "narHash": "sha256-iedW2Id/KVAEsXGru6FK8t+QTOxPzSxt1tNxcgQcG0o=",
+        "ref": "refs/tags/0.2.5",
+        "rev": "3de70c069b35806918a6ed442dd24c175d981f51",
+        "revCount": 93,
         "type": "git",
         "url": "ssh://git@github.com/gastrodon/free-code"
       },
       "original": {
-        "ref": "refs/tags/0.2.4",
+        "ref": "refs/tags/0.2.5",
         "type": "git",
         "url": "ssh://git@github.com/gastrodon/free-code"
       }
@@ -289,6 +361,52 @@
         "ref": "release-25.11",
         "repo": "home-manager",
         "type": "github"
+      }
+    },
+    "ifunny-cli": {
+      "inputs": {
+        "bun2nix": "bun2nix",
+        "nixpkgs": [
+          "ifunny-re",
+          "nixpkgs"
+        ],
+        "systems": "systems_4"
+      },
+      "locked": {
+        "lastModified": 1783234980,
+        "narHash": "sha256-OrNNxyt4mkT9TTfxv35s/IoSbny3s2hIo2NIwMpI//U=",
+        "ref": "refs/heads/main",
+        "rev": "a31ac6fbcc4649e466854b4b222bb637afdd48a9",
+        "revCount": 34,
+        "type": "git",
+        "url": "ssh://git@github.com/open-ifunny/cli"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/open-ifunny/cli"
+      }
+    },
+    "ifunny-re": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "ifunny-cli": "ifunny-cli",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "waydroid-script": "waydroid-script"
+      },
+      "locked": {
+        "lastModified": 1783279651,
+        "narHash": "sha256-IW/eSAbjCC/dSF6qmONLxr9HrG0G1BuORboHdZx8/eY=",
+        "ref": "refs/heads/main",
+        "rev": "ab1811b4a2e8ee8cdb6445a5bac537c94c865d87",
+        "revCount": 12,
+        "type": "git",
+        "url": "ssh://git@github.com/open-ifunny/app-tools"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/open-ifunny/app-tools"
       }
     },
     "nix": {
@@ -396,11 +514,11 @@
     "nixpkgs-src_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1782636521,
-        "narHash": "sha256-OG8laCOGtkxlB1JH3XqOnXxnkGJme4mQdXo5hkhCQIY=",
+        "lastModified": 1783279667,
+        "narHash": "sha256-/NAkDSsve+GNM0Bt6tleJdCGfsTlK89nPjkVOzZMo0s=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e1c1b84752fb0897897380a3cae9dc7fcab91ca3",
+        "rev": "f205b5574fd0cb7da5b702a2da51507b7f4fdd1b",
         "type": "github"
       },
       "original": {
@@ -444,11 +562,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1782959384,
-        "narHash": "sha256-xnJJk+ct+D2+wdRxj1wk36w5zV9RVESwRqcklPdt3fM=",
+        "lastModified": 1783224372,
+        "narHash": "sha256-8i/87eeoqiGE4yOTjwSA3Eh/ziJRQEmd/unYU+K27sk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "65179426c83bb3f6bc14898b42ea1c6f01d374b0",
+        "rev": "d407951447dcd00442e97087bf374aad70c04cea",
         "type": "github"
       },
       "original": {
@@ -460,15 +578,15 @@
     },
     "nur": {
       "inputs": {
-        "flake-parts": "flake-parts_2",
+        "flake-parts": "flake-parts_3",
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1783128872,
-        "narHash": "sha256-+UWqUJRonkJ2bU+RG/i0zNLEmuJt02KQnWCjmpXOzjo=",
+        "lastModified": 1783470252,
+        "narHash": "sha256-rs6FbjBH5r8XD/mf/+/4BLhEFvhOMVLMhHZS7i5/ySY=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "0a6e743d790af29825544ea0125e828a76fa18f5",
+        "rev": "941c4bf4b51d60395ac88c463dac9820fafcb2a4",
         "type": "github"
       },
       "original": {
@@ -508,6 +626,7 @@
         "flake-utils": "flake-utils",
         "free-code": "free-code",
         "home-manager": "home-manager",
+        "ifunny-re": "ifunny-re",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
         "obsidian-local-rest-api": "obsidian-local-rest-api",
@@ -542,11 +661,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783104586,
-        "narHash": "sha256-vSLKc7m34/g5xH4dwmNZSqxc5OcHeE3qiG3EIz6bJKs=",
+        "lastModified": 1783174389,
+        "narHash": "sha256-aCWC8ngycU7OdJrU2+Je3qf+1a2ykuBvpPhZT/9tXMc=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "1ebd41717762d837d5115f7108522c29cdb00fbb",
+        "rev": "f1406619a3884cd5c47992a70b8b35c9c0fcb4c9",
         "type": "github"
       },
       "original": {
@@ -585,6 +704,36 @@
         "type": "github"
       }
     },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_4": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
@@ -604,6 +753,45 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "treefmt-nix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "ifunny-re",
+          "ifunny-cli",
+          "bun2nix",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775636079,
+        "narHash": "sha256-pc20NRoMdiar8oPQceQT47UUZMBTiMdUuWrYu2obUP0=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "790751ff7fd3801feeaf96d7dc416a8d581265ba",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "waydroid-script": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767603363,
+        "narHash": "sha256-zSHZlhHJHWZRE3I5pYWhD4o8aNpa8rTiEtl2qJTuRjw=",
+        "owner": "casualsnek",
+        "repo": "waydroid_script",
+        "rev": "d5289cfd8929e86e7f0dc89ecadcef8b66930eec",
+        "type": "github"
+      },
+      "original": {
+        "owner": "casualsnek",
+        "repo": "waydroid_script",
         "type": "github"
       }
     }
