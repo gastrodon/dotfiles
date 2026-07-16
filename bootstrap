@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # ./bootstrap <hostname> <ip1> [ip2 ...]
+# ./bootstrap --host [hostname]
 #
 # Provision one or more targets (running NixOS with an `eva` user we can ssh to)
 # as `<hostname>`. Each target gets:
@@ -12,19 +13,77 @@
 #   4. `./build switch <hostname>` from that checkout (which activates the
 #      claude user), then chown the tree to claude:users
 #
+# Secrets are decrypted locally (via sops + your age key) into temp files and
+# shipped to each target via scp. The remote script itself contains no key
+# material — it just `install`s the pre-shipped files into place. This means
+# any machine with your age key can bootstrap any target.
+#
+# `--host` mode is for a machine you're already on (e.g. stone, twink) where
+# steps 3/4 don't apply — it just plants the two keys locally, no ssh. Follow
+# up yourself with `sudo ./build switch [hostname]`. Hostname defaults to
+# `$(hostname)`.
+#
 # Idempotent — safe to re-run. No target-specific state is written into git.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+AGE_KEY_FILE=""
+SSH_KEY_FILE=""
+REMOTE_SCRIPT=""
+cleanup() {
+  [ -n "$AGE_KEY_FILE" ] && rm -f "$AGE_KEY_FILE"
+  [ -n "$SSH_KEY_FILE" ] && rm -f "$SSH_KEY_FILE"
+  [ -n "$REMOTE_SCRIPT" ] && rm -f "$REMOTE_SCRIPT"
+  return 0
+}
+trap cleanup EXIT
+
+extract_keys() {
+  AGE_KEY_FILE="$(mktemp)"
+  SSH_KEY_FILE="$(mktemp)"
+
+  echo "Extracting claude age key from secrets.claude.yaml..."
+  sops -d --extract '["claude"]["age_key"]' "$SCRIPT_DIR/secrets.claude.yaml" > "$AGE_KEY_FILE"
+  if [ ! -s "$AGE_KEY_FILE" ]; then
+    echo "Failed to extract claude age key. Is your sops setup working?" >&2
+    exit 1
+  fi
+
+  echo "Extracting claude ssh privkey from secrets.claude.yaml..."
+  sops -d --extract '["claude"]["ssh_privkey"]' "$SCRIPT_DIR/secrets.claude.yaml" > "$SSH_KEY_FILE"
+  if [ ! -s "$SSH_KEY_FILE" ]; then
+    echo "Failed to extract claude ssh privkey. Is your sops setup working?" >&2
+    exit 1
+  fi
+}
+
+plant_keys_local() {
+  sudo install -d -m 700 -o root -g root /var/lib/sops-nix
+  sudo install -m 400 -o root -g root "$AGE_KEY_FILE" /var/lib/sops-nix/bootstrap-key.txt
+  sudo install -m 400 -o root -g root "$SSH_KEY_FILE" /var/lib/sops-nix/github-deploy-key
+}
+
+if [ "${1:-}" = "--host" ]; then
+  HOSTNAME="${2:-$(hostname)}"
+  echo "=== Bootstrapping $(hostname) as $HOSTNAME (local, no ssh) ==="
+  sudo -v
+  extract_keys
+  echo "Planting keys under /var/lib/sops-nix/..."
+  plant_keys_local
+  echo "=== done. Run 'sudo ./build switch $HOSTNAME' to apply. ==="
+  exit 0
+fi
+
 if [ $# -lt 2 ]; then
   echo "Usage: $0 <hostname> <ip1> [ip2 ...]" >&2
+  echo "       $0 --host [hostname]" >&2
   exit 1
 fi
 
 HOSTNAME="$1"
 shift
 IPS=("$@")
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 REPO_URL="https://github.com/gastrodon/dotfiles"
 
@@ -33,48 +92,66 @@ SSH_OPTS=(
   -o "ConnectTimeout=10"
 )
 
-echo "Extracting claude age key from secrets.claude.yaml..."
-AGE_KEY="$(sops -d --extract '["claude"]["age_key"]' "$SCRIPT_DIR/secrets.claude.yaml")"
+# Preflight uses BatchMode=yes, which refuses to prompt for a passphrase — so
+# the key needs to already be unlocked in the agent before we get there.
+SSH_KEY="$HOME/.ssh/id_ed25519"
+if [ -f "$SSH_KEY" ]; then
+  agent_status=0
+  ssh-add -l >/dev/null 2>&1 || agent_status=$?
+  if [ "$agent_status" = 2 ]; then
+    echo "No ssh-agent running; starting one for this session..."
+    eval "$(ssh-agent -s)" >/dev/null
+  fi
 
-if [ -z "$AGE_KEY" ]; then
-  echo "Failed to extract claude age key. Is your sops setup working?" >&2
-  exit 1
+  FINGERPRINT="$(ssh-keygen -lf "$SSH_KEY" | awk '{print $2}')"
+  if ! ssh-add -l 2>/dev/null | grep -q "$FINGERPRINT"; then
+    echo "Unlocking $SSH_KEY (agent doesn't have it — needed for the non-interactive ssh calls below)..."
+    ssh-add "$SSH_KEY"
+  fi
 fi
 
-echo "Extracting claude ssh privkey from secrets.claude.yaml..."
-SSH_PRIVKEY="$(sops -d --extract '["claude"]["ssh_privkey"]' "$SCRIPT_DIR/secrets.claude.yaml")"
+extract_keys
 
-if [ -z "$SSH_PRIVKEY" ]; then
-  echo "Failed to extract claude ssh privkey. Is your sops setup working?" >&2
-  exit 1
-fi
+# Remote orchestration script — no secrets, just moves the staged key files
+# into place and runs the switch. Uploaded alongside the keys per host.
+REMOTE_SCRIPT="$(mktemp)"
+cat > "$REMOTE_SCRIPT" <<REMOTE
+set -euo pipefail
+sudo -v
+
+echo "  -> installing keys into /var/lib/sops-nix/..."
+sudo install -d -m 700 -o root -g root /var/lib/sops-nix
+sudo install -m 400 -o root -g root /tmp/bootstrap-key.txt.staged /var/lib/sops-nix/bootstrap-key.txt
+sudo install -m 400 -o root -g root /tmp/github-deploy-key.staged /var/lib/sops-nix/github-deploy-key
+shred -u /tmp/bootstrap-key.txt.staged /tmp/github-deploy-key.staged 2>/dev/null || rm -f /tmp/bootstrap-key.txt.staged /tmp/github-deploy-key.staged
+
+echo "  -> clobber-cloning dotfiles into /home/claude/dotfiles..."
+sudo mkdir -p /home/claude
+sudo rm -rf /home/claude/dotfiles
+sudo git clone $REPO_URL /home/claude/dotfiles
+
+echo "  -> running ./build switch $HOSTNAME..."
+sudo env NIXPKGS_ALLOW_UNFREE=1 GIT_SSH_COMMAND='ssh -i /var/lib/sops-nix/github-deploy-key -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes' /home/claude/dotfiles/build switch $HOSTNAME
+
+echo "  -> handing /home/claude/dotfiles to claude:users..."
+sudo chown -R claude:users /home/claude/dotfiles
+REMOTE
 
 for ip in "${IPS[@]}"; do
   echo ""
   echo "=== Bootstrapping $ip as $HOSTNAME ==="
 
-  echo "[1/5] Preflight: verifying ssh eva@$ip..."
+  echo "[1/3] Preflight: verifying ssh eva@$ip..."
   ssh "${SSH_OPTS[@]}" -o "BatchMode=yes" "eva@$ip" true
 
-  echo "[2/5] Planting keys under /var/lib/sops-nix/..."
-  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
-    'sudo install -d -m 700 -o root -g root /var/lib/sops-nix'
-  printf '%s\n' "$AGE_KEY" | ssh "${SSH_OPTS[@]}" "eva@$ip" \
-    'sudo tee /var/lib/sops-nix/bootstrap-key.txt >/dev/null && sudo chmod 400 /var/lib/sops-nix/bootstrap-key.txt && sudo chown root:root /var/lib/sops-nix/bootstrap-key.txt'
-  printf '%s\n' "$SSH_PRIVKEY" | ssh "${SSH_OPTS[@]}" "eva@$ip" \
-    'sudo tee /var/lib/sops-nix/github-deploy-key >/dev/null && sudo chmod 400 /var/lib/sops-nix/github-deploy-key && sudo chown root:root /var/lib/sops-nix/github-deploy-key'
+  echo "[2/3] Uploading keys and bootstrap script..."
+  scp -p "${SSH_OPTS[@]}" "$AGE_KEY_FILE" "eva@$ip:/tmp/bootstrap-key.txt.staged"
+  scp -p "${SSH_OPTS[@]}" "$SSH_KEY_FILE" "eva@$ip:/tmp/github-deploy-key.staged"
+  scp -p "${SSH_OPTS[@]}" "$REMOTE_SCRIPT" "eva@$ip:/tmp/dotfiles-bootstrap.sh"
 
-  echo "[3/5] Clobber-cloning dotfiles into /home/claude/dotfiles..."
+  echo "[3/3] Executing (single sudo prompt)..."
   ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
-    "sudo mkdir -p /home/claude && sudo rm -rf /home/claude/dotfiles && sudo git clone $REPO_URL /home/claude/dotfiles"
-
-  echo "[4/5] Running ./build switch $HOSTNAME..."
-  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
-    "sudo env NIXPKGS_ALLOW_UNFREE=1 GIT_SSH_COMMAND='ssh -i /var/lib/sops-nix/github-deploy-key -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes' /home/claude/dotfiles/build switch $HOSTNAME"
-
-  echo "[5/5] Handing /home/claude/dotfiles to claude:users..."
-  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
-    'sudo chown -R claude:users /home/claude/dotfiles'
+    'bash /tmp/dotfiles-bootstrap.sh; rc=$?; shred -u /tmp/dotfiles-bootstrap.sh 2>/dev/null || rm -f /tmp/dotfiles-bootstrap.sh; exit $rc'
 
   echo "=== $ip: done ==="
 done
