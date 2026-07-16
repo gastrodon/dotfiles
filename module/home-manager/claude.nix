@@ -6,6 +6,8 @@
   ...
 }:
 let
+  hosts = import ../hosts.nix;
+
   # Available GitHub MCP toolsets:
   #   context          - current user and teams
   #   repos            - files, branches, commits, releases, search
@@ -73,6 +75,18 @@ let
   #   '';
   # };
 
+  sshMcpWrapper = pkgs.writeShellApplication {
+    name = "ssh-mcp-wrapped";
+    runtimeInputs = [ pkgs.nodejs_24 ];
+    text = ''
+      exec npx -y ssh-mcp -- \
+        --host=${hosts.server} \
+        --user=claude \
+        --key=/run/secrets/claude-ssh-privkey-local \
+        "$@"
+    '';
+  };
+
   emailMcpWrapper = pkgs.writeShellApplication {
     name = "email-mcp-wrapped";
     runtimeInputs = [ pkgs.nodejs_24 ];
@@ -101,6 +115,9 @@ let
           "--toolsets"
           (builtins.concatStringsSep "," githubMcpToolsets)
         ];
+      };
+      ssh = {
+        command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
       };
       # obsidian = {
       #   command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";

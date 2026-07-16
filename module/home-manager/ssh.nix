@@ -3,7 +3,9 @@
   lib,
   ...
 }:
-
+let
+  hosts = import ../hosts.nix;
+in
 {
   programs.ssh = {
     enable = true;
@@ -17,9 +19,9 @@
         extraOptions.SetEnv = "TERM=xterm-256color";
       };
 
-      stone.hostname = "192.168.0.77";
-      server.hostname = "192.168.0.116";
-      twink.hostname = "192.168.0.122";
+      stone.hostname = hosts.stone;
+      server.hostname = hosts.server;
+      twink.hostname = hosts.twink;
     };
   };
 

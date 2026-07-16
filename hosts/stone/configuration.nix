@@ -10,11 +10,23 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/nomad-client.nix
+    ../../module/claude-user.nix
   ];
 
   home-manager.users.${config.identity.username}.imports = [
     ../../module/home-manager/claude.nix
   ];
+
+  # Eva-readable copy of claude's SSH privkey, for Claude Code (running as eva)
+  # to authenticate as claude@server via the ssh-mcp server. The claude-owned
+  # entry in module/sops.nix stays as-is for the claude user's own use.
+  sops.secrets."claude-ssh-privkey-local" = {
+    sopsFile = ../../secrets.claude.yaml;
+    key = "claude/ssh_privkey";
+    format = "yaml";
+    owner = config.identity.username;
+    mode = "0600";
+  };
 
   ifunnyRe.waydroidUser = config.identity.username;
 
