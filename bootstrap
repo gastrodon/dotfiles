@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# ./bootstrap <hostname> <ip1> [ip2 ...]
+#
+# Provision one or more targets (running NixOS with an `eva` user we can ssh to)
+# as `<hostname>`. Each target gets:
+#   1. claude's age privkey planted at /var/lib/sops-nix/bootstrap-key.txt so
+#      sops-nix can decrypt secrets.claude.yaml at activation time
+#   2. claude's ssh privkey planted at /var/lib/sops-nix/github-deploy-key so
+#      the nix daemon can fetch the private free-code flake input via
+#      GIT_SSH_COMMAND (deploy key on gastrodon/free-code)
+#   3. this repo clobber-cloned into /home/claude/dotfiles
+#   4. `./build switch <hostname>` from that checkout (which activates the
+#      claude user), then chown the tree to claude:users
+#
+# Idempotent — safe to re-run. No target-specific state is written into git.
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <hostname> <ip1> [ip2 ...]" >&2
+  exit 1
+fi
+
+HOSTNAME="$1"
+shift
+IPS=("$@")
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+REPO_URL="https://github.com/gastrodon/dotfiles"
+
+SSH_OPTS=(
+  -o "StrictHostKeyChecking=accept-new"
+  -o "ConnectTimeout=10"
+)
+
+echo "Extracting claude age key from secrets.claude.yaml..."
+AGE_KEY="$(sops -d --extract '["claude"]["age_key"]' "$SCRIPT_DIR/secrets.claude.yaml")"
+
+if [ -z "$AGE_KEY" ]; then
+  echo "Failed to extract claude age key. Is your sops setup working?" >&2
+  exit 1
+fi
+
+echo "Extracting claude ssh privkey from secrets.claude.yaml..."
+SSH_PRIVKEY="$(sops -d --extract '["claude"]["ssh_privkey"]' "$SCRIPT_DIR/secrets.claude.yaml")"
+
+if [ -z "$SSH_PRIVKEY" ]; then
+  echo "Failed to extract claude ssh privkey. Is your sops setup working?" >&2
+  exit 1
+fi
+
+for ip in "${IPS[@]}"; do
+  echo ""
+  echo "=== Bootstrapping $ip as $HOSTNAME ==="
+
+  echo "[1/5] Preflight: verifying ssh eva@$ip..."
+  ssh "${SSH_OPTS[@]}" -o "BatchMode=yes" "eva@$ip" true
+
+  echo "[2/5] Planting keys under /var/lib/sops-nix/..."
+  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
+    'sudo install -d -m 700 -o root -g root /var/lib/sops-nix'
+  printf '%s\n' "$AGE_KEY" | ssh "${SSH_OPTS[@]}" "eva@$ip" \
+    'sudo tee /var/lib/sops-nix/bootstrap-key.txt >/dev/null && sudo chmod 400 /var/lib/sops-nix/bootstrap-key.txt && sudo chown root:root /var/lib/sops-nix/bootstrap-key.txt'
+  printf '%s\n' "$SSH_PRIVKEY" | ssh "${SSH_OPTS[@]}" "eva@$ip" \
+    'sudo tee /var/lib/sops-nix/github-deploy-key >/dev/null && sudo chmod 400 /var/lib/sops-nix/github-deploy-key && sudo chown root:root /var/lib/sops-nix/github-deploy-key'
+
+  echo "[3/5] Clobber-cloning dotfiles into /home/claude/dotfiles..."
+  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
+    "sudo mkdir -p /home/claude && sudo rm -rf /home/claude/dotfiles && sudo git clone $REPO_URL /home/claude/dotfiles"
+
+  echo "[4/5] Running ./build switch $HOSTNAME..."
+  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
+    "sudo env NIXPKGS_ALLOW_UNFREE=1 GIT_SSH_COMMAND='ssh -i /var/lib/sops-nix/github-deploy-key -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes' /home/claude/dotfiles/build switch $HOSTNAME"
+
+  echo "[5/5] Handing /home/claude/dotfiles to claude:users..."
+  ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
+    'sudo chown -R claude:users /home/claude/dotfiles'
+
+  echo "=== $ip: done ==="
+done
+
+echo ""
+echo "Bootstrap complete for ${#IPS[@]} host(s)."

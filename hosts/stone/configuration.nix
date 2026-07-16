@@ -11,10 +11,7 @@
     ../../module/avahi.nix
     ../../module/nomad-client.nix
     ../../module/claude-user.nix
-  ];
-
-  home-manager.users.${config.identity.username}.imports = [
-    ../../module/home-manager/claude.nix
+    ../../module/claude-code.nix
   ];
 
   # Eva-readable copy of claude's SSH privkey, for Claude Code (running as eva)

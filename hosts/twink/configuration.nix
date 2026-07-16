@@ -9,10 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../module/bluetooth.nix
-  ];
-
-  home-manager.users.${config.identity.username}.imports = [
-    ../../module/home-manager/claude.nix
+    ../../module/claude-code.nix
   ];
 
   ifunnyRe.waydroidUser = config.identity.username;
