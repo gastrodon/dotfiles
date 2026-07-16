@@ -34,5 +34,15 @@
     rustfmt.enable = true;
     clippy.enable = true;
     nixfmt.enable = true;
+
+    ssh-ip-update = {
+      enable = true;
+      name = "ssh-ip-update";
+      entry = "${./hooks/pre-commit}";
+      language = "system";
+      pass_filenames = false;
+      always_run = true;
+      stages = [ "pre-commit" ];
+    };
   };
 }

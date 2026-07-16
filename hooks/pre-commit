@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Update module/home-manager/ssh.nix so this host's matchBlock hostname
+# reflects its current IPv4 on the default route. No-op if there's no
+# entry keyed on this hostname.
+set -euo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+ssh_config="$repo_root/module/home-manager/ssh.nix"
+
+[ -f "$ssh_config" ] || exit 0
+
+host=$(hostname)
+ip=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || true)
+
+[ -n "$ip" ] || exit 0
+
+pattern="^(\s*${host}\.hostname\s*=\s*\")[^\"]*(\";)"
+
+grep -qE "$pattern" "$ssh_config" || exit 0
+
+current=$(grep -oE "${host}\.hostname[[:space:]]*=[[:space:]]*\"[^\"]*\"" "$ssh_config" \
+  | head -n1 | grep -oP '"\K[^"]+')
+
+if [ "$current" != "$ip" ]; then
+  sed -i -E "s|${pattern}|\1${ip}\2|" "$ssh_config"
+  git add "$ssh_config"
+  echo "pre-commit: ${host}.hostname ${current} → ${ip}"
+fi
