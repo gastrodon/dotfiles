@@ -8,6 +8,7 @@
 }:
 let
   local = import ../package { inherit pkgs lib; };
+  clusterHosts = import ../module/hosts.nix;
 
   # Solarized Dark
   palette = {
@@ -58,6 +59,9 @@ in
   # hosts/<hostname>/configuration.nix
 
   networking.networkmanager.enable = true;
+  networking.extraHosts = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: ip: "${ip} ${name}") clusterHosts
+  );
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
 
