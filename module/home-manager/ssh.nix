@@ -7,6 +7,34 @@ let
   hosts = import ../hosts.nix;
 in
 {
+  services.ssh-agent.enable = true;
+
+  programs.zsh.initContent = ''
+    ssh-login() {
+      if (( $# == 0 )); then
+        local f
+        for f in ~/.ssh/id_*(N); do
+          [[ -f "$f" && "$f" != *.pub ]] && ssh-add "$f"
+        done
+      else
+        local name
+        for name in "$@"; do
+          ssh-add "$HOME/.ssh/$name"
+        done
+      fi
+    }
+
+    _ssh-login() {
+      local -a keys
+      local f
+      for f in ~/.ssh/id_*(N); do
+        [[ -f "$f" && "$f" != *.pub ]] && keys+=("''${f:t}")
+      done
+      compadd -a keys
+    }
+    compdef _ssh-login ssh-login
+  '';
+
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
