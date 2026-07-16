@@ -38,6 +38,11 @@
       url = "git+ssh://git@github.com/open-ifunny/app-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-minecraft = {
+      url = "github:Infinidoge/nix-minecraft";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -111,6 +116,8 @@
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
           disko.nixosModules.disko
+          inputs.nix-minecraft.nixosModules.minecraft-servers
+          { nixpkgs.overlays = [ inputs.nix-minecraft.overlays.default ]; }
         ];
       };
 

@@ -12,6 +12,7 @@
     ../../module/claude-user.nix
     ../../module/avahi.nix
     ../../module/nomad-server.nix
+    ../../module/minecraft-server.nix
   ];
 
   networking.hostName = "server";
