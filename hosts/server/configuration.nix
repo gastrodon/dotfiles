@@ -12,7 +12,7 @@
     ../../module/claude-user.nix
     ../../module/avahi.nix
     ../../module/nomad-server.nix
-    ../../module/minecraft-server.nix
+    ../../module/minecraft-server
     ../../module/actual.nix
   ];
 
