@@ -25,11 +25,13 @@ in
     }
 
     _ssh-login() {
-      local -a keys
+      local -a keys present
       local f
       for f in ~/.ssh/id_*(N); do
         [[ -f "$f" && "$f" != *.pub ]] && keys+=("''${f:t}")
       done
+      present=($words[2,-1])
+      keys=(''${keys:|present})
       compadd -a keys
     }
     compdef _ssh-login ssh-login
