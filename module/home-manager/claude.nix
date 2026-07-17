@@ -119,6 +119,14 @@ let
       ssh = {
         command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
       };
+      # MCP server running inside the `server` host's Minecraft JVM
+      # (KubeJS server_scripts, see package/mcp-kubejs). LAN-only, no
+      # auth — matches the trust model documented in that package's
+      # README.
+      minecraft = {
+        type = "http";
+        url = "http://${hosts.server}:25580/mcp";
+      };
       # obsidian = {
       #   command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
       # };
