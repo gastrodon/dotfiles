@@ -27,27 +27,45 @@ case "${1:-build}" in
     i3-msg restart 2>/dev/null || true
     ;;
   iso)
-    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
-      echo "Error: Unknown hostname '$HOSTNAME'"
-      echo "Set NIXOS_HOSTNAME=stone|twink|server to build an ISO for a specific host"
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: iso requires --auto or --live flag"
+      echo "Usage: $0 iso [--auto | --live] [hostname]"
       exit 1
     fi
-    echo "Building installer ISO for $HOSTNAME..."
-    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
-    echo "ISO at: $(readlink result)/iso/"
-    ;;
-  live-media)
-    if [[ "$HOSTNAME" != "server" ]]; then
-      echo "Error: live-media is only supported for server hostname"
-      exit 1
-    fi
-    echo "Building live-media ISO for $HOSTNAME..."
-    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-live-media.config.system.build.isoImage" --impure
-    echo "ISO at: $(readlink result)/iso/"
-    echo ""
-    echo "To dd onto USB media:"
-    echo "  dd if=$(readlink result)/iso/*.iso of=/dev/sdX bs=4M status=progress"
-    echo "  (replace /dev/sdX with your USB device)"
+
+    ISO_MODE="$2"
+    HOSTNAME="${3:-${NIXOS_HOSTNAME:-$(hostname)}}"
+
+    case "$ISO_MODE" in
+      --auto)
+        if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
+          echo "Error: Unknown hostname '$HOSTNAME'"
+          echo "Set NIXOS_HOSTNAME=stone|twink|server to build an ISO for a specific host"
+          exit 1
+        fi
+        echo "Building autoinstall ISO for $HOSTNAME..."
+        nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
+        echo "ISO at: $(readlink result)/iso/"
+        ;;
+      --live)
+        if [[ "$HOSTNAME" != "server" ]]; then
+          echo "Error: --live is only supported for server hostname"
+          exit 1
+        fi
+        echo "Building live-media ISO for $HOSTNAME..."
+        nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-live-media.config.system.build.isoImage" --impure
+        echo "ISO at: $(readlink result)/iso/"
+        echo ""
+        echo "To dd onto USB media:"
+        echo "  dd if=$(readlink result)/iso/*.iso of=/dev/sdX bs=4M status=progress"
+        echo "  (replace /dev/sdX with your USB device)"
+        ;;
+      *)
+        echo "Error: Unknown ISO mode '$ISO_MODE'"
+        echo "Usage: $0 iso [--auto | --live] [hostname]"
+        exit 1
+        ;;
+    esac
     ;;
   sdimage)
     if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
@@ -60,14 +78,19 @@ case "${1:-build}" in
     echo "SD image at: $(readlink result)/sd-image/"
     ;;
   *)
-    echo "Usage: $0 [build|switch|iso|live-media|sdimage] [hostname]"
-    echo "  build      - Build configuration (default), hostname: stone|twink|server"
-    echo "  switch     - Switch to new configuration, hostname: stone|twink|server"
-    echo "  iso        - Build installer ISO, hostname: stone|twink|server"
-    echo "  live-media - Build live-media ISO, hostname: server only"
-    echo "  sdimage    - Build SD card image, hostname: rpi2b|rpi3b-plus|rpi4b"
+    echo "Usage: $0 [build|switch|iso|sdimage] [options]"
+    echo "  build             - Build configuration (default)"
+    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
+    echo "  switch            - Switch to new configuration"
+    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
+    echo "  iso --auto        - Build autoinstall ISO"
+    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
+    echo "  iso --live        - Build live-media interactive ISO"
+    echo "                      hostname: server only"
+    echo "  sdimage           - Build SD card image"
+    echo "                      hostname: rpi2b|rpi3b-plus|rpi4b (or NIXOS_HOSTNAME=<hostname>)"
     echo ""
-    echo "Building for: $HOSTNAME (override with second arg or NIXOS_HOSTNAME=<hostname>)"
+    echo "Current hostname: $HOSTNAME"
     exit 1
     ;;
 esac
