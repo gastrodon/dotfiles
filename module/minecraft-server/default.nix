@@ -38,6 +38,11 @@ let
     "mods/rhino.jar" = rhino;
     "mods/ponderjs.jar" = ponderjs;
   };
+
+  # MCP server bundle that runs inside KubeJS (TS → es2015 IIFE). Serves
+  # MCP Streamable-HTTP on :25580 from the game JVM via tinyserver.
+  # See package/mcp-kubejs/README.md for the interface.
+  mcp-kubejs = import ../../package/mcp-kubejs { inherit pkgs lib; };
 in
 {
   services.minecraft-servers = {
@@ -62,14 +67,16 @@ in
 
         # KubeJS scripts. server_scripts/ auto-loads on world start;
         # /kubejs reload server_scripts hot-reloads. The rest of kubejs/
-        # (cache/, logs/, mcp/) is created by KubeJS/the bridge at runtime
-        # in the writable data dir alongside this symlink.
-        "kubejs/server_scripts/mcp_bridge.js" = ./bridge/mcp_bridge.js;
+        # (cache/, logs/) is created by KubeJS at runtime in the writable
+        # data dir alongside this symlink.
+        "kubejs/server_scripts/mcp_server.js" = "${mcp-kubejs}/mcp_server.js";
       };
 
       serverProperties = {
-        # Bind only to the LAN interface. No loopback, no WAN.
-        server-ip = "192.168.0.116";
+        # Bind by mDNS name — avahi publishes ${hostname}.local and
+        # nss-mdns lets the JVM resolve it to the LAN interface. Keeps
+        # us off loopback and off the WAN without a hardcoded IP.
+        server-ip = "${config.networking.hostName}.local";
         server-port = 25565;
 
         motd = "eva's create+";
@@ -86,6 +93,22 @@ in
         white-list = false;
         enable-command-block = true;
         view-distance = 12;
+        simulation-distance = 12;
+
+        # Trusted players only — kill spawn protection so we can build
+        # anywhere near 0,0, and disable PvP so Daniel-vs-eva collisions
+        # can't hurt anyone during scripted experiments.
+        spawn-protection = 0;
+        pvp = false;
+
+        # Many Create/mod scenarios trigger the flight check (elytra,
+        # jetpacks, contraption rides). Allow it rather than kicking.
+        allow-flight = true;
+
+        # Create contraptions and heavy modded chunkloads can blow past
+        # the 60s watchdog; -1 disables the kill so the server doesn't
+        # self-terminate mid-tick during long recipe processing.
+        max-tick-time = -1;
       };
 
       whitelist = { };
@@ -94,13 +117,8 @@ in
     };
   };
 
-  # The KubeJS bridge reads and writes JSON under kubejs/mcp/{in,out}/.
-  # Create the directories eagerly so the script can drop files on first
-  # tick without racing world load. Group-writable so other users on this
-  # box (e.g. the mcp-minecraft MCP server later) can drop request files.
-  systemd.tmpfiles.rules = [
-    "d /srv/minecraft/createplus/kubejs/mcp 0775 minecraft minecraft - -"
-    "d /srv/minecraft/createplus/kubejs/mcp/in 0775 minecraft minecraft - -"
-    "d /srv/minecraft/createplus/kubejs/mcp/out 0775 minecraft minecraft - -"
-  ];
+  # MCP endpoint served from inside the game JVM (kubejs/server_scripts).
+  # LAN-only trust model: the box has no WAN exposure, so an unauthed
+  # HTTP port here is bounded to the home network.
+  networking.firewall.allowedTCPPorts = [ 25580 ];
 }
