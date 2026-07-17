@@ -9,9 +9,23 @@ the Minecraft server JVM. Rhino is not V8. Read this before editing.
 esbuild lowers syntax to ES2015 (`?.`, `??`, etc. are fine in source),
 but it does **not** polyfill runtime features, and Rhino has no event loop:
 
-- **No `async`/`await`/`Promise`** — nothing to drive them; awaits hang.
-  Everything is synchronous. `tsconfig.json` sets `lib: ["ES2015"]` to
-  keep Promise-typed APIs out of reach at check time.
+- **No `async`/`await`/`Promise`, enforced at compile time.**
+  `dev.latvian.mods.rhino` (KubeJS's Rhino fork, checked directly in the
+  jar) ships no `NativePromise` class and no JS-level polyfill —
+  `Promise` is an undefined global at runtime. esbuild's downlevel
+  transform for `async`/`await` still calls `new Promise(...)` under the
+  hood (it's a generator + `__async` helper, not a from-scratch
+  synchronous rewrite), so unguarded async code would build cleanly and
+  throw `ReferenceError` the instant it first ran. `tsconfig.json`
+  deliberately omits `ES2015.Promise` from `lib` (while including the
+  rest of `ES2015.*` individually) so `Promise` only exists as an ambient
+  *type*, not a runtime value: `tsc --noEmit` now hard-errors on any
+  `async function`/method/arrow (TS2705/TS2468) and on `new Promise(...)`
+  / `Promise.resolve(...)` (TS2585) — the existing `tsc --noEmit` step in
+  `default.nix`'s buildPhase catches these before esbuild ever runs.
+  Type-only uses of `Promise<T>` (e.g. a signature nothing ever actually
+  constructs) still slip through, so this isn't airtight, but it catches
+  the code that would actually crash.
 - **No `setTimeout`/`setInterval`** — no timers. Delayed work goes through
   game ticks (`ServerEvents.tick`) or `server.scheduleInTicks`.
 - **No npm packages** — assume nothing beyond ES2015 builtins exists at

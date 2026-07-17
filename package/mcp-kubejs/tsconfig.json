@@ -3,7 +3,24 @@
     "target": "ES2015",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2015"],
+    // Deliberately omits ES2015.Promise: without it, `Promise` only
+    // exists as a type (still needed for ambient generics), not as a
+    // runtime value, so `new Promise(...)`/`Promise.resolve(...)` and
+    // any `async function`/method/arrow all become hard compiler errors
+    // (TS2585/TS2468/TS2705) instead of silently building and blowing up
+    // at runtime — Rhino has no Promise implementation at all. See
+    // CLAUDE.md.
+    "lib": [
+      "ES5",
+      "ES2015.Core",
+      "ES2015.Collection",
+      "ES2015.Generator",
+      "ES2015.Iterable",
+      "ES2015.Proxy",
+      "ES2015.Reflect",
+      "ES2015.Symbol",
+      "ES2015.Symbol.WellKnown"
+    ],
     "strict": true,
     "noEmit": true,
     "types": [],
