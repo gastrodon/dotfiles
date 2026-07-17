@@ -191,5 +191,17 @@
           { devenv.root = builtins.toString ./.; }
         ];
       };
+
+      packages.x86_64-linux =
+        let
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          local = import ./package { inherit pkgs; lib = nixpkgs.lib; };
+        in
+        local.cmd // { inherit (local) sys rend; };
+
+      apps.x86_64-linux = nixpkgs.lib.mapAttrs (name: pkg: {
+        type = "app";
+        program = "${pkg}/bin/${name}";
+      }) self.packages.x86_64-linux;
     };
 }
