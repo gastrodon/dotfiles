@@ -36,6 +36,19 @@ case "${1:-build}" in
     nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
     echo "ISO at: $(readlink result)/iso/"
     ;;
+  live-media)
+    if [[ "$HOSTNAME" != "server" ]]; then
+      echo "Error: live-media is only supported for server hostname"
+      exit 1
+    fi
+    echo "Building live-media ISO for $HOSTNAME..."
+    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-live-media.config.system.build.isoImage" --impure
+    echo "ISO at: $(readlink result)/iso/"
+    echo ""
+    echo "To dd onto USB media:"
+    echo "  dd if=$(readlink result)/iso/*.iso of=/dev/sdX bs=4M status=progress"
+    echo "  (replace /dev/sdX with your USB device)"
+    ;;
   sdimage)
     if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
       echo "Error: Unknown hostname '$HOSTNAME'"
@@ -47,11 +60,12 @@ case "${1:-build}" in
     echo "SD image at: $(readlink result)/sd-image/"
     ;;
   *)
-    echo "Usage: $0 [build|switch|iso|sdimage] [hostname]"
-    echo "  build    - Build configuration (default), hostname: stone|twink|server"
-    echo "  switch   - Switch to new configuration, hostname: stone|twink|server"
-    echo "  iso      - Build installer ISO, hostname: stone|twink|server"
-    echo "  sdimage  - Build SD card image, hostname: rpi2b|rpi3b-plus|rpi4b"
+    echo "Usage: $0 [build|switch|iso|live-media|sdimage] [hostname]"
+    echo "  build      - Build configuration (default), hostname: stone|twink|server"
+    echo "  switch     - Switch to new configuration, hostname: stone|twink|server"
+    echo "  iso        - Build installer ISO, hostname: stone|twink|server"
+    echo "  live-media - Build live-media ISO, hostname: server only"
+    echo "  sdimage    - Build SD card image, hostname: rpi2b|rpi3b-plus|rpi4b"
     echo ""
     echo "Building for: $HOSTNAME (override with second arg or NIXOS_HOSTNAME=<hostname>)"
     exit 1

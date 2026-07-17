@@ -18,7 +18,7 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.5";
+    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.6";
 
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -74,6 +74,20 @@
           ];
         };
 
+      mkLiveMedia =
+        { targetSystem, diskConfig }:
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit targetSystem diskConfig;
+            diskoPkg = disko.packages.x86_64-linux.disko;
+          };
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+            ./hosts/live-media.nix
+          ];
+        };
+
       mkRpiImage =
         {
           system,
@@ -123,6 +137,11 @@
 
       # Installer ISOs
       nixosConfigurations.server-installer = mkInstaller {
+        targetSystem = self.nixosConfigurations.server;
+        diskConfig = ./hosts/server/disks.nix;
+      };
+
+      nixosConfigurations.server-live-media = mkLiveMedia {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
       };

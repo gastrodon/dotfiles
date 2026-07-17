@@ -75,9 +75,41 @@ if [ "${1:-}" = "--host" ]; then
   exit 0
 fi
 
+if [ "${1:-}" = "--live-media" ]; then
+  if [ $# -lt 3 ]; then
+    echo "Usage: $0 --live-media <hostname> <ip>" >&2
+    exit 1
+  fi
+
+  HOSTNAME="$2"
+  IP="$3"
+
+  SSH_OPTS=(
+    -o "StrictHostKeyChecking=accept-new"
+    -o "ConnectTimeout=10"
+  )
+
+  extract_keys
+
+  echo ""
+  echo "=== Bootstrapping $IP as $HOSTNAME (live-media) ==="
+
+  echo "[1/2] Uploading keys..."
+  scp -p "${SSH_OPTS[@]}" "$AGE_KEY_FILE" "eva@$IP:/tmp/bootstrap-key.txt.staged"
+  scp -p "${SSH_OPTS[@]}" "$SSH_KEY_FILE" "eva@$IP:/tmp/github-deploy-key.staged"
+
+  echo "[2/2] Running install-server..."
+  ssh "${SSH_OPTS[@]}" -t "eva@$IP" 'sudo install-server'
+
+  echo ""
+  echo "=== Installation complete. Pull USB and reboot when ready. ==="
+  exit 0
+fi
+
 if [ $# -lt 2 ]; then
   echo "Usage: $0 <hostname> <ip1> [ip2 ...]" >&2
   echo "       $0 --host [hostname]" >&2
+  echo "       $0 --live-media <hostname> <ip>" >&2
   exit 1
 fi
 
