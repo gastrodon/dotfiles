@@ -18,6 +18,11 @@
 
   networking.hostName = "server";
 
+  # Lets claude read minecraft-owned logs/state (services.minecraft-servers
+  # runs as user/group `minecraft`) for debugging the createplus service and
+  # its MCP bridge, without granting sudo or wheel.
+  users.users.claude.extraGroups = [ "minecraft" ];
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelModules = [ "i915" ];
