@@ -55,7 +55,16 @@ in
     servers.createplus = {
       enable = true;
       autoStart = true;
-      package = pkgs.neoforgeServers.neoforge-1_21_1;
+      # Pin Java 21: nix-minecraft's neoforgeServers default jre_headless
+      # resolved to OpenJDK 25 here, which is well past what this
+      # NeoForge build's ModLauncher/ASM/Mixin stack supports for MC
+      # 1.21.1 (officially a Java 21 target). That mismatch crashed the
+      # JVM ~5s into boot, before Log4j even initialized (nothing lands
+      # in logs/latest.log; the real error only ever hit the now-gone
+      # tmux pane).
+      package = pkgs.neoforgeServers.neoforge-1_21_1.override {
+        jre_headless = pkgs.jdk21_headless;
+      };
       jvmOpts = "-Xmx12G -Xms4G";
 
       symlinks = {
