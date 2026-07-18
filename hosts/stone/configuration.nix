@@ -120,6 +120,11 @@
     }
   ];
 
+  # Minecraft "Open to LAN": the LAN-world screen lets us pin the port, so
+  # open a fixed one instead of chasing the ephemeral default. Direct-connect
+  # from other PCs on the LAN via stone.local:25565.
+  networking.firewall.allowedTCPPorts = [ 25565 ];
+
   environment.systemPackages = [
     pkgs.prismlauncher
     # Extra JDKs kept in the closure so Prism's Java auto-detect can pick them
