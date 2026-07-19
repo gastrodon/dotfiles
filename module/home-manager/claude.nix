@@ -87,6 +87,25 @@ let
     '';
   };
 
+  awsMcpWrapper = pkgs.writeShellApplication {
+    name = "aws-mcp-wrapped";
+    runtimeInputs = [
+      pkgs.uv
+      pkgs.awscli2
+    ];
+    text = ''
+      # Access key id: claude's own secret (secrets.claude.yaml, in-ring).
+      AWS_ACCESS_KEY_ID="$(< /run/secrets/aws/iam_key)"
+      export AWS_ACCESS_KEY_ID
+      # Secret access key: eva-only (secrets.yaml, out of ring). Read at runtime
+      # into this subprocess env; never surfaced to the model.
+      AWS_SECRET_ACCESS_KEY="$(< /run/secrets/aws/iam_secret)"
+      export AWS_SECRET_ACCESS_KEY
+      export AWS_REGION="us-east-1"
+      exec uvx awslabs.aws-api-mcp-server@latest "$@"
+    '';
+  };
+
   emailMcpWrapper = pkgs.writeShellApplication {
     name = "email-mcp-wrapped";
     runtimeInputs = [ pkgs.nodejs_24 ];
@@ -118,6 +137,9 @@ let
       };
       ssh = {
         command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
+      };
+      aws = {
+        command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
       };
       # obsidian = {
       #   command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";

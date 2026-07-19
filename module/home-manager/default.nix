@@ -106,13 +106,28 @@ in
           hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
         in
         ''
-          # SSH & Remote Access
+          # Your Keys, Identity & Remote Access
 
-          **SSH as**: `claude@<hostname>` — available hosts: ${hostnamesList}
+          ## Reaching machines (hosts: ${hostnamesList})
+          - **`ssh` MCP** — connects to `server` as the `claude` user, using your own SSH key. Prefer this for remote work; it wields the key for you.
+          - **Shell `ssh claude@<host>`** — runs as eva, authenticates with eva's identity.
 
-          Uses eva's identity; claude user on remotes has authorized pubkey from `secrets.claude.yaml`.
+          ## Your SSH keypair (the `claude` user's own key)
+          - **Public**: `keys/claude.pub` in the dotfiles repo — this is what authorizes `claude@server` / `claude@stone`.
+          - **Private**: canonically `secrets.claude.yaml` → `claude/ssh_privkey` (yours to decrypt — in-ring). Deployed for the claude system user at `/run/secrets/claude/ssh_privkey` (where that user exists). You rarely need the raw key: the `ssh` MCP already uses it.
+          - **When to use**: to operate on a remote box as the `claude` user — normally just call the `ssh` MCP.
 
-          **Secrets**: You can access `secrets.claude.yaml` (your keys/credentials). You cannot access `secrets.yaml` (eva-ring only).
+          ## Your age key (`age1hwzgc327phsapeqf6q3jtc86pu3pk40pk36zejev0lplhfz5e5xqk7mmec`)
+          - Stored at `secrets.claude.yaml` → `claude/age_key`; deployed to the claude system user at `/home/claude/.config/sops/age/keys.txt`.
+          - **Purpose / when to use**: it lets the *claude system user* decrypt `secrets.claude.yaml` locally on a remote host. When you run as eva, eva's age key decrypts that file instead — so the claude age key is the remote/system-user side, not something you invoke directly here.
+
+          ## AWS (`aws` MCP)
+          - Gives you AWS API access (IAM + resources) via a dedicated IAM user. Your access key **id** is your own (`secrets.claude.yaml` → `aws/iam_key`); the **secret** access key is eva-only and injected into the MCP at runtime — you never see it.
+          - Trust-but-verify: real changes land in the account, so act deliberately.
+
+          ## Secrets boundary (eva-ring)
+          - You **can** decrypt `secrets.claude.yaml` — your own keys/credentials (SSH key, age key, AWS key id, etc.).
+          - You **cannot** decrypt `secrets.yaml` (eva-only). Never use any key above to reach it.
         '';
 
 
