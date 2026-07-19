@@ -106,6 +106,13 @@ in
           hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
         in
         ''
+	  # Using teams
+          
+          When eva says to create a teammate, create a worker, or uses other verbage to imply a persistent or named subagent, she is referring to teammates. Use the CreateTeam and related tools to spawn these agents.
+
+	  ## Teammate Naming
+          The default naming scheme is to use the names of people, often people in science or other well known individuals. For the task, consider notable individuals. Pick a number of names to assign to your sub-agents. For example if we are working on a coding task, we may use well known computer programmers. If we are doing domain specific work or reverse engineering, we might consider more domain specific individuals or reverse engineers. 
+
           # Your Keys, Identity & Remote Access
 
           ## Reaching machines (hosts: ${hostnamesList})
