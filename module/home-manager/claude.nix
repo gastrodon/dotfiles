@@ -2,11 +2,11 @@
   pkgs,
   lib,
   free-code,
-  obsidian-local-rest-api,
   ...
 }:
 let
   hosts = import ../hosts.nix;
+  obsidianMcp = import ./obsidian-mcp.nix;
 
   # Available GitHub MCP toolsets:
   #   context          - current user and teams
@@ -61,19 +61,6 @@ let
       exec github-mcp-server "$@"
     '';
   };
-
-  # Build mcp-obsidian from source
-  obsidianLocalRestApiPkg = obsidian-local-rest-api.packages.${pkgs.system}.default;
-
-  # obsidianMcpWrapper = pkgs.writeShellApplication {
-  #   name = "obsidian-mcp-server-wrapped";
-  #   runtimeInputs = [ obsidianLocalRestApiPkg ];
-  #   text = ''
-  #     OBSIDIAN_API_KEY="$(< /run/secrets/obsidian/api-key)"
-  #     export OBSIDIAN_API_KEY
-  #     exec mcp-obsidian "$@"
-  #   '';
-  # };
 
   sshMcpWrapper = pkgs.writeShellApplication {
     name = "ssh-mcp-wrapped";
@@ -141,9 +128,14 @@ let
       aws = {
         command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
       };
-      # obsidian = {
-      #   command = "${obsidianMcpWrapper}/bin/obsidian-mcp-server-wrapped";
-      # };
+      # Obsidian Local REST API plugin's built-in MCP server, over loopback HTTP.
+      # The apiKey is a local-only shared value (see obsidian-mcp.nix), not a
+      # sops secret, so it can be inlined as a static header here.
+      obsidian = {
+        type = "http";
+        url = obsidianMcp.url;
+        headers.Authorization = "Bearer ${obsidianMcp.apiKey}";
+      };
     };
     settings = {
       model = {

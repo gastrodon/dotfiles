@@ -2,6 +2,7 @@
 { config, pkgs, lib, ... }:
 let
   sshModule = import ./ssh.nix { inherit pkgs lib; };
+  obsidianMcp = import ./obsidian-mcp.nix;
 in
 
 {
@@ -66,6 +67,24 @@ in
               {
                 enable = true;
                 pkg = pkgs.callPackage ../../package/obsidian-theme/solarized { };
+              }
+            ];
+            communityPlugins = [
+              {
+                enable = true;
+                pkg = pkgs.callPackage ../../package/obsidian-plugin/local-rest-api {
+                  obsidianLocalRestApi = obsidian-local-rest-api.packages.${pkgs.system}.default;
+                };
+                settings = {
+                  apiKey = obsidianMcp.apiKey;
+                  enableInsecureServer = true;
+                  insecurePort = obsidianMcp.port;
+                  bindingHost = "127.0.0.1";
+                };
+              }
+              {
+                enable = true;
+                pkg = pkgs.callPackage ../../package/obsidian-plugin/omnisearch { };
               }
             ];
             corePlugins = [

@@ -13,7 +13,6 @@
   ];
 
   sops.secrets."github/mcp-token".owner = config.identity.username;
-  sops.secrets."obsidian/api-key".owner = config.identity.username;
   sops.secrets."email/address".owner = config.identity.username;
   sops.secrets."email/password".owner = config.identity.username;
 
