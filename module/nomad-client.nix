@@ -46,7 +46,18 @@ in
 
         client = {
           enabled = true;
-          servers = cfg.serverAddrs;
+          # retry_join re-resolves DNS names indefinitely, so the client
+          # recovers if it boots before server.local is resolvable. A plain
+          # `servers` list is resolved once at startup and silently dropped
+          # on failure, leaving the client stuck falling back to Consul.
+          server_join.retry_join = cfg.serverAddrs;
+        };
+
+        # No Consul in this cluster — disable auto-discovery so the client
+        # doesn't spam errors trying to reach 127.0.0.1:8500.
+        consul = {
+          client_auto_join = false;
+          server_auto_join = false;
         };
 
         plugin.nomad-driver-podman.config = {
