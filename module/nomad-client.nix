@@ -33,10 +33,11 @@ in
       package = pkgs.nomad;
       dropPrivileges = false;
       enableDocker = false;
-      extraPackages = [
-        pkgs.podman
-        pkgs.nomad-driver-podman
-      ];
+      # podman CLI must be on the agent's PATH; the driver binary must live in
+      # nomad's -plugin-dir, which the module builds from extraSettingsPlugins
+      # (NOT extraPackages — that only extends PATH).
+      extraPackages = [ pkgs.podman ];
+      extraSettingsPlugins = [ pkgs.nomad-driver-podman ];
 
       settings = {
         region = "global";
