@@ -12,9 +12,9 @@
     ../../module/claude-user.nix
     ../../module/avahi.nix
     ../../module/nomad-server.nix
-    ../../module/ifunny-etl-storage.nix
     ../../module/minecraft-server.nix
     ../../module/actual.nix
+    ../../module/ifunny-etl.nix
   ];
 
   networking.hostName = "server";
