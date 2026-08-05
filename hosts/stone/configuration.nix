@@ -111,6 +111,7 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
   hardware.graphics.enable = true;
+  hardware.nvidia-container-toolkit.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
 
   swapDevices = [
