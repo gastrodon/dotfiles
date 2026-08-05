@@ -4,6 +4,13 @@ set -euo pipefail
 export NIXPKGS_ALLOW_UNFREE=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Nix's git+ssh fetcher offers every ssh-agent key; isolate to the primary one.
+if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+  eval "$(ssh-agent -s)" >/dev/null
+  trap 'ssh-agent -k >/dev/null 2>&1 || true' EXIT
+  ssh-add -q "$HOME/.ssh/id_ed25519" >/dev/null 2>&1 || true
+fi
+
 HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
 
 case "${1:-build}" in
