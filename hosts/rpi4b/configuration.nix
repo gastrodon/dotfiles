@@ -2,6 +2,7 @@
 {
   imports = [
     ../../module/cluster-net.nix
+    ./graphical.nix
   ];
 
   networking.hostName = "rpi4b";

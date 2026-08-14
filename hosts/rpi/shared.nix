@@ -1,4 +1,10 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
+let
+  githubKeys = builtins.fetchurl {
+    url = "https://github.com/gastrodon.keys";
+    sha256 = "sha256-o46IPXKvUzgoNgSdLt9j3ThkeJbc6P5HGcFZKHH3Rhw=";
+  };
+in
 {
   imports = [
     ../../module/identity.nix
@@ -7,6 +13,18 @@
     ../../module/avahi.nix
     ../../module/nomad-client.nix
   ];
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    backupFileExtension = "old";
+
+    users.${config.identity.username} = {
+      imports = [ ../../module/home-manager/zsh ];
+      home.stateVersion = "25.11";
+      programs.home-manager.enable = true;
+    };
+  };
 
   nix.settings.experimental-features = [
     "nix-command"
@@ -30,6 +48,9 @@
     PasswordAuthentication = false;
     KbdInteractiveAuthentication = false;
   };
+
+  # Root pubkey login for `nixos-rebuild switch --target-host root@<pi>`.
+  users.users.root.openssh.authorizedKeys.keyFiles = [ githubKeys ];
 
   zramSwap.enable = true;
   boot.tmp.cleanOnBoot = true;

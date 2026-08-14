@@ -88,11 +88,17 @@
           ];
         };
 
+      # native = build on the target's own arch (via binfmt emulation on
+      # x86 hosts). Native builds substitute aarch64 outputs straight from
+      # cache.nixos.org; cross-compiled outputs miss the cache. Graphical
+      # hosts (firefox, X) want native so they hit cache; headless ones cross
+      # to keep the SD-image build fast.
       mkRpiImage =
         {
           system,
           sdModule,
           configPath,
+          native ? false,
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
@@ -100,8 +106,9 @@
             "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
             configPath
             ./hosts/rpi/shared.nix
-            { nixpkgs.buildPlatform = "x86_64-linux"; }
-          ];
+            home-manager.nixosModules.home-manager
+          ]
+          ++ nixpkgs.lib.optional (!native) { nixpkgs.buildPlatform = "x86_64-linux"; };
         };
     in
     {
@@ -181,6 +188,7 @@
         system = "aarch64-linux";
         sdModule = "sd-image-aarch64.nix";
         configPath = ./hosts/rpi4b/configuration.nix;
+        native = true;
       };
 
       devShells.x86_64-linux.default = devenv.lib.mkShell {
