@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   free-code,
@@ -138,6 +139,27 @@ let
     };
   };
 
+  # Desktop-only MCP servers (Cowork context). Scoped filesystem access to
+  # ~/code and a browser via Playwright. The Playwright nix package already
+  # wraps itself with PLAYWRIGHT_BROWSERS_PATH pointing at nix-built browsers,
+  # so it runs on NixOS without npx downloading incompatible binaries.
+  filesystemMcpWrapper = pkgs.writeShellApplication {
+    name = "filesystem-mcp-wrapped";
+    runtimeInputs = [ pkgs.nodejs_24 ];
+    text = ''
+      exec npx -y @modelcontextprotocol/server-filesystem ${config.home.homeDirectory}/code "$@"
+    '';
+  };
+
+  desktopMcpServers = mcpServers // {
+    filesystem = {
+      command = "${filesystemMcpWrapper}/bin/filesystem-mcp-wrapped";
+    };
+    playwright = {
+      command = "${pkgs.playwright-mcp}/bin/mcp-server-playwright";
+    };
+  };
+
   claude = free-code.lib.mkClaude pkgs {
     inherit mcpServers;
     settings = {
@@ -195,7 +217,7 @@ let
     env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
   };
   desktopSettingsFile = jsonFmt.generate "claude-desktop-settings.json" desktopSettings;
-  desktopMcpFile = jsonFmt.generate "claude-desktop-mcp.json" { inherit mcpServers; };
+  desktopMcpFile = jsonFmt.generate "claude-desktop-mcp.json" { mcpServers = desktopMcpServers; };
 
   # The app writes credentials/state into CLAUDE_CONFIG_DIR, so it must be a
   # writable per-user dir, not a store path. On each launch we (re)assert the
