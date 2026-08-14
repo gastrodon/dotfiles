@@ -45,9 +45,13 @@ case "${1:-build}" in
 
     case "$ISO_MODE" in
       --auto)
-        if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
+        if [[ "$HOSTNAME" == "server" ]]; then
+          echo "Error: server has no autoinstall ISO — use: $0 iso --live server"
+          exit 1
+        fi
+        if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" ]]; then
           echo "Error: Unknown hostname '$HOSTNAME'"
-          echo "Set NIXOS_HOSTNAME=stone|twink|server to build an ISO for a specific host"
+          echo "Set NIXOS_HOSTNAME=stone|twink to build an autoinstall ISO"
           exit 1
         fi
         echo "Building autoinstall ISO for $HOSTNAME..."

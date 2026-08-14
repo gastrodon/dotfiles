@@ -148,11 +148,11 @@
       };
 
       # Installer ISOs
-      nixosConfigurations.server-installer = mkInstaller {
-        targetSystem = self.nixosConfigurations.server;
-        diskConfig = ./hosts/server/disks.nix;
-      };
-
+      #
+      # server is generic (DHCP-derived hostname, runtime disk resolution) so it
+      # gets a single live-media image installable on any box — no baked-per-box
+      # autoinstall variant (that path hardcodes a device and risks wiping the
+      # wrong disk). stone/twink keep their per-host autoinstall ISOs.
       nixosConfigurations.server-live-media = mkLiveMedia {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
