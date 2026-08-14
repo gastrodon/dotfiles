@@ -30,7 +30,10 @@ in
       networkConfig = {
         Address = "${cfg.address}/24";
         Gateway = "192.168.0.1";
-        DNS = [ "192.168.0.1" ];
+        DNS = [
+          "1.1.1.1"
+          "8.8.8.8"
+        ];
         IPv6AcceptRA = true;
       };
     };
