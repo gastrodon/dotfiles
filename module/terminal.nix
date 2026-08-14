@@ -14,6 +14,12 @@
 
     hasSpeaker = lib.mkEnableOption "speaker/volume controls";
 
+    claudeDesktop = lib.mkOption {
+      type = lib.types.nullOr lib.types.package;
+      default = null;
+      description = "Claude Desktop package to install (configured wrapper is built in home-manager/claude.nix). Null disables it.";
+    };
+
     extra.i3config = lib.mkOption {
       type = lib.types.attrs;
       default = { };

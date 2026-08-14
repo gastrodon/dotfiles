@@ -43,6 +43,11 @@
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    claude-desktop = {
+      url = "github:poeck/claude-desktop-nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -115,7 +120,7 @@
       # Desktop build target (stone)
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code obsidian-local-rest-api; };
+        specialArgs = { inherit free-code obsidian-local-rest-api; claude-desktop = inputs.claude-desktop; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix

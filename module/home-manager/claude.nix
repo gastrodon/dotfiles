@@ -2,6 +2,7 @@
   pkgs,
   lib,
   free-code,
+  desktop,
   ...
 }:
 let
@@ -112,31 +113,33 @@ let
     '';
   };
 
-  claude = free-code.lib.mkClaude pkgs {
-    mcpServers = {
-      github = {
-        command = "${githubMcpWrapper}/bin/github-mcp-server-wrapped";
-        args = [
-          "stdio"
-          "--toolsets"
-          (builtins.concatStringsSep "," githubMcpToolsets)
-        ];
-      };
-      ssh = {
-        command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
-      };
-      aws = {
-        command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
-      };
-      # Obsidian Local REST API plugin's built-in MCP server, over loopback HTTP.
-      # The apiKey is a local-only shared value (see obsidian-mcp.nix), not a
-      # sops secret, so it can be inlined as a static header here.
-      obsidian = {
-        type = "http";
-        url = obsidianMcp.url;
-        headers.Authorization = "Bearer ${obsidianMcp.apiKey}";
-      };
+  mcpServers = {
+    github = {
+      command = "${githubMcpWrapper}/bin/github-mcp-server-wrapped";
+      args = [
+        "stdio"
+        "--toolsets"
+        (builtins.concatStringsSep "," githubMcpToolsets)
+      ];
     };
+    ssh = {
+      command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
+    };
+    aws = {
+      command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
+    };
+    # Obsidian Local REST API plugin's built-in MCP server, over loopback HTTP.
+    # The apiKey is a local-only shared value (see obsidian-mcp.nix), not a
+    # sops secret, so it can be inlined as a static header here.
+    obsidian = {
+      type = "http";
+      url = obsidianMcp.url;
+      headers.Authorization = "Bearer ${obsidianMcp.apiKey}";
+    };
+  };
+
+  claude = free-code.lib.mkClaude pkgs {
+    inherit mcpServers;
     settings = {
       model = {
         default = "opus";
@@ -181,6 +184,64 @@ let
   claudeEmail = pkgs.writeShellScriptBin "claude-email" ''
     exec ${claudeEmailBase}/bin/claude "$@"
   '';
+
+  # Claude Desktop (Cowork) — reuses the same MCP servers as the CLI but keeps
+  # its own settings + config dir so the two can diverge. Only built on hosts
+  # that set `desktop.claudeDesktop` (i.e. have /dev/kvm for Cowork's micro-VMs).
+  jsonFmt = pkgs.formats.json { };
+
+  desktopSettings = {
+    includeCoAuthoredBy = false;
+    env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+  };
+  desktopSettingsFile = jsonFmt.generate "claude-desktop-settings.json" desktopSettings;
+  desktopMcpFile = jsonFmt.generate "claude-desktop-mcp.json" { inherit mcpServers; };
+
+  # The app writes credentials/state into CLAUDE_CONFIG_DIR, so it must be a
+  # writable per-user dir, not a store path. On each launch we (re)assert the
+  # declarative settings.json and merge our mcpServers into the app-owned
+  # .claude.json, preserving whatever state the app has written.
+  claudeDesktopLauncher = pkgs.writeShellApplication {
+    name = "claude-desktop";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.coreutils
+    ];
+    text = ''
+      cfg="''${XDG_CONFIG_HOME:-$HOME/.config}/claude-desktop"
+      mkdir -p "$cfg"
+      install -m600 ${desktopSettingsFile} "$cfg/settings.json"
+
+      dotclaude="$cfg/.claude.json"
+      [ -f "$dotclaude" ] || echo '{}' > "$dotclaude"
+      tmp="$(mktemp)"
+      jq --slurpfile m ${desktopMcpFile} '.mcpServers = $m[0].mcpServers' "$dotclaude" > "$tmp"
+      mv "$tmp" "$dotclaude"
+      chmod 600 "$dotclaude"
+
+      export CLAUDE_CONFIG_DIR="$cfg"
+      exec ${desktop.claudeDesktop}/bin/claude-desktop "$@"
+    '';
+  };
+
+  claudeDesktopConfigured = pkgs.symlinkJoin {
+    name = "claude-desktop-configured";
+    paths = [
+      claudeDesktopLauncher
+      desktop.claudeDesktop
+    ];
+    postBuild = ''
+      rm -f "$out/bin/claude-desktop"
+      ln -s ${claudeDesktopLauncher}/bin/claude-desktop "$out/bin/claude-desktop"
+
+      if [ -e "$out/share/applications/claude-desktop.desktop" ]; then
+        rm -f "$out/share/applications/claude-desktop.desktop"
+        substitute ${desktop.claudeDesktop}/share/applications/claude-desktop.desktop \
+          "$out/share/applications/claude-desktop.desktop" \
+          --replace-fail "Exec=${desktop.claudeDesktop}/bin/claude-desktop" "Exec=$out/bin/claude-desktop"
+      fi
+    '';
+  };
 in
 {
   home.packages = [
@@ -188,6 +249,7 @@ in
     claudeEmail
     pkgs.bubblewrap # sandbox runtime
     pkgs.socat # sandbox IPC
-  ];
+  ]
+  ++ lib.optional (desktop.claudeDesktop != null) claudeDesktopConfigured;
 
 }

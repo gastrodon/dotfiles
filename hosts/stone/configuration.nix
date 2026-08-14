@@ -3,6 +3,7 @@
   config,
   lib,
   pkgs,
+  claude-desktop,
   ...
 }:
 {
@@ -13,6 +14,16 @@
     ../../module/claude-user.nix
     ../../module/claude-code.nix
   ];
+
+  # Claude Desktop (Linux beta) with Cowork. The configured wrapper (seeded MCP
+  # servers + settings) is built in module/home-manager/claude.nix; this just
+  # hands it the package and grants the runtime bits it needs. Cowork boots a
+  # micro-VM per task, so eva needs /dev/kvm access; the app bundles
+  # qemu/OVMF/virtiofsd.
+  desktop.claudeDesktop = claude-desktop.packages.${pkgs.system}.default;
+  users.users.${config.identity.username}.extraGroups = [ "kvm" ];
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   # Eva-readable copy of claude's SSH privkey, for Claude Code (running as eva)
   # to authenticate as claude@server via the ssh-mcp server. The claude-owned
@@ -44,7 +55,7 @@
           let
             monitors = {
               "DP-4" = "--mode 2560x1440 --rotate right --pos 0x1080";
-              "DP-3" = "--mode 2560x1440 --rotate normal --pos 1440x1763";
+              "DP-3" = "--primary --mode 2560x1440 --rotate normal --pos 1440x1562";
             };
             # Unspecified connected outputs default to 1080p and stack directly
             # above DP-4 (bottom edge at y = 1080), left-to-right from x = 0.
