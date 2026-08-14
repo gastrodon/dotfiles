@@ -13,7 +13,15 @@
     ../../module/nomad-client.nix
     ../../module/claude-user.nix
     ../../module/claude-code.nix
+    ../../module/pxe-boot-server.nix
   ];
+
+  # Boot server for the generic server boxes' netboot install.
+  services.pxeBootServer = {
+    enable = true;
+    interface = "enp7s0";
+    hostAddress = "192.168.0.77";
+  };
 
   # Claude Desktop (Linux beta) with Cowork. The configured wrapper (seeded MCP
   # servers + settings) is built in module/home-manager/claude.nix; this just
