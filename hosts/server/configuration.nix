@@ -14,7 +14,15 @@
     ../../module/nomad-server.nix
     ../../module/minecraft-server.nix
     ../../module/actual.nix
+    ../../module/linear-agent.nix
+    ../../module/tailscale-funnel.nix
   ];
+
+  services.linearAgent.enable = true;
+  services.tailscaleFunnel = {
+    enable = true;
+    target = "3456";
+  };
 
   # module path has no --argstr to supply disks.nix's `device`; pin the default (inert on the running system).
   _module.args.device = "/dev/sda";
