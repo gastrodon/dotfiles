@@ -14,15 +14,11 @@
     content = {
       type = "gpt";
       partitions = {
-        ESP = {
-          size = "512M";
-          type = "EF00";
-          content = {
-            type = "filesystem";
-            format = "vfat";
-            mountpoint = "/boot";
-            mountOptions = [ "umask=0077" ];
-          };
+        # BIOS-boot partition (no filesystem) — GRUB embeds core.img here on a
+        # GPT + legacy-BIOS box. No ESP: these boxes network-boot in legacy mode.
+        boot = {
+          size = "1M";
+          type = "EF02";
         };
         root = {
           size = "100%";
