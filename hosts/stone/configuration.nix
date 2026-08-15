@@ -18,7 +18,7 @@
 
   # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
   services.pxeBootServer = {
-    enable = true;
+    enable = false;
     interface = "enp7s0";
     hostAddress = "192.168.0.77";
   };
