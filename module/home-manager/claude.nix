@@ -64,15 +64,47 @@ let
     '';
   };
 
+  # role=admin + group=prod mirrors ssh-mcp's CLI-quickstart posture
+  # (read-only + safe + destructive; no privileged, so no sudo path). Set
+  # explicitly so a profile rename can't shift the tier via name-guessing.
+  sshMcpConfig = (pkgs.formats.toml { }).generate "ssh-mcp.toml" {
+    defaults.defaultProfile = "server1";
+    profiles = [
+      {
+        name = "server1";
+        host = hosts.server1;
+        user = "claude";
+        auth = "key";
+        keyRef = "/run/secrets/claude-ssh-privkey-local";
+        role = "admin";
+        group = "prod";
+      }
+      {
+        name = "server2";
+        host = hosts.server2;
+        user = "claude";
+        auth = "key";
+        keyRef = "/run/secrets/claude-ssh-privkey-local";
+        role = "admin";
+        group = "prod";
+      }
+    ];
+  };
+
   sshMcpWrapper = pkgs.writeShellApplication {
     name = "ssh-mcp-wrapped";
-    runtimeInputs = [ pkgs.nodejs_24 ];
+    runtimeInputs = [
+      pkgs.nodejs_24
+      pkgs.coreutils
+    ];
     text = ''
-      exec npx -y ssh-mcp -- \
-        --host=${hosts.server} \
-        --user=claude \
-        --key=/run/secrets/claude-ssh-privkey-local \
-        "$@"
+      # ssh-mcp refuses a group/world-readable config (needs 0600 in a 0700
+      # dir); the nix-store copy is world-readable, so stage a private one.
+      cfgdir="''${XDG_RUNTIME_DIR:-/tmp}/ssh-mcp"
+      mkdir -p "$cfgdir"
+      chmod 700 "$cfgdir"
+      install -m600 ${sshMcpConfig} "$cfgdir/config.toml"
+      exec npx -y ssh-mcp@2.2.5 -- --config="$cfgdir/config.toml" "$@"
     '';
   };
 

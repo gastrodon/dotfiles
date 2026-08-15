@@ -50,7 +50,8 @@ in
       };
 
       stone.hostname = hosts.stone;
-      server.hostname = hosts.server;
+      server1.hostname = hosts.server1;
+      server2.hostname = hosts.server2;
       twink.hostname = hosts.twink;
     };
   };
