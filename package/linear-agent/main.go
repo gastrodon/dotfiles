@@ -40,17 +40,13 @@ func loadConfig() config {
 		}
 		return def
 	}
-	must := func(k string) string {
-		v := os.Getenv(k)
-		if v == "" {
-			log.Fatalf("missing required env %s", k)
-		}
-		return v
-	}
+	// Linear creds are optional at startup: the process stays up (and /health
+	// serves) before the Linear app exists. Webhooks are rejected until the
+	// signing secret is set; see handleWebhook.
 	return config{
 		listenAddr:    get("LISTEN_ADDR", ":3456"),
-		webhookSecret: []byte(must("LINEAR_WEBHOOK_SECRET")),
-		appToken:      must("LINEAR_APP_TOKEN"),
+		webhookSecret: []byte(os.Getenv("LINEAR_WEBHOOK_SECRET")),
+		appToken:      os.Getenv("LINEAR_APP_TOKEN"),
 		nomadAddr:     get("NOMAD_ADDR", "http://127.0.0.1:4646"),
 		nomadToken:    os.Getenv("NOMAD_TOKEN"),
 		nomadJob:      get("NOMAD_JOB", "pi-agent"),
@@ -89,6 +85,12 @@ type client struct {
 func (c *client) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Fail closed until the Linear signing secret is configured — an empty-key
+	// HMAC would be forgeable, so reject rather than verify against "".
+	if len(c.cfg.webhookSecret) == 0 {
+		http.Error(w, "receiver not configured", http.StatusServiceUnavailable)
 		return
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
@@ -148,6 +150,9 @@ func (c *client) dispatch(ev agentSessionEvent, raw []byte) {
 
 // postActivity emits an agent activity (thought | action | response | error).
 func (c *client) postActivity(ctx context.Context, sessionID, typ, body string) error {
+	if c.cfg.appToken == "" {
+		return fmt.Errorf("no LINEAR_APP_TOKEN configured")
+	}
 	const q = `mutation($input: AgentActivityCreateInput!) {
   agentActivityCreate(input: $input) { success }
 }`
