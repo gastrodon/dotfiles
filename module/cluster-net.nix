@@ -1,8 +1,4 @@
-# Static IP on the LAN for cluster hosts that need a stable address
-# (RPis — server and stone use router DHCP reservations instead).
-#
-# Callers set:
-#   clusterNet.address — dotted-quad within 192.168.0.240/28 (the cluster block)
+# Static LAN IP for cluster hosts (RPis) in the 192.168.0.240/28 block; server/stone use router DHCP reservations instead.
 {
   config,
   lib,

@@ -10,11 +10,6 @@
 }:
 
 let
-  # Import scripts module to get script paths
-  # We need to reference the local packages from the system configuration
-  # These are passed via the system-level module
-
-  # Workspace definitions with icons
   ws1 = "1:";
   ws2 = "2:";
   ws3 = "3";
@@ -26,7 +21,6 @@ let
   ws9 = "9";
   ws10 = "10";
 
-  # Wallpaper - same processing as before
   wallpaper =
     pkgs.runCommand "wallpaper-scaled"
       {
@@ -54,25 +48,20 @@ in
           size = 11.0;
         };
 
-        # Default workspace layout
         workspaceLayout = "default";
 
-        # Window settings
         window = {
           border = 1;
           titlebar = false;
         };
 
-        # Gaps
         gaps = {
           inner = 6;
           outer = 3;
         };
 
-        # Floating modifier
         floating.modifier = mod;
 
-        # Floating rules
         floating.criteria = [
           {
             class = "Yad";
@@ -106,10 +95,8 @@ in
           { window_role = "About"; }
         ];
 
-        # Workspace assignments
         assigns = { };
 
-        # Colors
         colors = {
           background = palette.background;
 
@@ -146,7 +133,6 @@ in
           };
         };
 
-        # Bar configuration
         bars = [
           {
             position = "bottom";
@@ -190,12 +176,9 @@ in
           }
         ];
 
-        # Keybindings
         keybindings = lib.mkOptionDefault (
           {
-            # Remove default bindsym $mod+N workspace binds — we use bindcode equivalents
-            # below to avoid duplicate keybinding errors (bindsym and bindcode resolve
-            # to the same key and i3 treats them as duplicates).
+            # Null the default bindsym workspace binds — bindcode equivalents below collide as duplicates otherwise.
             "${mod}+1" = null;
             "${mod}+2" = null;
             "${mod}+3" = null;
@@ -217,30 +200,22 @@ in
             "${mod}+Shift+9" = null;
             "${mod}+Shift+0" = null;
 
-            # Workspace navigation
             "${mod}+Tab" = "workspace next";
             "${mod}+Shift+Tab" = "workspace prev";
 
-            # Terminal
             "${mod}+Return" = "exec --no-startup-id ${desktop.terminal}/bin/${desktop.terminal.pname}";
 
-            # Kill focused window
             "${mod}+q" = "kill";
 
-            # Exit menu
             "${mod}+Shift+e" = "exec --no-startup-id powermenu";
 
-            # Screen lock
             "${mod}+Escape" = "exec --no-startup-id blur-lock";
 
-            # Reload/restart
             "${mod}+Shift+c" = "reload";
             "${mod}+Shift+r" = "restart";
 
-            # Keybinding hint
             "F1" = "exec --no-startup-id keyhint-2";
 
-            # Focus
             "${mod}+j" = "focus left";
             "${mod}+k" = "focus down";
             "${mod}+l" = "focus up";
@@ -251,7 +226,6 @@ in
             "${mod}+Up" = "focus up";
             "${mod}+Right" = "focus right";
 
-            # Move
             "${mod}+Shift+j" = "move left";
             "${mod}+Shift+k" = "move down";
             "${mod}+Shift+l" = "move up";
@@ -262,43 +236,32 @@ in
             "${mod}+Shift+Up" = "move up";
             "${mod}+Shift+Right" = "move right";
 
-            # Split
             "${mod}+h" = "split h";
             "${mod}+v" = "split v";
 
-            # Fullscreen
             "${mod}+f" = "fullscreen toggle";
 
-            # Floating toggle
             "${mod}+Shift+space" = "floating toggle";
 
-            # Focus parent/child
             "${mod}+a" = "focus parent";
             "${mod}+d" = "focus child";
 
-            # Empty workspace
             "${mod}+Shift+n" = "exec --no-startup-id empty_workspace";
 
-            # Screenshot
             "Print" =
               "exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send \"Screenshot saved\" \"~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +\"%Y-%m-%d-%T\").png\"";
 
-            # Power profiles
             "${mod}+Shift+p" = "exec --no-startup-id power-profiles";
 
-            # Rofi application launcher
             "${mod}+space" =
               "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi";
 
-            # Rofi window switcher
             "${mod}+t" =
               "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window -config ~/.config/rofi/rofidmenu.rasi";
 
-            # Move workspace between monitors
             "${mod}+Shift+greater" = "move workspace to output right";
             "${mod}+Shift+less" = "move workspace to output left";
 
-            # Resize mode
             "${mod}+r" = "mode \"resize\"";
           }
           // lib.optionalAttrs desktop.hasBacklight {
@@ -316,9 +279,8 @@ in
           }
         );
 
-        # Keycode bindings for workspace switching (number row)
         keycodebindings = {
-          # Number keys for workspace switching
+          # number row
           "${mod}+10" = "workspace ${ws1}";
           "${mod}+11" = "workspace ${ws2}";
           "${mod}+12" = "workspace ${ws3}";
@@ -330,7 +292,7 @@ in
           "${mod}+18" = "workspace ${ws9}";
           "${mod}+19" = "workspace ${ws10}";
 
-          # Numpad workspace switching
+          # numpad
           "${mod}+87" = "workspace ${ws1}";
           "${mod}+88" = "workspace ${ws2}";
           "${mod}+89" = "workspace ${ws3}";
@@ -342,7 +304,7 @@ in
           "${mod}+81" = "workspace ${ws9}";
           "${mod}+90" = "workspace ${ws10}";
 
-          # Numpad with Numlock
+          # numpad + numlock
           "${mod}+Mod2+87" = "workspace ${ws1}";
           "${mod}+Mod2+88" = "workspace ${ws2}";
           "${mod}+Mod2+89" = "workspace ${ws3}";
@@ -354,7 +316,7 @@ in
           "${mod}+Mod2+81" = "workspace ${ws9}";
           "${mod}+Mod2+90" = "workspace ${ws10}";
 
-          # Move container to workspace (number keys)
+          # move container — number row
           "${mod}+Shift+10" = "move container to workspace ${ws1}";
           "${mod}+Shift+11" = "move container to workspace ${ws2}";
           "${mod}+Shift+12" = "move container to workspace ${ws3}";
@@ -366,7 +328,7 @@ in
           "${mod}+Shift+18" = "move container to workspace ${ws9}";
           "${mod}+Shift+19" = "move container to workspace ${ws10}";
 
-          # Move container to workspace (numpad)
+          # move container — numpad
           "${mod}+Shift+87" = "move container to workspace ${ws1}";
           "${mod}+Shift+88" = "move container to workspace ${ws2}";
           "${mod}+Shift+89" = "move container to workspace ${ws3}";
@@ -378,7 +340,7 @@ in
           "${mod}+Shift+81" = "move container to workspace ${ws9}";
           "${mod}+Shift+90" = "move container to workspace ${ws10}";
 
-          # Move container to workspace (numpad with Numlock)
+          # move container — numpad + numlock
           "${mod}+Shift+Mod2+87" = "move container to workspace ${ws1}";
           "${mod}+Shift+Mod2+88" = "move container to workspace ${ws2}";
           "${mod}+Shift+Mod2+89" = "move container to workspace ${ws3}";
@@ -391,22 +353,21 @@ in
           "${mod}+Shift+Mod2+90" = "move container to workspace ${ws10}";
         };
 
-        # Modes
         modes = {
           resize = {
-            # Fine control with Alt+Shift
+            # fine (1px)
             "Alt+Shift+j" = "resize shrink width 1 px";
             "Alt+Shift+k" = "resize grow height 1 px";
             "Alt+Shift+l" = "resize shrink height 1 px";
             "Alt+Shift+semicolon" = "resize grow width 1 px";
 
-            # Medium control with Shift
+            # medium (16px)
             "Shift+j" = "resize shrink width 16 px";
             "Shift+k" = "resize grow height 16 px";
             "Shift+l" = "resize shrink height 16 px";
             "Shift+semicolon" = "resize grow width 16 px";
 
-            # Coarse control
+            # coarse (64px)
             "j" = "resize shrink width 64 px";
             "k" = "resize grow height 64 px";
             "l" = "resize shrink height 64 px";
@@ -416,7 +377,6 @@ in
           };
         };
 
-        # Startup programs
         startup = [
           {
             command = "${pkgs.autotiling}/bin/autotiling";

@@ -1,8 +1,4 @@
-# Nomad client — worker node. Connects to server.local via mDNS.
-# Uses the podman task driver (no docker).
-#
-# Callers set:
-#   services.nomadClient.datacenter — "home" (RPis) or "stone" (opt-in heavy)
+# Nomad client — worker node, joins server.local via mDNS, podman driver (no docker).
 {
   config,
   lib,
@@ -33,9 +29,7 @@ in
       package = pkgs.nomad;
       dropPrivileges = false;
       enableDocker = false;
-      # podman CLI must be on the agent's PATH; the driver binary must live in
-      # nomad's -plugin-dir, which the module builds from extraSettingsPlugins
-      # (NOT extraPackages — that only extends PATH).
+      # both needed: extraPackages puts podman on PATH, extraSettingsPlugins puts the driver in -plugin-dir.
       extraPackages = [ pkgs.podman ];
       extraSettingsPlugins = [ pkgs.nomad-driver-podman ];
 
@@ -47,15 +41,11 @@ in
 
         client = {
           enabled = true;
-          # retry_join re-resolves DNS names indefinitely, so the client
-          # recovers if it boots before server.local is resolvable. A plain
-          # `servers` list is resolved once at startup and silently dropped
-          # on failure, leaving the client stuck falling back to Consul.
+          # retry_join re-resolves DNS forever (recovers if it boots before server.local resolves); a plain `servers` list resolves once then drops.
           server_join.retry_join = cfg.serverAddrs;
         };
 
-        # No Consul in this cluster — disable auto-discovery so the client
-        # doesn't spam errors trying to reach 127.0.0.1:8500.
+        # No Consul here — disable auto-join to stop 127.0.0.1:8500 error spam.
         consul = {
           client_auto_join = false;
           server_auto_join = false;

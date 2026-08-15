@@ -16,26 +16,20 @@
     ../../module/pxe-boot-server.nix
   ];
 
-  # Boot server for the generic server boxes' netboot install.
+  # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
   services.pxeBootServer = {
     enable = true;
     interface = "enp7s0";
     hostAddress = "192.168.0.77";
   };
 
-  # Claude Desktop (Linux beta) with Cowork. The configured wrapper (seeded MCP
-  # servers + settings) is built in module/home-manager/claude.nix; this just
-  # hands it the package and grants the runtime bits it needs. Cowork boots a
-  # micro-VM per task, so eva needs /dev/kvm access; the app bundles
-  # qemu/OVMF/virtiofsd.
+  # Claude Desktop + Cowork; wrapper built in claude.nix. Cowork runs a micro-VM per task, so eva needs kvm access.
   desktop.claudeDesktop = claude-desktop.packages.${pkgs.system}.default;
   users.users.${config.identity.username}.extraGroups = [ "kvm" ];
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
-  # Eva-readable copy of claude's SSH privkey, for Claude Code (running as eva)
-  # to authenticate as claude@server via the ssh-mcp server. The claude-owned
-  # entry in module/sops.nix stays as-is for the claude user's own use.
+  # Eva-readable copy of claude's SSH privkey so Claude Code (as eva) can auth as claude@server via ssh-mcp.
   sops.secrets."claude-ssh-privkey-local" = {
     sopsFile = ../../secrets.claude.yaml;
     key = "claude/ssh_privkey";
@@ -107,7 +101,7 @@
     ];
   };
 
-  # Desktop: Direct GRUB boot (no EFI, no separate /boot partition)
+  # Direct GRUB boot (no EFI, no separate /boot)
   boot.loader.timeout = 0;
   boot.loader.grub = {
     enable = true;
@@ -115,10 +109,7 @@
     timeoutStyle = "hidden";
   };
 
-  # Desktop: Disable laptop-specific services
   services.upower.enable = false;
-
-  # Desktop: No backlight controls
   services.udev.extraRules = "";
 
   # NVIDIA RTX 2080 Super
@@ -140,15 +131,12 @@
     }
   ];
 
-  # Minecraft "Open to LAN": the LAN-world screen lets us pin the port, so
-  # open a fixed one instead of chasing the ephemeral default. Direct-connect
-  # from other PCs on the LAN via stone.local:25565.
+  # Minecraft "Open to LAN" on a pinned port — direct-connect via stone.local:25565.
   networking.firewall.allowedTCPPorts = [ 25565 ];
 
   environment.systemPackages = [
     pkgs.prismlauncher
-    # Extra JDKs kept in the closure so Prism's Java auto-detect can pick them
-    # for modpacks that need something other than the launcher's bundled 21.
+    # extra JDKs in-closure for Prism's Java auto-detect (modpacks needing != bundled 21)
     pkgs.jdk8
     pkgs.jdk25
   ];

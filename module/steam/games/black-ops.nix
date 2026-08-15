@@ -62,19 +62,8 @@ let
   '';
 in
 {
-  # Call of Duty: Black Ops 1 (Steam App ID: 42700)
-  #
-  # Steam (vanilla):
-  #   Proton: GE-Proton (Proton 5.0 fails CEG DRM; GE-Proton passes it)
-  #   Launch options: MANGOHUD=1 gamemoderun %command%
-  #   Controller: Steam Input ON for GCN adapter
-  #
-  # Plutonium (community client, T5 — bypasses CEG DRM entirely):
-  #   1. Register at plutonium.pw
-  #   2. Run `plutonium-setup` once to initialize the Wine prefix
-  #   3. Run `plutonium` to launch (exe is fetched declaratively from cdn.plutonium.pw)
-  #   Game files: ~/.local/share/Steam/steamapps/common/Call of Duty Black Ops
-
+  # Black Ops 1 (Steam 42700). Vanilla: GE-Proton (Proton 5.0 fails CEG DRM), launch opts `MANGOHUD=1 gamemoderun %command%`.
+  # Plutonium (T5, bypasses CEG): register at plutonium.pw, `plutonium-setup` once, then `plutonium`.
   environment.systemPackages = [
     wine
     pkgs.winetricks

@@ -7,7 +7,6 @@ let
 
   terminalPkg = config.desktop.terminal;
 
-  # Install i3 and essential desktop packages
   basePackages = with pkgs; [
     terminalPkg
 
@@ -42,7 +41,6 @@ let
       [ ];
 in
 {
-  # Enable i3 window manager at system level
   services.xserver.windowManager.i3 = {
     enable = true;
     package = pkgs.i3;

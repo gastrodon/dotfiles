@@ -4,7 +4,6 @@
 }:
 {
   xresources.properties = {
-    # Color definitions (Solarized Dark palette)
     "*background" = palette.background;
     "*foreground" = palette.brightBlue;
     "*fadeColor" = palette.background;
@@ -37,10 +36,8 @@
     "*color7" = palette.white;
     "*color15" = palette.brightWhite;
 
-    # Cursor configuration
     "Xcursor.size" = 18;
 
-    # XTerm configuration
     "xterm*termName" = "xterm-256color";
     "xterm*font" = "iosevka term ss04";
     "xterm*faceName" = "iosevka term ss04:size=11";

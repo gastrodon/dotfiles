@@ -16,21 +16,13 @@
     ../../module/actual.nix
   ];
 
-  # disks.nix takes `device` as a module arg (so the disko CLI can override it
-  # per box via --argstr at install time). On the installed-system module path
-  # there's no CLI to supply it, so pin the default here; it's inert on the
-  # running system (only the root mountpoint reaches the toplevel).
+  # module path has no --argstr to supply disks.nix's `device`; pin the default (inert on the running system).
   _module.args.device = "/dev/sda";
 
-  # EC2-style: no baked hostname. A boot service derives `ip-a-b-c-d` from the
-  # DHCP-assigned IPv4 (see derive-hostname below), so one image serves every
-  # box and each self-names from its (router-reserved) address.
+  # EC2-style empty hostname; derive-hostname below sets ip-a-b-c-d from the DHCP IPv4.
   networking.hostName = "";
 
-  # Legacy BIOS boot via GRUB. These boxes (Dell OptiPlex) only expose network
-  # boot in legacy mode, so the installed system boots the same way — no
-  # ESP/systemd-boot. disko installs GRUB onto the disk's EF02 partition, so the
-  # target device comes from disks.nix, not a hardcoded path here.
+  # Legacy BIOS/GRUB (OptiPlex only netboots in legacy mode). disko installs GRUB onto disks.nix's EF02 partition — don't set grub.device.
   boot.loader.grub.enable = true;
 
   services.upower.enable = false;
@@ -53,9 +45,7 @@
     KbdInteractiveAuthentication = false;
   };
 
-  # Derive a transient hostname from the primary LAN IPv4 (ip-192-168-0-243).
-  # Runs once network is up and before nomad, so the node registers under its
-  # IP-based name. Avahi then publishes <name>.local for discovery.
+  # Transient hostname ip-a-b-c-d from the primary LAN IPv4; runs before nomad/avahi so the node registers under it.
   systemd.services.derive-hostname = {
     description = "Set transient hostname from primary LAN IPv4";
     wantedBy = [ "multi-user.target" ];

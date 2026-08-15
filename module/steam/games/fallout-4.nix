@@ -5,8 +5,7 @@
   ...
 }:
 let
-  # Fallout 4 Script Extender — targets runtime 1.10.163 (pre-Next-Gen)
-  # F4SE 0.7.x (runtime 1.11.169, Next-Gen) is Nexus-only; update that manually.
+  # F4SE targets runtime 1.10.163 (pre-Next-Gen); 0.7.x for Next-Gen 1.11.169 is Nexus-only.
   f4se = pkgs.stdenv.mkDerivation {
     pname = "f4se";
     version = "0.6.23";
@@ -25,12 +24,8 @@ let
     '';
   };
 
-  # Jackify — automates Wabbajack modlist installation on Linux.
-  # Handles Wabbajack download, modlist install, Mod Organizer 2 setup, and
-  # Steam shortcut/Proton prefix configuration. Requires Nexus Premium.
-  #
-  # Jackify uses system Python (not bundled); pycryptodome is an AUR-listed dep.
-  # appimage-run provides both into the FHS environment the AppImage sees.
+  # Jackify automates Wabbajack modlist installs (needs Nexus Premium). It expects system Python +
+  # pycryptodome; appimage-run injects both into the AppImage's FHS env.
   jackify =
     let
       src = pkgs.fetchurl {
@@ -49,14 +44,9 @@ let
       exec ${runner}/bin/appimage-run ${src} "$@"
     '';
 
-  # Pinned Wabbajack modlists.
-  #
-  # The .wabbajack manifest file is served via the Wabbajack CDN (requires the
-  # client for auth) so it cannot be fetched with fetchurl. Instead we record
-  # the version and Wabbajack content hash here as the source of truth.
-  # To update: bump version + hash from https://github.com/wabbajack-tools/mod-lists/blob/master/modlists.json
-  #
-  # hash: xxHash64 (base64) that Wabbajack uses to verify the downloaded manifest.
+  # Pinned Wabbajack modlists. The .wabbajack manifest is CDN/auth-gated (no fetchurl), so we pin
+  # version + Wabbajack content hash (xxHash64 base64) here.
+  # Update: bump from https://github.com/wabbajack-tools/mod-lists/blob/master/modlists.json
   modlists = {
     lifeInTheRuins = {
       title = "Life in the Ruins";
@@ -66,10 +56,7 @@ let
     };
   };
 
-  # Disables weapon debris in the Fallout 4 Proton prefix ini.
-  # Weapon debris uses Nvidia FleX, which is unsupported on Turing (RTX 20xx+);
-  # enabling it hard-crashes the game on the 2080 Super regardless of Proton version.
-  # MO2 manages per-profile inis separately — disable it in-game after first launch too.
+  # bWeaponDebris=0 in the Proton prefix ini — FleX hard-crashes on the 2080 Super. Also disable in-game (MO2 inis are separate).
   disable-weapon-debris = pkgs.writeShellScriptBin "fo4-disable-weapon-debris" ''
     set -euo pipefail
     ini="$HOME/.local/share/Steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser/My Documents/My Games/Fallout4/Fallout4Prefs.ini"
@@ -87,7 +74,6 @@ let
     echo "Also disable it in-game (Options → Display) so MO2 profile inis are updated."
   '';
 
-  # Prints the pinned modlist version and walks through the install steps.
   install-modlists = pkgs.writeShellScriptBin "install-fo4-modlists" ''
     echo "=== Fallout 4 modlist install ==="
     echo ""
@@ -110,12 +96,7 @@ let
   '';
 in
 {
-  # Fallout 4 (Steam App ID: 377160)
-  #
-  # Proton: use GE-Proton — game Properties → Compatibility → enable → select GE-Proton
-  # Launch options (with F4SE): f4se_loader.exe %command%
-  # Launch options (without): gamemoderun mangohud %command%
-
+  # Fallout 4 (Steam 377160). GE-Proton. Launch opts: `f4se_loader.exe %command%` with F4SE, else `gamemoderun mangohud %command%`.
   environment.systemPackages = [
     (pkgs.writeShellScriptBin "install-f4se" ''
       set -euo pipefail

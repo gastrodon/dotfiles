@@ -56,8 +56,7 @@ in
     };
   };
 
-  # programs.ssh writes ~/.ssh/config as a symlink to the nix store (444),
-  # which OpenSSH rejects. Replace it with a real copy at 600.
+  # programs.ssh symlinks ~/.ssh/config to the store (444); OpenSSH rejects it — replace with a 600 copy.
   home.activation.fixSshConfigPermissions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     config="$HOME/.ssh/config"
     if [ -L "$config" ]; then
@@ -71,7 +70,6 @@ in
   home.activation.generateSshPubKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -d ~/.ssh ]; then
       for keyfile in ~/.ssh/id_*; do
-        # Check if it's a regular file and doesn't have an extension
         if [ -f "$keyfile" ] && [[ ! "$keyfile" =~ \. ]]; then
           pubkey="$keyfile.pub"
           if [ ! -f "$pubkey" ]; then

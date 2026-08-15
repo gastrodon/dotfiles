@@ -10,7 +10,6 @@
 
 let
 
-  # Disk usage block
   i3blocks-disk = pkgs.writeScriptBin "i3blocks-disk" ''
     #!/usr/bin/env bash
     DIR="''${DIR:-''${BLOCK_INSTANCE}}"
@@ -39,7 +38,6 @@ let
     '
   '';
 
-  # Bandwidth block
   i3blocks-bandwidth = pkgs.writeScriptBin "i3blocks-bandwidth" ''
     #!/usr/bin/env bash
     iface="''${BLOCK_INSTANCE}"
@@ -111,7 +109,6 @@ let
     '
   '';
 
-  # Battery block
   i3blocks-battery = pkgs.writeScriptBin "i3blocks-battery" ''
     #!/usr/bin/env python3
     from subprocess import check_output
@@ -201,7 +198,6 @@ let
         exit(33)
   '';
 
-  # Bluetooth block
   i3blocks-bluetooth = pkgs.writeShellScriptBin "i3blocks-bluetooth" ''
     connected=$(${pkgs.bluez}/bin/bluetoothctl devices Connected 2>/dev/null \
       | ${pkgs.gnused}/bin/sed 's/^Device [A-F0-9:]\{17\} //')
@@ -217,7 +213,6 @@ let
     echo "<span font='FontAwesome'></span> $names"
   '';
 
-  # Volume block
   i3blocks-volume = pkgs.writeScriptBin "i3blocks-volume" ''
     #!/usr/bin/env bash
     MIXER="default"
@@ -260,7 +255,6 @@ let
   '';
 in
 {
-  # Install the custom block scripts to the user's PATH
   home.packages = [
     i3blocks-disk
     i3blocks-bandwidth
@@ -269,8 +263,6 @@ in
     i3blocks-volume
   ];
 
-  # Configure i3blocks configuration file using xdg.configFile
-  # This creates ~/.config/i3blocks/config
   xdg.configFile."i3blocks/config".text = ''
     # i3blocks config file
     separator=false
@@ -280,7 +272,6 @@ in
     full_text=: :
     color=#717171
 
-    # Disk usage
     [disk]
     label=
     instance=/

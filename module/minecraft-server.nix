@@ -22,7 +22,6 @@
         view-distance = 12;
       };
 
-      # Empty blocklist for now — no whitelist restrictions, no bans.
       whitelist = { };
       operators = { };
       bannedPlayers = { };

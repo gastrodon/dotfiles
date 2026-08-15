@@ -9,7 +9,6 @@
     openssh.authorizedKeys.keyFiles = [ ../keys/claude.pub ];
   };
 
-  # Create .ssh directory and set permissions
   system.activationScripts.claude-ssh-setup = lib.stringAfter [ "users" ] ''
     mkdir -p /home/claude/.ssh
     chmod 700 /home/claude/.ssh

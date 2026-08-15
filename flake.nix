@@ -94,9 +94,7 @@
           ];
         };
 
-      # Thin PXE netboot image: the target closure is left out of the RAM
-      # initrd and substituted from `substituter` (stone's http cache) at
-      # install time. See hosts/netboot.nix + installer-payload.nix.
+      # Thin PXE netboot image (see hosts/netboot.nix + installer-payload.nix).
       mkNetboot =
         { targetSystem, diskConfig, substituter }:
         nixpkgs.lib.nixosSystem {
@@ -111,11 +109,7 @@
           ];
         };
 
-      # native = build on the target's own arch (via binfmt emulation on
-      # x86 hosts). Native builds substitute aarch64 outputs straight from
-      # cache.nixos.org; cross-compiled outputs miss the cache. Graphical
-      # hosts (firefox, X) want native so they hit cache; headless ones cross
-      # to keep the SD-image build fast.
+      # native builds hit cache.nixos.org (graphical hosts want this); cross builds miss cache but keep headless SD builds fast.
       mkRpiImage =
         {
           system,
@@ -135,7 +129,6 @@
         };
     in
     {
-      # Desktop build target (stone)
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit free-code obsidian-local-rest-api; claude-desktop = inputs.claude-desktop; };
@@ -149,7 +142,6 @@
         ];
       };
 
-      # Server build target (server)
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit free-code obsidian-local-rest-api; };
@@ -165,21 +157,13 @@
         ];
       };
 
-      # Installer ISOs
-      #
-      # server is generic (DHCP-derived hostname, runtime disk resolution) so it
-      # gets a single live-media image installable on any box — no baked-per-box
-      # autoinstall variant (that path hardcodes a device and risks wiping the
-      # wrong disk). stone/twink keep their per-host autoinstall ISOs.
+      # server gets one generic live-media ISO (no per-box autoinstall — that hardcodes a device, wrong-disk risk); stone/twink keep autoinstall ISOs.
       nixosConfigurations.server-live-media = mkLiveMedia {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
       };
 
-      # Thin netboot image, chained from stone's PXE boot server. The
-      # substituter is stone's nginx serving the staged binary cache (see
-      # module/pxe-boot-server.nix: hostAddress:httpPort + /cache under
-      # payloadDir).
+      # Thin netboot chained from stone's PXE server; substituter = stone's nginx binary cache.
       nixosConfigurations.server-netboot = mkNetboot {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
@@ -196,7 +180,6 @@
         diskConfig = ./hosts/twink/disks.nix;
       };
 
-      # Laptop build target (twink)
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit free-code obsidian-local-rest-api; };

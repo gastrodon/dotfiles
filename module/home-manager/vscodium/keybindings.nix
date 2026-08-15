@@ -1,9 +1,5 @@
 let
-  # Convert compact keybinding format to full format
-  # Format: "command" = { key = "..."; when = "..."; replaces = "..."; };
-  # - key: required
-  # - when: optional, context to  which to restrict command usage
-  # - replaces: optional, auto-generates unbinding for old command
+  # "command" = { key (required); when (optional context); replaces (optional, auto-generates unbind of old command) }
   mkKeybinding =
     command: value:
     let

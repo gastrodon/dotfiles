@@ -1,6 +1,4 @@
-# USB live-media ISO for the server boxes. All install behaviour lives in the
-# shared installer payload; this file only bakes the target closure into the
-# ISO and pulls in the payload.
+# USB live-media ISO: bakes the target closure into the ISO; install behaviour is in installer-payload.nix.
 {
   targetSystem,
   ...

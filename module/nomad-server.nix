@@ -1,6 +1,4 @@
-# Nomad server — sole cluster leader. Single-server, no HA.
-# Also runs a co-located client (datacenter `home`) so the box can run jobs
-# itself, not just schedule them onto stone/the RPis.
+# Nomad server — sole cluster leader (single-server, no HA); also runs a co-located client so the box runs jobs itself.
 { config, pkgs, ... }:
 {
   services.nomad = {
@@ -8,9 +6,7 @@
     package = pkgs.nomad;
     dropPrivileges = false;
     enableDocker = false;
-    # podman CLI must be on the agent's PATH; the driver binary must live in
-    # nomad's -plugin-dir, which the module builds from extraSettingsPlugins
-    # (NOT extraPackages — that only extends PATH).
+    # both needed: extraPackages puts podman on PATH, extraSettingsPlugins puts the driver in -plugin-dir.
     extraPackages = [ pkgs.podman ];
     extraSettingsPlugins = [ pkgs.nomad-driver-podman ];
 
@@ -25,8 +21,7 @@
         bootstrap_expect = 1;
       };
 
-      # Co-located client. It reaches the local server over loopback RPC, so no
-      # server list / retry_join is needed here.
+      # Co-located client — reaches the local server over loopback, no retry_join needed.
       client.enabled = true;
 
       plugin.nomad-driver-podman.config = {
@@ -39,10 +34,7 @@
   # Rootful podman socket for the Nomad podman driver.
   systemd.sockets.podman.wantedBy = [ "sockets.target" ];
 
-  # One-shot ACL bootstrap with our known management token (from sops). ACL
-  # bootstrap is a one-time raft-state operation, so this is idempotent:
-  # "already been bootstrapped" is treated as success. Runs as root, which can
-  # read the token regardless of its ownership.
+  # Idempotent one-shot ACL bootstrap with the known sops management token ("already done" = success).
   systemd.services.nomad-acl-bootstrap = {
     description = "Bootstrap Nomad ACL with the known management token";
     after = [ "nomad.service" ];

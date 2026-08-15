@@ -1,7 +1,4 @@
-# The obsidian-local-rest-api flake builds the plugin reproducibly (via bun2nix)
-# and installs its artifacts under `$out/lib/`. The programs.obsidian HM module
-# expects a plugin package whose `manifest.json` (and `main.js` / `styles.css`)
-# sit at the package root, so re-layout the flake output accordingly.
+# The flake installs plugin artifacts under $out/lib/; programs.obsidian expects manifest.json/main.js/styles.css at the package root — re-layout them here.
 {
   lib,
   runCommand,

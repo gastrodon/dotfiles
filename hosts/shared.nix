@@ -55,9 +55,6 @@ in
     "flakes"
   ];
 
-  # Machine-specific boot config and hostname are defined in
-  # hosts/<hostname>/configuration.nix
-
   networking.networkmanager.enable = true;
   networking.extraHosts = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: ip: "${ip} ${name}") clusterHosts
@@ -65,7 +62,6 @@ in
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages =
     with pkgs;
     [
@@ -91,9 +87,6 @@ in
     pulse.enable = true;
     jack.enable = true;
   };
-
-  # Machine-specific services (upower, backlight) are defined in
-  # hosts/<hostname>/configuration.nix
 
   systemd.user.services.polkit-gnome = {
     description = "Polkit GNOME Authentication Agent";

@@ -5,24 +5,19 @@
   ...
 }:
 let
-  # Home Assistant Lovelace dashboard the kiosk points at.
   kioskUrl = "http://homeassistant.local:8123/";
 
-  # One monitor on this Pi; rotate whatever output X brings up 90° left
-  # (tall). Detect the name at runtime rather than hardcoding HDMI-1 vs
-  # HDMI-A-1, which varies by kernel/driver.
+  # Rotate the connected output 90° left; detect its name at runtime (HDMI-1 vs HDMI-A-1 varies by kernel). No input device to wake it, so never blank.
   rotate = pkgs.writeShellScript "rpi4b-monitor-rotate" ''
     ${pkgs.xorg.xrandr}/bin/xrandr --query \
       | ${pkgs.gawk}/bin/awk '/ connected/ {print $1}' \
       | while read -r out; do
           ${pkgs.xorg.xrandr}/bin/xrandr --output "$out" --rotate left
         done
-    # No input device to wake a blanked screen — keep it always on.
     ${pkgs.xorg.xset}/bin/xset s off -dpms
   '';
 
-  # Fresh profile each boot so a crash/reboot never triggers a
-  # "restore session?" prompt that would sit over the dashboard.
+  # Fresh profile each boot so a crash never leaves a "restore session?" prompt over the dashboard.
   kiosk = pkgs.writeShellScript "rpi4b-kiosk" ''
     profile="$(mktemp -d)"
     exec ${pkgs.firefox}/bin/firefox \
@@ -49,22 +44,20 @@ in
   };
   services.displayManager.defaultSession = "none+i3";
 
-  # Force the DRM connector on regardless of HDMI hotplug-detect. The vc4
-  # KMS driver otherwise races/flaps HPD at boot and X caches the output as
-  # disconnected, leaving the monitor black. Pins the current micro-HDMI port.
+  # `e` forces the connector on regardless of HDMI HPD — vc4 KMS flaps HPD at boot and X caches it disconnected (black monitor).
   boot.kernelParams = [ "video=HDMI-A-2:1920x1080@60e" ];
 
   services.libinput.enable = true;
   hardware.graphics.enable = true;
 
-  # BT mouse + BT speaker. MACs paired interactively on the booted Pi.
+  # BT mouse + speaker; MACs paired interactively on the booted Pi.
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
   hardware.enableRedistributableFirmware = true;
 
-  # Audio out for the BT speaker (rpi/shared.nix ships no sound stack).
+  # BT speaker audio out (rpi/shared.nix ships no sound stack).
   services.pipewire = {
     enable = true;
     alsa.enable = true;

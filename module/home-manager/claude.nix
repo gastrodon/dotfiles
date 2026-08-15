@@ -64,9 +64,7 @@ let
     '';
   };
 
-  # role=admin + group=prod mirrors ssh-mcp's CLI-quickstart posture
-  # (read-only + safe + destructive; no privileged, so no sudo path). Set
-  # explicitly so a profile rename can't shift the tier via name-guessing.
+  # role=admin + group=prod = read-only+safe+destructive, no privileged/sudo. Set explicitly so a rename can't shift the tier.
   sshMcpConfig = (pkgs.formats.toml { }).generate "ssh-mcp.toml" {
     defaults.defaultProfile = "server1";
     profiles = [
@@ -98,8 +96,7 @@ let
       pkgs.coreutils
     ];
     text = ''
-      # ssh-mcp refuses a group/world-readable config (needs 0600 in a 0700
-      # dir); the nix-store copy is world-readable, so stage a private one.
+      # ssh-mcp refuses a world-readable config (needs 0600/0700); the store copy is world-readable, so stage a private one.
       cfgdir="''${XDG_RUNTIME_DIR:-/tmp}/ssh-mcp"
       mkdir -p "$cfgdir"
       chmod 700 "$cfgdir"
@@ -115,11 +112,10 @@ let
       pkgs.awscli2
     ];
     text = ''
-      # Access key id: claude's own secret (secrets.claude.yaml, in-ring).
+      # Access key id: claude's own (secrets.claude.yaml, in-ring).
       AWS_ACCESS_KEY_ID="$(< /run/secrets/aws/iam_key)"
       export AWS_ACCESS_KEY_ID
-      # Secret access key: eva-only (secrets.yaml, out of ring). Read at runtime
-      # into this subprocess env; never surfaced to the model.
+      # Secret access key: eva-only (secrets.yaml, out of ring) — into this subprocess env only, never the model.
       AWS_SECRET_ACCESS_KEY="$(< /run/secrets/aws/iam_secret)"
       export AWS_SECRET_ACCESS_KEY
       export AWS_REGION="us-east-1"
@@ -161,9 +157,7 @@ let
     aws = {
       command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
     };
-    # Obsidian Local REST API plugin's built-in MCP server, over loopback HTTP.
-    # The apiKey is a local-only shared value (see obsidian-mcp.nix), not a
-    # sops secret, so it can be inlined as a static header here.
+    # Obsidian Local REST API MCP over loopback; apiKey is a local-only value (see obsidian-mcp.nix), not a secret, so inlined.
     obsidian = {
       type = "http";
       url = obsidianMcp.url;
@@ -171,10 +165,7 @@ let
     };
   };
 
-  # Desktop-only MCP servers (Cowork context). Scoped filesystem access to
-  # ~/code and a browser via Playwright. The Playwright nix package already
-  # wraps itself with PLAYWRIGHT_BROWSERS_PATH pointing at nix-built browsers,
-  # so it runs on NixOS without npx downloading incompatible binaries.
+  # Desktop-only (Cowork) MCP servers: ~/code filesystem + Playwright (nix package self-wraps PLAYWRIGHT_BROWSERS_PATH, so no npx browser download).
   filesystemMcpWrapper = pkgs.writeShellApplication {
     name = "filesystem-mcp-wrapped";
     runtimeInputs = [ pkgs.nodejs_24 ];
@@ -239,9 +230,7 @@ let
     exec ${claudeEmailBase}/bin/claude "$@"
   '';
 
-  # Claude Desktop (Cowork) — reuses the same MCP servers as the CLI but keeps
-  # its own settings + config dir so the two can diverge. Only built on hosts
-  # that set `desktop.claudeDesktop` (i.e. have /dev/kvm for Cowork's micro-VMs).
+  # Claude Desktop (Cowork) — same MCP servers as the CLI, own settings/config dir so they can diverge. Only built where desktop.claudeDesktop is set.
   jsonFmt = pkgs.formats.json { };
 
   desktopSettings = {
@@ -251,10 +240,7 @@ let
   desktopSettingsFile = jsonFmt.generate "claude-desktop-settings.json" desktopSettings;
   desktopMcpFile = jsonFmt.generate "claude-desktop-mcp.json" { mcpServers = desktopMcpServers; };
 
-  # The app writes credentials/state into CLAUDE_CONFIG_DIR, so it must be a
-  # writable per-user dir, not a store path. On each launch we (re)assert the
-  # declarative settings.json and merge our mcpServers into the app-owned
-  # .claude.json, preserving whatever state the app has written.
+  # The app writes state into CLAUDE_CONFIG_DIR (must be writable, not a store path); each launch re-asserts settings.json and merges our mcpServers into the app-owned .claude.json.
   claudeDesktopLauncher = pkgs.writeShellApplication {
     name = "claude-desktop";
     runtimeInputs = [

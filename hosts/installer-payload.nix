@@ -1,16 +1,6 @@
-# Shared installer environment for the server boxes. Imported by both the USB
-# live-media ISO (hosts/live-media.nix) and the PXE netboot image
-# (hosts/netboot.nix) so both deliver the exact same install flow — the only
-# difference between them is transport (USB vs network), not behaviour.
-#
-# Two closure-delivery shapes, selected by `substituter`:
-#   - null (USB): the target closure is baked into the image by the importing
-#     host (isoImage.storeContents), and install-server references it as a
-#     context-carrying store path so it's a genuine dependency of the image.
-#   - set (netboot): thin. install-server references the target closure only as
-#     a bare (context-discarded) path string, so it is NOT dragged into the RAM
-#     initrd; nixos-install substitutes it straight into /mnt from `substituter`
-#     (stone's http binary cache) at install time.
+# Shared installer environment for the server boxes (USB live-media + PXE netboot
+# deliver the identical install flow; only transport differs). `substituter`
+# selects closure delivery: null = baked/USB, set = thin/netboot.
 {
   pkgs,
   lib,
@@ -23,18 +13,14 @@
 let
   targetTopLevel = targetSystem.config.system.build.toplevel;
 
-  # Baked: keep the context so the closure is a dependency of the image.
-  # Thin: discard the context so referencing the path here creates no
-  # dependency edge — the closure stays out of the netboot initrd.
+  # Thin discards string context so the path is no dependency edge — closure stays out of the netboot initrd. Baked keeps it.
   systemPath =
     if substituter == null then
       "${targetTopLevel}"
     else
       builtins.unsafeDiscardStringContext (toString targetTopLevel);
 
-  # nixos-install forwards --option to its internal `nix-env --set --store /mnt`
-  # (verified against nixos-install.sh), which then substitutes the closure into
-  # /mnt from our unsigned http cache.
+  # nixos-install forwards --option to its internal nix-env --set --store /mnt, which substitutes the closure from our unsigned http cache.
   substituterFlags = lib.optionalString (substituter != null) (
     "--option extra-substituters ${substituter} --option require-sigs false"
   );

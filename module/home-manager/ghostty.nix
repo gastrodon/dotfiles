@@ -40,11 +40,10 @@ lib.mkIf (desktop.terminal.pname == "ghostty") {
       window-padding-y = 0;
       window-show-tab-bar = "auto";
 
-      # Solarized Dark colors
       background = palette.background;
       foreground = palette.foreground;
 
-      # Color palette (0-15)
+      # palette indices 0-15
       palette = [
         "0=${palette.black}"
         "1=${palette.red}"

@@ -1,32 +1,3 @@
-/*
-  # i3 Window Manager Scripts Collection
-
-  This module provides utility scripts for i3wm functionality:
-
-  `blur-lock`
-  Screen lock with blur effect using i3lock
-
-  `volume-brightness`
-  Volume and brightness control with dunst notifications
-
-  `powermenu`
-  Rofi-based power menu (shutdown, reboot, suspend, etc.)
-
-  `empty-workspace`
-  Find and switch to the first empty workspace
-
-  `keyhint`
-  Display i3 keybindings in rofi
-
-  `power-profiles`
-  Rofi menu for switching power profiles (performance/balanced/power-saver)
-
-  `battery-block`
-  i3blocks battery indicator using sys/rend pipeline
-
-  `brightness-block`
-  i3blocks brightness indicator with scroll wheel support
-*/
 { pkgs, local, ... }:
 let
   blur-lock = pkgs.writeScriptBin "blur-lock" ''
