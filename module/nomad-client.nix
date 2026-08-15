@@ -1,4 +1,4 @@
-# Nomad client — worker node, joins server.local via mDNS, podman driver (no docker).
+# Nomad client — worker node, retry_joins the server boxes by IP, podman driver (no docker).
 {
   config,
   lib,
@@ -7,6 +7,8 @@
 }:
 let
   cfg = config.services.nomadClient;
+  hosts = import ./hosts.nix;
+  serverIps = lib.attrValues (lib.filterAttrs (n: _: lib.hasPrefix "server" n) hosts);
 in
 {
   options.services.nomadClient = {
@@ -18,7 +20,7 @@ in
 
     serverAddrs = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "server.local:4647" ];
+      default = map (ip: "${ip}:4647") serverIps;
       description = "Nomad server RPC addresses.";
     };
   };

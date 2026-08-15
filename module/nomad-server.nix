@@ -1,5 +1,10 @@
-# Nomad server — sole cluster leader (single-server, no HA); also runs a co-located client so the box runs jobs itself.
-{ config, pkgs, ... }:
+# Nomad server — HA raft peer. Every server box runs this; they form one cluster.
+{ config, lib, pkgs, ... }:
+let
+  hosts = import ./hosts.nix;
+  serverIps = lib.attrValues (lib.filterAttrs (n: _: lib.hasPrefix "server" n) hosts);
+  serverAddrs = map (ip: "${ip}:4647") serverIps;
+in
 {
   services.nomad = {
     enable = true;
@@ -18,7 +23,9 @@
 
       server = {
         enabled = true;
-        bootstrap_expect = 1;
+        bootstrap_expect = builtins.length serverAddrs;
+        # Same list on every box; a peer self-joining is a no-op.
+        server_join.retry_join = serverAddrs;
       };
 
       # Co-located client — reaches the local server over loopback, no retry_join needed.
