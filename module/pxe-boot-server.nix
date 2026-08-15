@@ -104,8 +104,9 @@ in
       };
     };
 
-    # claude-owned so the payload can be staged without sudo.
-    systemd.tmpfiles.rules = [ "d ${cfg.payloadDir} 0755 claude users - -" ];
+    # claude-owned, group-writable so the payload can be staged (by claude, or
+    # by eva who shares the users group) without sudo.
+    systemd.tmpfiles.rules = [ "d ${cfg.payloadDir} 0775 claude users - -" ];
 
     networking.firewall.allowedUDPPorts = [
       67

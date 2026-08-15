@@ -78,6 +78,39 @@ case "${1:-build}" in
         ;;
     esac
     ;;
+  netboot)
+    # Thin PXE netboot for the server boxes: build the image, stage the boot
+    # files + target closure into stone's PXE payload dir. Run this on stone.
+    PXE_DIR="${PXE_DIR:-/var/lib/pxe}"
+    NB="$SCRIPT_DIR#nixosConfigurations.server-netboot.config.system.build"
+
+    if [[ ! -d "$PXE_DIR" ]]; then
+      echo "Error: $PXE_DIR doesn't exist — run this on the PXE boot server (stone)."
+      echo "       (services.pxeBootServer creates it; set PXE_DIR to override.)"
+      exit 1
+    fi
+
+    echo "Building thin netboot image for server..."
+    kernel=$(nix build --no-link --print-out-paths --impure "$NB.kernel")
+    initrd=$(nix build --no-link --print-out-paths --impure "$NB.netbootRamdisk")
+    ipxe=$(nix build --no-link --print-out-paths --impure "$NB.netbootIpxeScript")
+    toplevel=$(nix build --no-link --print-out-paths --impure \
+      "$SCRIPT_DIR#nixosConfigurations.server.config.system.build.toplevel")
+
+    echo "Staging boot files into $PXE_DIR ..."
+    install -m 0644 "$kernel/bzImage" "$PXE_DIR/bzImage"
+    install -m 0644 "$initrd/initrd" "$PXE_DIR/initrd"
+    install -m 0644 "$ipxe/netboot.ipxe" "$PXE_DIR/netboot.ipxe"
+
+    echo "Copying target closure into $PXE_DIR/cache ..."
+    nix copy --to "file://$PXE_DIR/cache?compression=zstd" "$toplevel"
+
+    echo ""
+    echo "Staged:"
+    echo "  initrd (thin — installer env only): $(du -h "$initrd/initrd" | cut -f1)"
+    echo "  target closure served from:         $PXE_DIR/cache"
+    echo "Boxes chain http://<stone>:8080/netboot.ipxe and pull the closure at install time."
+    ;;
   sdimage)
     if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
       echo "Error: Unknown hostname '$HOSTNAME'"
@@ -98,6 +131,7 @@ case "${1:-build}" in
     echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
     echo "  iso --live        - Build live-media interactive ISO"
     echo "                      hostname: server only"
+    echo "  netboot           - Build + stage thin PXE netboot payload (server; run on stone)"
     echo "  sdimage           - Build SD card image"
     echo "                      hostname: rpi2b|rpi3b-plus|rpi4b (or NIXOS_HOSTNAME=<hostname>)"
     echo ""

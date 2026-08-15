@@ -85,11 +85,29 @@
           system = "x86_64-linux";
           specialArgs = {
             inherit targetSystem diskConfig;
+            substituter = null;
             diskoPkg = disko.packages.x86_64-linux.disko;
           };
           modules = [
             "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
             ./hosts/live-media.nix
+          ];
+        };
+
+      # Thin PXE netboot image: the target closure is left out of the RAM
+      # initrd and substituted from `substituter` (stone's http cache) at
+      # install time. See hosts/netboot.nix + installer-payload.nix.
+      mkNetboot =
+        { targetSystem, diskConfig, substituter }:
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit targetSystem diskConfig substituter;
+            diskoPkg = disko.packages.x86_64-linux.disko;
+          };
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/netboot/netboot-minimal.nix"
+            ./hosts/netboot.nix
           ];
         };
 
@@ -156,6 +174,16 @@
       nixosConfigurations.server-live-media = mkLiveMedia {
         targetSystem = self.nixosConfigurations.server;
         diskConfig = ./hosts/server/disks.nix;
+      };
+
+      # Thin netboot image, chained from stone's PXE boot server. The
+      # substituter is stone's nginx serving the staged binary cache (see
+      # module/pxe-boot-server.nix: hostAddress:httpPort + /cache under
+      # payloadDir).
+      nixosConfigurations.server-netboot = mkNetboot {
+        targetSystem = self.nixosConfigurations.server;
+        diskConfig = ./hosts/server/disks.nix;
+        substituter = "http://192.168.0.77:8080/cache";
       };
 
       nixosConfigurations.stone-installer = mkInstaller {
