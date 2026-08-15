@@ -66,6 +66,10 @@ in
   config = lib.mkIf cfg.enable {
     services.dnsmasq = {
       enable = true;
+      # Don't let NixOS point resolv.conf at dnsmasq: with port=0 there's no DNS
+      # listener, so registering it as the local resolver breaks all name
+      # resolution on the host.
+      resolveLocalQueries = false;
       settings = {
         # DNS off — this is a boot helper, not a resolver.
         port = 0;
