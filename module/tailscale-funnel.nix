@@ -47,21 +47,34 @@ in
       requires = [ "tailscaled.service" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
-      path = [ pkgs.tailscale ];
+      path = [
+        pkgs.tailscale
+        pkgs.coreutils
+        pkgs.gnugrep
+      ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
+        # Never wedge activation — cap the whole unit.
+        TimeoutStartSec = 60;
       };
       script = ''
-        set -eu
+        set -u
         # Wait for the node to be Running before serving.
-        for _ in $(seq 1 30); do
+        for _ in $(seq 1 20); do
           if tailscale status --json 2>/dev/null | grep -q '"BackendState": *"Running"'; then
             break
           fi
           sleep 2
         done
-        tailscale funnel --bg ${cfg.target}
+        # If Funnel isn't yet enabled for this node in the tailnet ACL the CLI
+        # blocks; bound it and exit clean so the switch completes. A later
+        # `systemctl restart tailscale-funnel` (after the ACL grants funnel)
+        # applies it for real.
+        if ! timeout 15 tailscale funnel --bg ${cfg.target}; then
+          echo "funnel not applied — is Funnel enabled for this node in the tailnet ACL?" >&2
+        fi
+        exit 0
       '';
     };
   };
