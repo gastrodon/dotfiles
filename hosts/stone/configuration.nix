@@ -13,6 +13,7 @@
     ../../module/claude-user.nix
     ../../module/claude-code.nix
     ../../module/pi.nix
+    ../../module/linear.nix
     ../../module/pxe-boot-server.nix
   ];
 
