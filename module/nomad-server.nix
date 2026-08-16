@@ -3,7 +3,10 @@
 let
   hosts = import ./hosts.nix;
   serverIps = lib.attrValues (lib.filterAttrs (n: _: lib.hasPrefix "server" n) hosts);
-  serverAddrs = map (ip: "${ip}:4647") serverIps;
+  # Server-to-server join is serf gossip on 4648 — NOT the RPC port 4647 (that's
+  # what clients use to reach servers). Joining on 4647 never forms gossip, so
+  # each server bootstraps its own raft → split brain.
+  serverGossipAddrs = map (ip: "${ip}:4648") serverIps;
 in
 {
   services.nomad = {
@@ -23,9 +26,9 @@ in
 
       server = {
         enabled = true;
-        bootstrap_expect = builtins.length serverAddrs;
+        bootstrap_expect = builtins.length serverGossipAddrs;
         # Same list on every box; a peer self-joining is a no-op.
-        server_join.retry_join = serverAddrs;
+        server_join.retry_join = serverGossipAddrs;
       };
 
       # Co-located client — reaches the local server over loopback, no retry_join needed.
