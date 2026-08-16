@@ -14,12 +14,10 @@
     ../../module/nomad-server.nix
     ../../module/minecraft-server.nix
     ../../module/actual.nix
-    ../../module/linear-agent.nix
-    ../../module/pi-agent.nix
+    ../../module/pibot.nix
     ../../module/tailscale-funnel.nix
   ];
 
-  services.linearAgent.enable = true;
   services.tailscaleFunnel = {
     enable = true;
     target = "3456";
