@@ -8,7 +8,7 @@ let
   kioskUrl = "http://homeassistant.local:8123/";
 
   # Rotate the connected output 90° left; detect its name at runtime (HDMI-1 vs HDMI-A-1 varies by kernel). No input device to wake it, so never blank.
-  rotate = pkgs.writeShellScript "rpi4b-monitor-rotate" ''
+  rotate = pkgs.writeShellScript "rpi-monitor-rotate" ''
     ${pkgs.xorg.xrandr}/bin/xrandr --query \
       | ${pkgs.gawk}/bin/awk '/ connected/ {print $1}' \
       | while read -r out; do
@@ -18,13 +18,13 @@ let
   '';
 
   # Fresh profile each boot so a crash never leaves a "restore session?" prompt over the dashboard.
-  kiosk = pkgs.writeShellScript "rpi4b-kiosk" ''
+  kiosk = pkgs.writeShellScript "rpi-kiosk" ''
     profile="$(mktemp -d)"
     exec ${pkgs.firefox}/bin/firefox \
       --profile "$profile" --kiosk "${kioskUrl}"
   '';
 
-  i3Config = pkgs.writeText "i3-rpi4b" ''
+  i3Config = pkgs.writeText "i3-rpi-kiosk" ''
     font pango:monospace 8
     exec_always --no-startup-id ${rotate}
     exec --no-startup-id ${kiosk}

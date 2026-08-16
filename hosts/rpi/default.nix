@@ -12,6 +12,7 @@ in
     ../../module/podman.nix
     ../../module/avahi.nix
     ../../module/nomad-client.nix
+    ../../module/cluster-net.nix
   ];
 
   home-manager = {

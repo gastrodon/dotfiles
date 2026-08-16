@@ -104,22 +104,29 @@
           ];
         };
 
+      # One rpi host (./hosts/rpi); boards differ only in the args below.
       # native builds hit cache.nixos.org (graphical hosts want this); cross builds miss cache but keep headless SD builds fast.
-      mkRpiImage =
+      mkRpi =
+        hostName:
         {
-          system,
-          sdModule,
-          configPath,
+          system ? "aarch64-linux",
+          sdModule ? "sd-image-aarch64.nix",
           native ? false,
+          address ? null,
+          modules ? [ ],
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
-            configPath
-            ./hosts/rpi/shared.nix
+            ./hosts/rpi
             home-manager.nixosModules.home-manager
+            {
+              networking.hostName = hostName;
+              clusterNet.address = address;
+            }
           ]
+          ++ modules
           ++ nixpkgs.lib.optional (!native) { nixpkgs.buildPlatform = "x86_64-linux"; };
         };
     in
@@ -189,17 +196,19 @@
       };
 
       # RPi SD card images
-      nixosConfigurations.rpi3b-plus = mkRpiImage {
-        system = "aarch64-linux";
-        sdModule = "sd-image-aarch64.nix";
-        configPath = ./hosts/rpi3b-plus/configuration.nix;
+      nixosConfigurations.rpi2b = mkRpi "rpi2b" {
+        system = "armv7l-linux";
+        sdModule = "sd-image-armv7l-multiplatform.nix";
       };
 
-      nixosConfigurations.rpi4b = mkRpiImage {
-        system = "aarch64-linux";
-        sdModule = "sd-image-aarch64.nix";
-        configPath = ./hosts/rpi4b/configuration.nix;
+      nixosConfigurations.rpi3b-plus = mkRpi "rpi3b-plus" {
+        address = "192.168.0.241";
+      };
+
+      nixosConfigurations.rpi4b = mkRpi "rpi4b" {
+        address = "192.168.0.242";
         native = true;
+        modules = [ ./hosts/rpi/graphical.nix ];
       };
 
       devShells.x86_64-linux.default = devenv.lib.mkShell {
