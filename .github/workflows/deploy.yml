@@ -1,0 +1,113 @@
+name: Deploy
+
+# Rolls the `server` config out to every live server box once CI's build job
+# has confirmed it builds cleanly on main. This is the automated version of
+# eva running:
+#   NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --flake .#server \
+#     --target-host root@<addr> --impure
+# ...once per box, with the box list discovered instead of hardcoded.
+#
+# EVA-154. This workflow is inert until three things exist, none of which
+# happen automatically:
+#   1. Repo secrets: TS_OAUTH_CLIENT_ID, TS_OAUTH_CLIENT_SECRET (a Tailscale
+#      OAuth client scoped to tag:ci-deploy) and CI_DEPLOY_SSH_KEY (the
+#      private half of keys/ci-deploy.pub, module/ci-deploy.nix).
+#   2. Tailnet ACL: tag:server and tag:ci-deploy defined in tagOwners, plus a
+#      grant tag:ci-deploy -> tag:server on tcp:22.
+#   3. keys/ci-deploy.pub committed and rolled out (module/ci-deploy.nix) so
+#      the deploy key is actually in root's authorized_keys on the boxes.
+# See the EVA-154 PR description for the full setup checklist and the
+# security review this design came out of. The `if:` below just skips the
+# job — not a hard failure — until secrets 1) exist.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      secrets.TS_OAUTH_CLIENT_ID != '' &&
+      secrets.CI_DEPLOY_SSH_KEY != ''
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # deploy exactly what CI validated, not whatever's newest on main.
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      # Ephemeral + tagged: this identity is gone from the tailnet the moment
+      # the job ends, so there's no standing CI node to revoke later — just
+      # the OAuth client, which eva can disable independently.
+      - name: join tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci-deploy
+
+      - name: load deploy key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.CI_DEPLOY_SSH_KEY }}
+
+      # Ask the tailnet who's tagged tag:server rather than hitting Nomad's
+      # HTTP API — same live membership (server boxes advertise both), one
+      # fewer credential (no Nomad read token to scope/rotate for CI), and
+      # it's the same ACL grant already needed for SSH. Swap this for a
+      # `nomad node status` query if node membership and tag:server ever
+      # diverge.
+      - name: discover server nodes
+        id: discover
+        run: |
+          set -euo pipefail
+          addrs=$(tailscale status --json \
+            | jq -r '.Peer[] | select(.Tags != null and (.Tags | index("tag:server"))) | .TailscaleIPs[0]')
+          if [ -z "$addrs" ]; then
+            echo "no tag:server peers visible on the tailnet — nothing to deploy" >&2
+            exit 1
+          fi
+          echo "deploy targets:"
+          echo "$addrs"
+          {
+            echo 'addrs<<EOF'
+            echo "$addrs"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # Serial, fail-open across hosts (one bad box doesn't block the rest),
+      # non-zero overall exit if any box failed. Good enough for a 2-3 box
+      # cluster; if the fleet grows, matrix this over discover's output
+      # instead for parallelism, or move to colmena/deploy-rs, which also
+      # buy health-checked rollback that raw nixos-rebuild doesn't have.
+      - name: deploy
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+          # host keys are unpinned (each run is a fresh runner, TOFU every
+          # time) — acceptable here because the tailnet ACL, not the host
+          # key, is what actually gates which boxes this job can reach.
+          NIX_SSHOPTS: "-o StrictHostKeyChecking=accept-new"
+        run: |
+          set -euo pipefail
+          status=0
+          while read -r addr; do
+            [ -z "$addr" ] && continue
+            echo "::group::deploy $addr"
+            nix shell nixpkgs#nixos-rebuild -c \
+              nixos-rebuild switch \
+                --flake ".#server" \
+                --target-host "root@$addr" \
+                --impure \
+              || { echo "deploy to $addr failed" >&2; status=1; }
+            echo "::endgroup::"
+          done <<< "${{ steps.discover.outputs.addrs }}"
+          exit "$status"
