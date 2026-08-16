@@ -53,6 +53,19 @@ in
       server1.hostname = hosts.server1;
       server2.hostname = hosts.server2;
       twink.hostname = hosts.twink;
+
+      # claude@ identity, not eva's — for agents (pi) that should carry the same
+      # scoped access ssh-mcp already grants Claude Code, not eva's own login.
+      "server1-agent" = {
+        hostname = hosts.server1;
+        user = "claude";
+        identityFile = "/run/secrets/claude-ssh-privkey-local";
+      };
+      "server2-agent" = {
+        hostname = hosts.server2;
+        user = "claude";
+        identityFile = "/run/secrets/claude-ssh-privkey-local";
+      };
     };
   };
 
