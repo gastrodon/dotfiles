@@ -11,6 +11,7 @@
 }:
 let
   jsonFormat = pkgs.formats.json { };
+  cfg = config.services.piAgent;
 
   # settings.json for the pi agent. Nix is authoritative — the entrypoint copies
   # this over the volume copy every dispatch, so Eva's tweaks flow through
@@ -23,6 +24,26 @@ let
     defaultThinkingLevel = "high";
     defaultProjectTrust = "always";
     packages = [ "git:github.com/paoloanzn/pi-black@v0.84.1-cc2.1.224.4" ];
+  };
+
+  # models.json — registers a custom "ollama" provider so dispatches can pass
+  # --model ollama/<id> (see the entrypoint's model_args) alongside the default
+  # Anthropic-via-pi-black provider from settings.json. Only rendered when the
+  # Ollama endpoint is enabled and at least one model is listed; the entrypoint
+  # copies it in only if present, so this is a no-op until configured. Ollama's
+  # OpenAI-compatible endpoint doesn't understand the `developer` role or
+  # `reasoning_effort`, hence the compat overrides (see docs/models.md).
+  modelsFile = jsonFormat.generate "pi-models.json" {
+    providers.ollama = {
+      baseUrl = cfg.ollama.baseUrl;
+      api = "openai-completions";
+      apiKey = "ollama";
+      compat = {
+        supportsDeveloperRole = false;
+        supportsReasoningEffort = false;
+      };
+      models = map (id: { inherit id; }) cfg.ollama.models;
+    };
   };
 
   # Unpatched standalone pi. It's a Bun single-exec (glibc-dynamic) — we do NOT
@@ -45,6 +66,9 @@ let
       mkdir -p $out
       cp -r . $out/
       cp ${settingsFile} $out/settings.json
+      ${lib.optionalString (cfg.ollama.enable && cfg.ollama.models != [ ]) ''
+        cp ${modelsFile} $out/models.json
+      ''}
       cp ${entrypointScript} $out/entrypoint.sh
     '';
   };
@@ -92,6 +116,11 @@ let
     export HOME=/root
     mkdir -p "$HOME/.pi/agent"
     cp -f /opt/pi/settings.json "$HOME/.pi/agent/settings.json"
+    # models.json only rides along when the Ollama provider is configured (see
+    # services.piAgent.ollama); absent otherwise, so this is a no-op by default.
+    if [ -f /opt/pi/models.json ]; then
+      cp -f /opt/pi/models.json "$HOME/.pi/agent/models.json"
+    fi
 
     # GitHub auth for clone/push. The PAT rides in on a ro bind-mount of the sops
     # secret; feed it to git via a credential helper (keeps it out of .gitconfig)
@@ -207,59 +236,83 @@ let
   };
 in
 {
-  # GitHub PAT for the worker's clone/push. Server-side secret (servers decrypt
-  # secrets.claude.yaml via the claude age key); bind-mounted ro into the job.
-  sops.secrets."github/pat" = {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    mode = "0400";
+  # Ollama provider config, rendered into models.json (see modelsFile above).
+  # Off by default — the worker keeps routing through Anthropic-via-pi-black
+  # until an endpoint is set. Once enabled with models listed, dispatch with
+  # `--model ollama/<id>` (the receiver already forwards a per-request model
+  # override via NOMAD_META_model).
+  options.services.piAgent.ollama = {
+    enable = lib.mkEnableOption "an Ollama provider stanza in the pi agent's models.json";
+
+    baseUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "http://127.0.0.1:11434/v1";
+      description = "Ollama's OpenAI-compatible endpoint, reachable from the pi-agent container network.";
+    };
+
+    models = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ "qwen2.5-coder:7b" ];
+      description = "Ollama model ids to expose to pi. Dispatch a given one with --model ollama/<id>.";
+    };
   };
 
-  # Persistent rw home for the pi container: auth.json, pi-black install, trust,
-  # sessions. Survives dispatches; the login command seeds auth.json here once.
-  systemd.tmpfiles.rules = [
-    "d /var/lib/pi-agent/home 0700 root root -"
-  ];
-
-  # Register (idempotent upsert) the job once Nomad has a leader. Cloned from
-  # nomad-acl-bootstrap: same retry-until-leader loop, same token handling. Both
-  # server boxes run this; a re-register is a no-op.
-  systemd.services.pi-agent-register = {
-    description = "Register the pi-agent parameterized Nomad batch job";
-    after = [ "nomad-acl-bootstrap.service" ];
-    requires = [ "nomad-acl-bootstrap.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.curl ];
-    environment.NOMAD_ADDR = "http://127.0.0.1:4646";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+  config = {
+    # GitHub PAT for the worker's clone/push. Server-side secret (servers decrypt
+    # secrets.claude.yaml via the claude age key); bind-mounted ro into the job.
+    sops.secrets."github/pat" = {
+      sopsFile = ../secrets.claude.yaml;
+      format = "yaml";
+      mode = "0400";
     };
-    script = ''
-      set -u
-      umask 077
-      tmp=$(mktemp)
-      trap 'rm -f "$tmp"' EXIT
-      tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path} > "$tmp"
-      token=$(cat "$tmp")
 
-      for _ in $(seq 1 60); do
-        code=$(curl -s -o /dev/null -w '%{http_code}' \
-          -H "X-Nomad-Token: $token" \
-          -X POST "$NOMAD_ADDR/v1/jobs" \
-          --data @${jobFile}) || code=000
-        case "$code" in
-          200)
-            echo "pi-agent job registered"
-            exit 0
-            ;;
-          *)
-            sleep 2
-            ;;
-        esac
-      done
-      echo "pi-agent registration failed after retries" >&2
-      exit 1
-    '';
+    # Persistent rw home for the pi container: auth.json, pi-black install, trust,
+    # sessions. Survives dispatches; the login command seeds auth.json here once.
+    systemd.tmpfiles.rules = [
+      "d /var/lib/pi-agent/home 0700 root root -"
+    ];
+
+    # Register (idempotent upsert) the job once Nomad has a leader. Cloned from
+    # nomad-acl-bootstrap: same retry-until-leader loop, same token handling. Both
+    # server boxes run this; a re-register is a no-op.
+    systemd.services.pi-agent-register = {
+      description = "Register the pi-agent parameterized Nomad batch job";
+      after = [ "nomad-acl-bootstrap.service" ];
+      requires = [ "nomad-acl-bootstrap.service" ];
+      wantedBy = [ "multi-user.target" ];
+      path = [ pkgs.curl ];
+      environment.NOMAD_ADDR = "http://127.0.0.1:4646";
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        set -u
+        umask 077
+        tmp=$(mktemp)
+        trap 'rm -f "$tmp"' EXIT
+        tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path} > "$tmp"
+        token=$(cat "$tmp")
+
+        for _ in $(seq 1 60); do
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "X-Nomad-Token: $token" \
+            -X POST "$NOMAD_ADDR/v1/jobs" \
+            --data @${jobFile}) || code=000
+          case "$code" in
+            200)
+              echo "pi-agent job registered"
+              exit 0
+              ;;
+            *)
+              sleep 2
+              ;;
+          esac
+        done
+        echo "pi-agent registration failed after retries" >&2
+        exit 1
+      '';
+    };
   };
 }
