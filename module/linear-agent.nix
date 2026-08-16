@@ -41,7 +41,18 @@ in
       sopsFile = ../secrets.claude.yaml;
       format = "yaml";
     };
-    sops.secrets."linear/app_token" = {
+    # The receiver bootstraps from the refresh token alone: on first use it mints
+    # an access token (client_id/secret + refresh_token) and persists the rotated
+    # material to StateDirectory, which is authoritative thereafter.
+    sops.secrets."linear/refresh_token" = {
+      sopsFile = ../secrets.claude.yaml;
+      format = "yaml";
+    };
+    sops.secrets."linear/client_id" = {
+      sopsFile = ../secrets.claude.yaml;
+      format = "yaml";
+    };
+    sops.secrets."linear/client_secret" = {
       sopsFile = ../secrets.claude.yaml;
       format = "yaml";
     };
@@ -52,7 +63,9 @@ in
       owner = "linear-agent";
       content = ''
         LINEAR_WEBHOOK_SECRET=${config.sops.placeholder."linear/webhook_secret"}
-        LINEAR_APP_TOKEN=${config.sops.placeholder."linear/app_token"}
+        LINEAR_REFRESH_TOKEN=${config.sops.placeholder."linear/refresh_token"}
+        LINEAR_CLIENT_ID=${config.sops.placeholder."linear/client_id"}
+        LINEAR_CLIENT_SECRET=${config.sops.placeholder."linear/client_secret"}
         NOMAD_TOKEN=${config.sops.placeholder."nomad/bootstrap_token"}
       '';
     };
@@ -66,6 +79,7 @@ in
         LISTEN_ADDR = cfg.listenAddr;
         NOMAD_ADDR = "http://127.0.0.1:4646";
         NOMAD_JOB = cfg.nomadJob;
+        STATE_DIR = "/var/lib/linear-agent";
       };
       serviceConfig = {
         ExecStart = "${linear-agent}/bin/linear-agent";
@@ -74,7 +88,11 @@ in
         Group = "linear-agent";
         Restart = "always";
         RestartSec = 5;
-        # Hardening — pure network service, no filesystem writes.
+        # /var/lib/linear-agent, owned by the service user — holds the rotated
+        # OAuth token state; stays writable under ProtectSystem=strict.
+        StateDirectory = "linear-agent";
+        StateDirectoryMode = "0700";
+        # Hardening — network service; only writes are to StateDirectory.
         DynamicUser = false;
         ProtectSystem = "strict";
         ProtectHome = true;

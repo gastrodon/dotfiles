@@ -4,6 +4,10 @@
 // 200 within Linear's 5s budget, then asynchronously (3) posts a `thought`
 // activity to acknowledge the session within the 10s budget and (4) dispatches
 // a parameterized Nomad batch job to run the actual agent (pi) in isolation.
+//
+// Linear's OAuth access token is short-lived (~24h), so the receiver refreshes
+// it in place using the refresh token + client credentials and persists the
+// rotated material to STATE_DIR so it survives restarts.
 package main
 
 import (
@@ -18,16 +22,26 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 )
 
-const linearGraphQL = "https://api.linear.app/graphql"
+const (
+	linearGraphQL = "https://api.linear.app/graphql"
+	linearOAuth   = "https://api.linear.app/oauth/token"
+)
 
 type config struct {
 	listenAddr    string
 	webhookSecret []byte
-	appToken      string
+	refreshToken  string
+	clientID      string
+	clientSecret  string
+	stateDir      string
 	nomadAddr     string
 	nomadToken    string
 	nomadJob      string
@@ -46,7 +60,10 @@ func loadConfig() config {
 	return config{
 		listenAddr:    get("LISTEN_ADDR", ":3456"),
 		webhookSecret: []byte(os.Getenv("LINEAR_WEBHOOK_SECRET")),
-		appToken:      os.Getenv("LINEAR_APP_TOKEN"),
+		refreshToken:  os.Getenv("LINEAR_REFRESH_TOKEN"),
+		clientID:      os.Getenv("LINEAR_CLIENT_ID"),
+		clientSecret:  os.Getenv("LINEAR_CLIENT_SECRET"),
+		stateDir:      os.Getenv("STATE_DIR"),
 		nomadAddr:     get("NOMAD_ADDR", "http://127.0.0.1:4646"),
 		nomadToken:    os.Getenv("NOMAD_TOKEN"),
 		nomadJob:      get("NOMAD_JOB", "pi-agent"),
@@ -62,9 +79,18 @@ type agentSessionEvent struct {
 	} `json:"agentSession"`
 }
 
+// tokenState is the refreshable OAuth material. Persisted to the state dir so
+// rotations survive restarts (Linear may rotate the refresh token on each use).
+type tokenState struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	Expires      int64  `json:"expires"` // unix seconds; 0 = unknown
+}
+
 func main() {
 	cfg := loadConfig()
 	c := &client{http: &http.Client{Timeout: 10 * time.Second}, cfg: cfg}
+	c.loadToken()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/webhook", c.handleWebhook)
@@ -80,6 +106,44 @@ func main() {
 type client struct {
 	http *http.Client
 	cfg  config
+	mu   sync.Mutex // guards tok
+	tok  tokenState
+}
+
+// loadToken seeds in-memory token state: the persisted state file wins; on first
+// run (no file) it falls back to the env-provided token trio and writes the file
+// so subsequent refreshes have somewhere to persist. Startup is single-threaded.
+func (c *client) loadToken() {
+	if c.cfg.stateDir != "" {
+		if b, err := os.ReadFile(c.tokenPath()); err == nil {
+			var ts tokenState
+			if json.Unmarshal(b, &ts) == nil && ts.AccessToken != "" {
+				c.tok = ts
+				log.Printf("loaded token state from %s (expires %d)", c.tokenPath(), ts.Expires)
+				return
+			}
+		}
+	}
+	c.tok = tokenState{RefreshToken: c.cfg.refreshToken}
+	c.persist(c.tok)
+}
+
+func (c *client) tokenPath() string { return filepath.Join(c.cfg.stateDir, "token.json") }
+
+// persist atomically writes token state to the state dir (temp + rename).
+func (c *client) persist(ts tokenState) {
+	if c.cfg.stateDir == "" {
+		return
+	}
+	b, _ := json.Marshal(ts)
+	tmp := c.tokenPath() + ".tmp"
+	if err := os.WriteFile(tmp, b, 0o600); err != nil {
+		log.Printf("persist token: %v", err)
+		return
+	}
+	if err := os.Rename(tmp, c.tokenPath()); err != nil {
+		log.Printf("persist token rename: %v", err)
+	}
 }
 
 func (c *client) handleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -148,11 +212,36 @@ func (c *client) dispatch(ev agentSessionEvent, raw []byte) {
 	}
 }
 
-// postActivity emits an agent activity (thought | action | response | error).
+// postActivity emits an agent activity (thought | action | response | error),
+// refreshing the OAuth token once on an auth failure and retrying.
 func (c *client) postActivity(ctx context.Context, sessionID, typ, body string) error {
-	if c.cfg.appToken == "" {
-		return fmt.Errorf("no LINEAR_APP_TOKEN configured")
+	token, err := c.token(ctx)
+	if err != nil {
+		return err
 	}
+	status, out, err := c.doActivity(ctx, token, sessionID, typ, body)
+	if err != nil {
+		return err
+	}
+	if isAuthFailure(status, out) {
+		token, err = c.refreshAfter(ctx, token)
+		if err != nil {
+			return fmt.Errorf("auth failed and refresh failed: %w", err)
+		}
+		status, out, err = c.doActivity(ctx, token, sessionID, typ, body)
+		if err != nil {
+			return err
+		}
+	}
+	if status != http.StatusOK || bytes.Contains(out, []byte(`"errors"`)) {
+		return fmt.Errorf("graphql %d: %s", status, out)
+	}
+	return nil
+}
+
+// doActivity performs one agentActivityCreate with the given bearer token and
+// returns the raw status + body so the caller can decide whether to refresh.
+func (c *client) doActivity(ctx context.Context, token, sessionID, typ, body string) (int, []byte, error) {
 	const q = `mutation($input: AgentActivityCreateInput!) {
   agentActivityCreate(input: $input) { success }
 }`
@@ -168,10 +257,80 @@ func (c *client) postActivity(ctx context.Context, sessionID, typ, body string) 
 	buf, _ := json.Marshal(payload)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, linearGraphQL, bytes.NewReader(buf))
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.cfg.appToken)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	out, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	return resp.StatusCode, out, nil
+}
+
+// isAuthFailure reports whether a Linear response indicates an expired/invalid
+// token (worth a refresh + retry). GraphQL auth errors can arrive 200/400 with
+// an AUTHENTICATION code rather than a 401.
+func isAuthFailure(status int, body []byte) bool {
+	if status == http.StatusUnauthorized || status == http.StatusForbidden {
+		return true
+	}
+	return bytes.Contains(bytes.ToLower(body), []byte("authentication"))
+}
+
+// token returns a currently-valid access token, refreshing proactively if it's
+// within 60s of expiry.
+func (c *client) token(ctx context.Context) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	// Refresh when we have no access token at all (bootstrap from the refresh
+	// token alone) or when a known expiry is within 60s.
+	needRefresh := c.tok.AccessToken == "" ||
+		(c.tok.Expires > 0 && time.Now().Unix() >= c.tok.Expires-60)
+	if needRefresh {
+		if err := c.refreshLocked(ctx); err != nil {
+			return "", err
+		}
+	}
+	if c.tok.AccessToken == "" {
+		return "", fmt.Errorf("no access token available")
+	}
+	return c.tok.AccessToken, nil
+}
+
+// refreshAfter refreshes only if the token still matches `used` (i.e. a
+// concurrent caller didn't already refresh), then returns the current token.
+func (c *client) refreshAfter(ctx context.Context, used string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.tok.AccessToken == used {
+		if err := c.refreshLocked(ctx); err != nil {
+			return "", err
+		}
+	}
+	return c.tok.AccessToken, nil
+}
+
+// refreshLocked exchanges the refresh token for a new access token and persists
+// the result. Caller must hold c.mu.
+func (c *client) refreshLocked(ctx context.Context) error {
+	if c.cfg.clientID == "" || c.cfg.clientSecret == "" || c.tok.RefreshToken == "" {
+		return fmt.Errorf("cannot refresh: missing client creds or refresh token")
+	}
+	form := url.Values{
+		"grant_type":    {"refresh_token"},
+		"refresh_token": {c.tok.RefreshToken},
+		"client_id":     {c.cfg.clientID},
+		"client_secret": {c.cfg.clientSecret},
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, linearOAuth, strings.NewReader(form.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -179,9 +338,29 @@ func (c *client) postActivity(ctx context.Context, sessionID, typ, body string) 
 	}
 	defer resp.Body.Close()
 	out, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if resp.StatusCode != http.StatusOK || bytes.Contains(out, []byte(`"errors"`)) {
-		return fmt.Errorf("graphql %d: %s", resp.StatusCode, out)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("token refresh %d: %s", resp.StatusCode, out)
 	}
+	var tr struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+		ExpiresIn    int64  `json:"expires_in"`
+	}
+	if err := json.Unmarshal(out, &tr); err != nil {
+		return fmt.Errorf("token refresh decode: %w", err)
+	}
+	if tr.AccessToken == "" {
+		return fmt.Errorf("token refresh: empty access_token in response")
+	}
+	c.tok.AccessToken = tr.AccessToken
+	if tr.RefreshToken != "" { // Linear may rotate the refresh token
+		c.tok.RefreshToken = tr.RefreshToken
+	}
+	if tr.ExpiresIn > 0 {
+		c.tok.Expires = time.Now().Unix() + tr.ExpiresIn
+	}
+	c.persist(c.tok)
+	log.Printf("refreshed Linear access token (expires %d)", c.tok.Expires)
 	return nil
 }
 
@@ -196,8 +375,8 @@ func (c *client) dispatchNomad(ctx context.Context, ev agentSessionEvent, raw []
 		},
 	}
 	buf, _ := json.Marshal(body)
-	url := c.cfg.nomadAddr + "/v1/job/" + c.cfg.nomadJob + "/dispatch"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(buf))
+	reqURL := c.cfg.nomadAddr + "/v1/job/" + c.cfg.nomadJob + "/dispatch"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(buf))
 	if err != nil {
 		return err
 	}
