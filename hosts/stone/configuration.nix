@@ -3,7 +3,6 @@
   config,
   lib,
   pkgs,
-  claude-desktop,
   ...
 }:
 {
@@ -22,12 +21,6 @@
     interface = "enp7s0";
     hostAddress = "192.168.0.77";
   };
-
-  # Claude Desktop + Cowork; wrapper built in claude.nix. Cowork runs a micro-VM per task, so eva needs kvm access.
-  desktop.claudeDesktop = claude-desktop.packages.${pkgs.system}.default;
-  users.users.${config.identity.username}.extraGroups = [ "kvm" ];
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   # Eva-readable copy of claude's SSH privkey so Claude Code (as eva) can auth as claude@server via ssh-mcp.
   sops.secrets."claude-ssh-privkey-local" = {

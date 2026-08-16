@@ -1,9 +1,6 @@
 {
-  config,
   pkgs,
-  lib,
   free-code,
-  desktop,
   ...
 }:
 let
@@ -165,42 +162,12 @@ let
     };
   };
 
-  # Desktop-only (Cowork) MCP servers: ~/code filesystem + Playwright (nix package self-wraps PLAYWRIGHT_BROWSERS_PATH, so no npx browser download).
-  filesystemMcpWrapper = pkgs.writeShellApplication {
-    name = "filesystem-mcp-wrapped";
-    runtimeInputs = [ pkgs.nodejs_24 ];
-    text = ''
-      exec npx -y @modelcontextprotocol/server-filesystem ${config.home.homeDirectory}/code "$@"
-    '';
-  };
-
-  desktopMcpServers = mcpServers // {
-    filesystem = {
-      command = "${filesystemMcpWrapper}/bin/filesystem-mcp-wrapped";
-    };
-    playwright = {
-      command = "${pkgs.playwright-mcp}/bin/mcp-server-playwright";
-    };
-  };
-
   claude = free-code.lib.mkClaude pkgs {
     inherit mcpServers;
     settings = {
-      model = {
-        default = "opus";
-        agent = "haiku";
-        plan = "best";
-        advisor = "best";
-        fallback = {
-          claude-fable-5 = [
-            "opus-4-8"
-            "opus-4-7"
-            "opus-4-6"
-            "sonnet-5"
-          ];
-        };
-      };
-      effortLevel = "low";
+      model = "sonnet";
+      advisorModel = "best";
+      effortLevel = "medium";
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
       };
@@ -229,59 +196,6 @@ let
   claudeEmail = pkgs.writeShellScriptBin "claude-email" ''
     exec ${claudeEmailBase}/bin/claude "$@"
   '';
-
-  # Claude Desktop (Cowork) — same MCP servers as the CLI, own settings/config dir so they can diverge. Only built where desktop.claudeDesktop is set.
-  jsonFmt = pkgs.formats.json { };
-
-  desktopSettings = {
-    includeCoAuthoredBy = false;
-    env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
-  };
-  desktopSettingsFile = jsonFmt.generate "claude-desktop-settings.json" desktopSettings;
-  desktopMcpFile = jsonFmt.generate "claude-desktop-mcp.json" { mcpServers = desktopMcpServers; };
-
-  # The app writes state into CLAUDE_CONFIG_DIR (must be writable, not a store path); each launch re-asserts settings.json and merges our mcpServers into the app-owned .claude.json.
-  claudeDesktopLauncher = pkgs.writeShellApplication {
-    name = "claude-desktop";
-    runtimeInputs = [
-      pkgs.jq
-      pkgs.coreutils
-    ];
-    text = ''
-      cfg="''${XDG_CONFIG_HOME:-$HOME/.config}/claude-desktop"
-      mkdir -p "$cfg"
-      install -m600 ${desktopSettingsFile} "$cfg/settings.json"
-
-      dotclaude="$cfg/.claude.json"
-      [ -f "$dotclaude" ] || echo '{}' > "$dotclaude"
-      tmp="$(mktemp)"
-      jq --slurpfile m ${desktopMcpFile} '.mcpServers = $m[0].mcpServers' "$dotclaude" > "$tmp"
-      mv "$tmp" "$dotclaude"
-      chmod 600 "$dotclaude"
-
-      export CLAUDE_CONFIG_DIR="$cfg"
-      exec ${desktop.claudeDesktop}/bin/claude-desktop "$@"
-    '';
-  };
-
-  claudeDesktopConfigured = pkgs.symlinkJoin {
-    name = "claude-desktop-configured";
-    paths = [
-      claudeDesktopLauncher
-      desktop.claudeDesktop
-    ];
-    postBuild = ''
-      rm -f "$out/bin/claude-desktop"
-      ln -s ${claudeDesktopLauncher}/bin/claude-desktop "$out/bin/claude-desktop"
-
-      if [ -e "$out/share/applications/claude-desktop.desktop" ]; then
-        rm -f "$out/share/applications/claude-desktop.desktop"
-        substitute ${desktop.claudeDesktop}/share/applications/claude-desktop.desktop \
-          "$out/share/applications/claude-desktop.desktop" \
-          --replace-fail "Exec=${desktop.claudeDesktop}/bin/claude-desktop" "Exec=$out/bin/claude-desktop"
-      fi
-    '';
-  };
 in
 {
   home.packages = [
@@ -289,7 +203,5 @@ in
     claudeEmail
     pkgs.bubblewrap # sandbox runtime
     pkgs.socat # sandbox IPC
-  ]
-  ++ lib.optional (desktop.claudeDesktop != null) claudeDesktopConfigured;
-
+  ];
 }
