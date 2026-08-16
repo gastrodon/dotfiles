@@ -703,6 +703,26 @@
         "type": "github"
       }
     },
+    "pibot": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786908595,
+        "narHash": "sha256-UOCzfBE1UfpCJxO9exug73QQ/RLI84NgUYhfGuyAVts=",
+        "owner": "gastrodon",
+        "repo": "pibot",
+        "rev": "9485614a0e31dcde1612bb57b041cba23320cd49",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gastrodon",
+        "repo": "pibot",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "devenv": "devenv",
@@ -716,6 +736,7 @@
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
         "obsidian-local-rest-api": "obsidian-local-rest-api",
+        "pibot": "pibot",
         "sops-nix": "sops-nix"
       }
     },
