@@ -22,7 +22,7 @@ CLIENT_SECRET = os.environ.get("LINEAR_CLIENT_SECRET") or input("Client secret: 
 
 PORT = 8080
 REDIRECT = f"http://localhost:{PORT}/callback"
-SCOPE = "app:assignable,app:mentionable"
+SCOPE = "read,write,app:assignable,app:mentionable"
 STATE = secrets.token_urlsafe(16)
 
 authorize = "https://linear.app/oauth/authorize?" + urllib.parse.urlencode(
