@@ -367,11 +367,19 @@ func (c *client) refreshLocked(ctx context.Context) error {
 // dispatchNomad kicks the parameterized batch job, passing the raw webhook as
 // the dispatch payload and the session id as dispatch meta.
 func (c *client) dispatchNomad(ctx context.Context, ev agentSessionEvent, raw []byte) error {
+	// The receiver is the sole owner of the refresh token; hand the job only a
+	// short-lived access token (no refresh material) so it can post one response
+	// activity without a second refresher rotating tokens out from under us.
+	token, err := c.token(ctx)
+	if err != nil {
+		return fmt.Errorf("get access token for dispatch: %w", err)
+	}
 	body := map[string]any{
 		"Payload": base64.StdEncoding.EncodeToString(raw),
 		"Meta": map[string]string{
-			"session_id": ev.AgentSession.ID,
-			"action":     ev.Action,
+			"session_id":   ev.AgentSession.ID,
+			"action":       ev.Action,
+			"access_token": token,
 		},
 	}
 	buf, _ := json.Marshal(body)

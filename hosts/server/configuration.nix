@@ -15,6 +15,7 @@
     ../../module/minecraft-server.nix
     ../../module/actual.nix
     ../../module/linear-agent.nix
+    ../../module/pi-agent.nix
     ../../module/tailscale-funnel.nix
   ];
 
