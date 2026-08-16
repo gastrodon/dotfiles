@@ -31,4 +31,7 @@ in
     # Set a real password with `sudo passwd eva`
     initialPassword = "foobar2000";
   };
+
+  # Root pubkey login for `nixos-rebuild switch --target-host root@<host>`.
+  users.users.root.openssh.authorizedKeys.keyFiles = [ githubKeys ];
 }
