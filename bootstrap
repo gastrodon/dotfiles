@@ -1,27 +1,28 @@
 #!/usr/bin/env bash
-# ./bootstrap <hostname> <ip1> [ip2 ...]
-# ./bootstrap --host [hostname]
+# ./bootstrap <hostname> <ip1> [ip2 ...]   plant claude's keys on running targets
+# ./bootstrap --host [hostname]            plant claude's keys on this machine
+# ./bootstrap --live-media <hostname> <ip> install onto a box booted from live USB
 #
-# Provision one or more targets (running NixOS with an `eva` user we can ssh to)
-# as `<hostname>`. Each target gets:
-#   1. claude's age privkey planted at /var/lib/sops-nix/bootstrap-key.txt so
-#      sops-nix can decrypt secrets.claude.yaml at activation time
-#   2. claude's ssh privkey planted at /var/lib/sops-nix/github-deploy-key so
-#      the nix daemon can fetch the private free-code flake input via
-#      GIT_SSH_COMMAND (deploy key on gastrodon/free-code)
-#   3. this repo clobber-cloned into /home/claude/dotfiles
-#   4. `./build switch <hostname>` from that checkout (which activates the
-#      claude user), then chown the tree to claude:users
+# Bootstrap only plants the two secret keys a box needs before it can stand on
+# its own — everything target-host can't do on a fresh box:
+#   1. claude's age privkey at /var/lib/sops-nix/bootstrap-key.txt so sops-nix
+#      can decrypt secrets.claude.yaml at activation time
+#   2. claude's ssh privkey at /var/lib/sops-nix/github-deploy-key so the nix
+#      daemon can fetch the private free-code flake input (deploy key on
+#      gastrodon/free-code)
+#
+# Everyday rebuilds are NOT bootstrap's job. Once the keys are planted, deploy
+# with:
+#   nixos-rebuild switch --flake .#<hostname> --target-host root@<ip> --impure
+# (root pubkey login is granted by module/users.nix.)
 #
 # Secrets are decrypted locally (via sops + your age key) into temp files and
 # shipped to each target via scp. The remote script itself contains no key
 # material — it just `install`s the pre-shipped files into place. This means
 # any machine with your age key can bootstrap any target.
 #
-# `--host` mode is for a machine you're already on (e.g. stone, twink) where
-# steps 3/4 don't apply — it just plants the two keys locally, no ssh. Follow
-# up yourself with `sudo ./build switch [hostname]`. Hostname defaults to
-# `$(hostname)`.
+# `--host` mode is for a machine you're already on (e.g. stone, twink) — it just
+# plants the two keys locally, no ssh. Hostname defaults to `$(hostname)`.
 #
 # Idempotent — safe to re-run. No target-specific state is written into git.
 set -euo pipefail
@@ -117,8 +118,6 @@ HOSTNAME="$1"
 shift
 IPS=("$@")
 
-REPO_URL="https://github.com/gastrodon/dotfiles"
-
 SSH_OPTS=(
   -o "StrictHostKeyChecking=accept-new"
   -o "ConnectTimeout=10"
@@ -144,10 +143,10 @@ fi
 
 extract_keys
 
-# Remote orchestration script — no secrets, just moves the staged key files
-# into place and runs the switch. Uploaded alongside the keys per host.
+# Remote script — no secrets, just moves the staged key files into place.
+# Uploaded alongside the keys per host.
 REMOTE_SCRIPT="$(mktemp)"
-cat > "$REMOTE_SCRIPT" <<REMOTE
+cat > "$REMOTE_SCRIPT" <<'REMOTE'
 set -euo pipefail
 sudo -v
 
@@ -156,27 +155,16 @@ sudo install -d -m 700 -o root -g root /var/lib/sops-nix
 sudo install -m 400 -o root -g root /tmp/bootstrap-key.txt.staged /var/lib/sops-nix/bootstrap-key.txt
 sudo install -m 400 -o root -g root /tmp/github-deploy-key.staged /var/lib/sops-nix/github-deploy-key
 shred -u /tmp/bootstrap-key.txt.staged /tmp/github-deploy-key.staged 2>/dev/null || rm -f /tmp/bootstrap-key.txt.staged /tmp/github-deploy-key.staged
-
-echo "  -> clobber-cloning dotfiles into /home/claude/dotfiles..."
-sudo mkdir -p /home/claude
-sudo rm -rf /home/claude/dotfiles
-sudo git clone $REPO_URL /home/claude/dotfiles
-
-echo "  -> running ./build switch $HOSTNAME..."
-sudo env NIXPKGS_ALLOW_UNFREE=1 GIT_SSH_COMMAND='ssh -i /var/lib/sops-nix/github-deploy-key -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes' /home/claude/dotfiles/build switch $HOSTNAME
-
-echo "  -> handing /home/claude/dotfiles to claude:users..."
-sudo chown -R claude:users /home/claude/dotfiles
 REMOTE
 
 for ip in "${IPS[@]}"; do
   echo ""
-  echo "=== Bootstrapping $ip as $HOSTNAME ==="
+  echo "=== Planting keys on $ip ==="
 
   echo "[1/3] Preflight: verifying ssh eva@$ip..."
   ssh "${SSH_OPTS[@]}" -o "BatchMode=yes" "eva@$ip" true
 
-  echo "[2/3] Uploading keys and bootstrap script..."
+  echo "[2/3] Uploading keys and install script..."
   scp -p "${SSH_OPTS[@]}" "$AGE_KEY_FILE" "eva@$ip:/tmp/bootstrap-key.txt.staged"
   scp -p "${SSH_OPTS[@]}" "$SSH_KEY_FILE" "eva@$ip:/tmp/github-deploy-key.staged"
   scp -p "${SSH_OPTS[@]}" "$REMOTE_SCRIPT" "eva@$ip:/tmp/dotfiles-bootstrap.sh"
@@ -185,8 +173,9 @@ for ip in "${IPS[@]}"; do
   ssh "${SSH_OPTS[@]}" -t "eva@$ip" \
     'bash /tmp/dotfiles-bootstrap.sh; rc=$?; shred -u /tmp/dotfiles-bootstrap.sh 2>/dev/null || rm -f /tmp/dotfiles-bootstrap.sh; exit $rc'
 
-  echo "=== $ip: done ==="
+  echo "=== $ip: keys planted ==="
 done
 
 echo ""
-echo "Bootstrap complete for ${#IPS[@]} host(s)."
+echo "Keys planted on ${#IPS[@]} host(s). Deploy each with:"
+echo "  nixos-rebuild switch --flake .#$HOSTNAME --target-host root@<ip> --impure"
