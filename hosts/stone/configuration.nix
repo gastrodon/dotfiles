@@ -44,7 +44,10 @@
 
   desktop.extra.i3config = {
     workspaceOutputAssign = [
-      { workspace = "10"; output = "DP-3"; }
+      {
+        workspace = "10";
+        output = "DP-3";
+      }
     ];
     startup = [
       {

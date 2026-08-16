@@ -13,11 +13,13 @@
 
   sops.age.generateKey = false;
 
-  system.activationScripts.claude-sops-setup = lib.mkIf (config.users.users ? claude) (lib.stringAfter [ "users" ] ''
-    mkdir -p /home/claude/.config/sops/age
-    chown -R claude:users /home/claude/.config
-    chmod 700 /home/claude/.config /home/claude/.config/sops /home/claude/.config/sops/age
-  '');
+  system.activationScripts.claude-sops-setup = lib.mkIf (config.users.users ? claude) (
+    lib.stringAfter [ "users" ] ''
+      mkdir -p /home/claude/.config/sops/age
+      chown -R claude:users /home/claude/.config
+      chmod 700 /home/claude/.config /home/claude/.config/sops /home/claude/.config/sops/age
+    ''
+  );
 
   sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../secrets.yaml) ../secrets.yaml;
 
