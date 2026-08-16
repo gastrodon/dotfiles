@@ -710,11 +710,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786910405,
-        "narHash": "sha256-soFZYkHpzxEPxLi2tyNtGKrMzGrfdH/OqtK+Z0fUi48=",
+        "lastModified": 1786910484,
+        "narHash": "sha256-m1zNJetr/ODVOn5MZUWpgc2FwWbYNBXNkjfSMitCkBk=",
         "owner": "gastrodon",
         "repo": "pibot",
-        "rev": "2d920b0b8bf89e5ef965a086f4b90b59d28c4bf0",
+        "rev": "3da26b5f5958f0cea36f1b6fae875d9d5da26bcf",
         "type": "github"
       },
       "original": {
