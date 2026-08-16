@@ -39,6 +39,13 @@ in
         region = "global";
         datacenter = cfg.datacenter;
 
+        # Must match the servers (module/nomad-server.nix). A client left with
+        # ACLs disabled against ACL-enabled servers can still serve its own HTTP
+        # API and forward UI requests, but every node RPC it makes is rejected —
+        # Node.UpdateStatus and Node.GetClientAllocs come back "Permission
+        # denied", so the node never registers and never appears in the topology.
+        acl.enabled = true;
+
         server.enabled = false;
 
         client = {
