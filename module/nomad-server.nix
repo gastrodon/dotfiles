@@ -32,7 +32,11 @@ in
       };
 
       # Co-located client — reaches the local server over loopback, no retry_join needed.
-      client.enabled = true;
+      # pi_worker meta pins the pi-agent job here (only server boxes carry the piPkg store path + auth volume).
+      client = {
+        enabled = true;
+        meta.pi_worker = "true";
+      };
 
       plugin.nomad-driver-podman.config = {
         socket_path = "unix:///run/podman/podman.sock";
