@@ -119,6 +119,18 @@
   hardware.nvidia-container-toolkit.enable = true;
   powerManagement.cpuFreqGovernor = "performance";
 
+  # Ollama endpoint for pi-agent's `ollama` provider (module/pi-agent.nix) to
+  # route local-model requests to, GPU-accelerated on the RTX 2080 Super.
+  # Listens on all interfaces so the "server" boxes can reach it over LAN at
+  # stone's IP (module/hosts.nix); firewalled open below, same pattern as the
+  # Minecraft port.
+  services.ollama = {
+    enable = true;
+    host = "0.0.0.0";
+    port = 11434;
+    acceleration = "cuda";
+  };
+
   swapDevices = [
     {
       device = "/swapfile";
@@ -127,7 +139,12 @@
   ];
 
   # Minecraft "Open to LAN" on a pinned port — direct-connect via stone.local:25565.
-  networking.firewall.allowedTCPPorts = [ 25565 ];
+  # 11434 is Ollama (services.ollama above), reachable from the pi-agent Nomad
+  # worker's container on the server boxes over LAN (module/hosts.nix).
+  networking.firewall.allowedTCPPorts = [
+    25565
+    11434
+  ];
 
   environment.systemPackages = [
     pkgs.prismlauncher

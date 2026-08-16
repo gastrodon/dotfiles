@@ -12,6 +12,11 @@
 let
   jsonFormat = pkgs.formats.json { };
 
+  # Host → LAN IP single source of truth (see module/hosts.nix). Used to point
+  # the Ollama provider at stone's GPU box without relying on mDNS resolution
+  # inside the minimal piImage container (it has no nss-mdns/avahi client).
+  hosts = import ./hosts.nix;
+
   # settings.json for the pi agent. Nix is authoritative — the entrypoint copies
   # this over the volume copy every dispatch, so Eva's tweaks flow through
   # rebuilds. defaultProjectTrust=always is required because -p is non-interactive
@@ -25,13 +30,38 @@ let
     packages = [ "git:github.com/paoloanzn/pi-black@v0.84.1-cc2.1.224.4" ];
   };
 
+  # models.json — custom provider catalog (docs/models.md). Adds an `ollama`
+  # provider pointed at stone's GPU box (module/hosts.nix has services.ollama
+  # enabled, listening on 0.0.0.0:11434, firewalled open). `compat` disables the
+  # `developer` role and `reasoning_effort`, which Ollama's OpenAI-compatible
+  # endpoint doesn't understand. Per-request `--model ollama/<id>` (see
+  # entrypoint's model_args) resolves against this catalog, so keep it in sync
+  # with whatever models are actually pulled on stone (`ollama pull <id>`).
+  modelsFile = jsonFormat.generate "pi-models.json" {
+    providers = {
+      ollama = {
+        baseUrl = "http://${hosts.stone}:11434/v1";
+        api = "openai-completions";
+        apiKey = "ollama";
+        compat = {
+          supportsDeveloperRole = false;
+          supportsReasoningEffort = false;
+        };
+        models = [
+          { id = "qwen2.5-coder:7b"; }
+          { id = "deepseek-r1:1.5b"; }
+        ];
+      };
+    };
+  };
+
   # Unpatched standalone pi. It's a Bun single-exec (glibc-dynamic) — we do NOT
   # autoPatchelf it (patchelf-on-appended-payload breaks Bun single-execs). The
   # interp is the FHS path /lib64/ld-linux-x86-64.so.2; piImage carries glibc,
   # which supplies that loader, so the binary runs unmodified. Keep the tarball
   # layout intact (sibling
-  # node_modules + wasm). settings.json rides along so the entrypoint can cp it
-  # from the ro mount.
+  # node_modules + wasm). settings.json/models.json ride along so the entrypoint
+  # can cp them from the ro mount.
   piPkg = pkgs.stdenvNoCC.mkDerivation {
     pname = "pi-standalone";
     version = "0.84.1";
@@ -45,6 +75,7 @@ let
       mkdir -p $out
       cp -r . $out/
       cp ${settingsFile} $out/settings.json
+      cp ${modelsFile} $out/models.json
       cp ${entrypointScript} $out/entrypoint.sh
     '';
   };
@@ -92,6 +123,7 @@ let
     export HOME=/root
     mkdir -p "$HOME/.pi/agent"
     cp -f /opt/pi/settings.json "$HOME/.pi/agent/settings.json"
+    cp -f /opt/pi/models.json "$HOME/.pi/agent/models.json"
 
     # GitHub auth for clone/push. The PAT rides in on a ro bind-mount of the sops
     # secret; feed it to git via a credential helper (keeps it out of .gitconfig)
