@@ -43,6 +43,11 @@
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    pibot = {
+      url = "github:gastrodon/pibot";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -156,6 +161,8 @@
           disko.nixosModules.disko
           inputs.nix-minecraft.nixosModules.minecraft-servers
           { nixpkgs.overlays = [ inputs.nix-minecraft.overlays.default ]; }
+          inputs.pibot.nixosModules.linearAgent
+          inputs.pibot.nixosModules.piAgent
         ];
       };
 
