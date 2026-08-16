@@ -1,5 +1,10 @@
 # Nomad server — HA raft peer. Every server box runs this; they form one cluster.
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   hosts = import ./hosts.nix;
   serverIps = lib.attrValues (lib.filterAttrs (n: _: lib.hasPrefix "server" n) hosts);

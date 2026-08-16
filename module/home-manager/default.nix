@@ -1,5 +1,14 @@
-{ palette, free-code, obsidian-local-rest-api }:
-{ config, pkgs, lib, ... }:
+{
+  palette,
+  free-code,
+  obsidian-local-rest-api,
+}:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   sshModule = import ./ssh.nix { inherit pkgs lib; };
   obsidianMcp = import ./obsidian-mcp.nix;
@@ -121,15 +130,17 @@ in
 
       home.file.".claude/project.md".text =
         let
-          hostnames = builtins.sort builtins.lessThan (builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.matchBlocks));
+          hostnames = builtins.sort builtins.lessThan (
+            builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.matchBlocks)
+          );
           hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
         in
         ''
-	  # Using teams
-          
+          # Using teams
+
           When eva says to create a teammate, create a worker, or uses other verbage to imply a persistent or named subagent, she is referring to teammates. Use the CreateTeam and related tools to spawn these agents.
 
-	  ## Teammate Naming
+          ## Teammate Naming
           The default naming scheme is to use the names of people, often people in science or other well known individuals. For the task, consider notable individuals. Pick a number of names to assign to your sub-agents. For example if we are working on a coding task, we may use well known computer programmers. If we are doing domain specific work or reverse engineering, we might consider more domain specific individuals or reverse engineers. 
 
           # Your Keys, Identity & Remote Access
@@ -155,7 +166,6 @@ in
           - You **can** decrypt `secrets.claude.yaml` — your own keys/credentials (SSH key, age key, AWS key id, etc.).
           - You **cannot** decrypt `secrets.yaml` (eva-only). Never use any key above to reach it.
         '';
-
 
       home.stateVersion = "25.11";
 
