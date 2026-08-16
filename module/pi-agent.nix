@@ -45,6 +45,7 @@ let
       mkdir -p $out
       cp -r . $out/
       cp ${settingsFile} $out/settings.json
+      cp ${entrypointScript} $out/entrypoint.sh
     '';
   };
 
@@ -138,6 +139,12 @@ let
       --data @/local/req.json
   '';
 
+  # Ship the script as a file in piPkg and run it, rather than inlining it as the
+  # task's args: Nomad interpolates ''${...} in job-spec fields and rejects the
+  # bash ''${VAR:-} colon syntax. In a file bash owns all expansion; Nomad only
+  # injects NOMAD_META_* as env.
+  entrypointScript = pkgs.writeText "pi-agent-entrypoint.sh" entrypoint;
+
   # API JSON shape for POST /v1/jobs — the { Job = {...}; } wrapper is the exact
   # request body. Meta keys declared here must match dispatchNomad exactly or
   # Nomad rejects the dispatch. model/thinking are optional (receiver doesn't send
@@ -178,10 +185,7 @@ let
               Config = {
                 image = "docker-archive:${piImage}";
                 command = "bash";
-                args = [
-                  "-c"
-                  entrypoint
-                ];
+                args = [ "/opt/pi/entrypoint.sh" ];
                 volumes = [
                   "${piPkg}:/opt/pi:ro"
                   "/var/lib/pi-agent/home:/root/.pi/agent"
