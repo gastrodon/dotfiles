@@ -7,6 +7,10 @@
 # auth.json (~/.pi/agent/auth.json) is never touched here: `/login anthropic` is
 # interactive and eva-only, and the resulting token is writable runtime state, not
 # something sops/nix should own — same model as the Linear agent's own tokens.
+#
+# BRAVE_API_KEY is the one exception: it's read from the sops secret module/pi.nix
+# declares (secrets.claude.yaml) and exported for the brave-search skill below, since
+# that key isn't produced by an interactive pi login the way auth.json is.
 { pkgs, ... }:
 let
   piVersion = "0.84.1";
@@ -64,6 +68,13 @@ let
     packages = [
       "git:github.com/paoloanzn/pi-black@${piBlackTag}"
       "npm:@lebronj/pi-playwright@${piPlaywrightVersion}"
+      # badlogic/pi-skills is a grab-bag (browser-tools/gccli/gdcli/gmcli/etc.); scope the
+      # install to just brave-search — pi's WebSearch equivalent — via the object filter
+      # form instead of pulling in the whole bundle.
+      {
+        source = "git:github.com/badlogic/pi-skills";
+        skills = [ "brave-search" ];
+      }
     ];
   };
 
@@ -101,6 +112,14 @@ let
       # skip Playwright's own postinstall browser download — it would just fail/waste
       # time trying to fetch binaries we never use.
       export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+      # brave-search skill reads this. The secret itself is owned by module/pi.nix
+      # (sops.secrets."brave/api_key", in secrets.claude.yaml) — absent until that key
+      # is provisioned, so this is best-effort rather than a hard dependency.
+      if [ -r /run/secrets/brave/api_key ]; then
+        BRAVE_API_KEY="$(< /run/secrets/brave/api_key)"
+        export BRAVE_API_KEY
+      fi
 
       cfg="$HOME/.pi/agent"
       mkdir -p "$cfg"
