@@ -105,6 +105,5 @@ in
   home.packages = [
     pi
     notesmdCli
-    pkgs.comma
   ];
 }
