@@ -109,23 +109,24 @@ let
     };
   };
 
-  # Every server box runs this module, but only the pinned one may claim the mDNS
-  # name — two publishers of homeassistant.local is a name collision.
+  # Every server box runs this module, but only one may claim the mDNS name — two
+  # publishers is a collision. Gate on "is HA actually serving here?" rather than on
+  # hostname: the boxes have no static hostname (derive-hostname/DHCP set it well
+  # after boot), so a name comparison races startup and, worse, silently succeeds as
+  # a no-op. Probing the port is race-free and self-corrects if the pin ever moves.
   publishAlias = pkgs.writeShellScript "publish-homeassistant-alias" ''
-    if [ "$(${pkgs.nettools}/bin/hostname)" != "${cfg.nodeName}" ]; then
-      echo "not the HA node (${cfg.nodeName}); nothing to publish"
-      exit 0
-    fi
+    while :; do
+      if (echo > /dev/tcp/127.0.0.1/${toString cfg.port}) 2>/dev/null; then
+        ip=$(${pkgs.iproute2}/bin/ip -4 route get 1.1.1.1 \
+          | ${pkgs.gawk}/bin/awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
 
-    ip=$(${pkgs.iproute2}/bin/ip -4 route get 1.1.1.1 \
-      | ${pkgs.gawk}/bin/awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
-
-    if [ -z "$ip" ]; then
-      echo "no primary IPv4 to publish" >&2
-      exit 1
-    fi
-
-    exec ${pkgs.avahi}/bin/avahi-publish -a -R ${cfg.aliasName} "$ip"
+        if [ -n "$ip" ]; then
+          echo "HA is serving locally; publishing ${cfg.aliasName} -> $ip"
+          exec ${pkgs.avahi}/bin/avahi-publish -a -R ${cfg.aliasName} "$ip"
+        fi
+      fi
+      sleep 15
+    done
   '';
 in
 {
@@ -195,6 +196,12 @@ in
 
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
+    # module/avahi.nix leaves disable-user-service-publishing=yes, which makes the
+    # daemon reject client-published records outright ("Failed to create entry
+    # group: Not permitted") — avahi-publish below is exactly such a client, and an
+    # A record alias has no static-file equivalent to fall back on.
+    services.avahi.publish.userServices = true;
+
     # Same shape as pi-agent-register (module/pibot.nix): idempotent oneshot that
     # POSTs the jobspec once Nomad's ACL bootstrap has landed. Runs on all three
     # boxes; re-registering an identical spec is a no-op.
@@ -242,13 +249,21 @@ in
 
     systemd.services.homeassistant-mdns-alias = {
       description = "Publish ${cfg.aliasName} over mDNS for the kiosk";
-      after = [ "avahi-daemon.service" ];
-      wants = [ "avahi-daemon.service" ];
+      after = [
+        "network-online.target"
+        "avahi-daemon.service"
+      ];
+      wants = [
+        "network-online.target"
+        "avahi-daemon.service"
+      ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         ExecStart = publishAlias;
-        Restart = "on-failure";
-        RestartSec = 5;
+        # always, not on-failure: avahi-publish exiting cleanly (daemon restart)
+        # must send us back to probing, or the name silently disappears.
+        Restart = "always";
+        RestartSec = 10;
       };
     };
 
