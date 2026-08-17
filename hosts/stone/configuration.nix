@@ -12,7 +12,6 @@
     ../../module/nomad-client.nix
     ../../module/claude-user.nix
     ../../module/claude-code.nix
-    ../../module/pi.nix
     ../../module/linear.nix
     ../../module/pxe-boot-server.nix
   ];
@@ -32,6 +31,12 @@
     owner = config.identity.username;
     mode = "0600";
   };
+
+  # pi + pi-black — stone-only, and needs no system-level wiring (auth is interactive,
+  # no sops secrets), so it goes straight into home-manager rather than via a module/ wrapper.
+  home-manager.users.${config.identity.username}.imports = [
+    ../../module/home-manager/pi.nix
+  ];
 
   ifunnyRe.waydroidUser = config.identity.username;
 
