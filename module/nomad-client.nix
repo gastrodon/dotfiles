@@ -52,6 +52,13 @@ in
           enabled = true;
           # retry_join re-resolves DNS forever (recovers if it boots before server.local resolves); a plain `servers` list resolves once then drops.
           server_join.retry_join = cfg.serverAddrs;
+          # Declared, not merely absent: the pi-agent job selects nodes on
+          # meta.pi_worker, and these clients must never win one. They carry
+          # neither the worker's auth volume nor its store paths, and the rpi is
+          # arm64 while the worker image is x86_64-only. Setting it false says so
+          # in the config and in `nomad node status -verbose`, rather than
+          # leaving the exclusion to depend on nobody ever adding the meta.
+          meta.pi_worker = "false";
         };
 
         # No Consul here — disable auto-join to stop 127.0.0.1:8500 error spam.
