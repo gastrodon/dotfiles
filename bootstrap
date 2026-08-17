@@ -11,6 +11,13 @@
 #      daemon can fetch the private free-code flake input (deploy key on
 #      gastrodon/free-code)
 #
+# Everything else a box needs rides sops-nix off the back of key 1, and should
+# keep doing so rather than growing a step here — e.g. a server box joins the
+# pi-agent worker pool with credentials already in place because
+# sops.secrets."pi/auth_json" (module/pibot.nix) decrypts at activation. A
+# worker that needs a manual login is a worker that silently eats dispatches
+# until someone notices.
+#
 # Everyday rebuilds are NOT bootstrap's job. Once the keys are planted, deploy
 # with:
 #   nixos-rebuild switch --flake .#<hostname> --target-host root@<ip> --impure

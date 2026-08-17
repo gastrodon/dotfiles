@@ -43,6 +43,19 @@
     format = "yaml";
     mode = "0400";
   };
+  # pi's auth.json — the provider credentials the worker runs on. A fresh
+  # worker box has an empty /var/lib/pi-agent/home, and pi answers every prompt
+  # on such a node with "No API key found for the selected model" and then sits
+  # idle until the run is killed, which reaches Linear as a contentless reply.
+  # Seeding it from here means a new box becomes a working worker the moment
+  # bootstrap plants claude's age key and the config is deployed — no manual
+  # login per box. pi rewrites its own copy as tokens rotate; this is only the
+  # starting point, never a clobber.
+  sops.secrets."pi/auth_json" = {
+    sopsFile = ../secrets.claude.yaml;
+    format = "yaml";
+    mode = "0400";
+  };
 
   services.linearAgent = {
     enable = true;
@@ -57,5 +70,6 @@
     enable = true;
     githubPatFile = config.sops.secrets."github/pat".path;
     nomadBootstrapTokenFile = config.sops.secrets."nomad/bootstrap_token".path;
+    authFile = config.sops.secrets."pi/auth_json".path;
   };
 }
