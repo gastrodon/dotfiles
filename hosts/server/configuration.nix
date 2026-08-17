@@ -15,6 +15,7 @@
     ../../module/minecraft-server.nix
     ../../module/actual.nix
     ../../module/pibot.nix
+    ../../module/hermes-agent.nix
     ../../module/tailscale-funnel.nix
     ../../module/home-assistant.nix
   ];
