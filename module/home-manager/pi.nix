@@ -70,6 +70,10 @@ let
       rather than eva's own login.
     - For searching/comprehending the vault (not just reading a known file), prefer
       `notesmd-cli search-content <query>` over grepping `~/notes` by hand.
+    - This machine is NixOS: there's no ambient `apt`/`pip install`, and a binary missing
+      from PATH (e.g. `python3`) usually just isn't installed rather than needing a package
+      manager invocation. Reach for `, <command>` (comma, nix-community/comma) to run it
+      once from nixpkgs without a permanent install — it's the fast path for one-off tools.
   '';
 
   # Re-asserts our declared packages/instructions on every launch, merging packages into
@@ -82,6 +86,7 @@ let
       pkgs.git
       pkgs.ripgrep
       pkgs.nodejs_24
+      pkgs.comma
     ];
     text = ''
       cfg="$HOME/.pi/agent"
@@ -100,5 +105,6 @@ in
   home.packages = [
     pi
     notesmdCli
+    pkgs.comma
   ];
 }
