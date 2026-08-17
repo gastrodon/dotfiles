@@ -11,7 +11,6 @@
 let
   piVersion = "0.84.1";
   piBlackTag = "v0.84.1-cc2.1.224.4";
-  piPlaywrightVersion = "0.0.1";
 
   # Yakitrak's Obsidian CLI, renamed notesmd-cli (upstream ceded the "obsidian-cli" name
   # to Obsidian's own official tool). Go binary, no running Obsidian app required — has
@@ -27,14 +26,6 @@ let
     };
     vendorHash = null; # vendor/ directory ships in the repo
   };
-
-  # nixpkgs' chromium is fully self-contained (wrapped libs + working sandbox out of
-  # the box on NixOS — confirmed via a headless --dump-dom smoke test, no --no-sandbox
-  # or security.wrappers needed). pi-playwright never bundles its own browser: its
-  # `executablePath` tool param is the intended NixOS escape hatch (see its README),
-  # so we point every call at this store path instead of letting Playwright try to
-  # download/manage its own Chromium.
-  chromiumPath = "${pkgs.chromium}/bin/chromium";
 
   piPkg = pkgs.stdenv.mkDerivation {
     pname = "pi-coding-agent";
@@ -63,7 +54,6 @@ let
   piSettings = (pkgs.formats.json { }).generate "pi-settings.json" {
     packages = [
       "git:github.com/paoloanzn/pi-black@${piBlackTag}"
-      "npm:@lebronj/pi-playwright@${piPlaywrightVersion}"
     ];
   };
 
@@ -78,9 +68,6 @@ let
     - server1/server2: use `ssh server1-agent` / `ssh server2-agent`, not `ssh server1`/`ssh server2` —
       these authenticate as `claude@`, matching the scoped access ssh-mcp already grants Claude Code,
       rather than eva's own login.
-    - Browser automation (`browser_navigate` etc. from pi-playwright): always pass
-      `executablePath: "${chromiumPath}"` — there is no bundled/downloaded browser here,
-      that path is the only Chromium available.
     - For searching/comprehending the vault (not just reading a known file), prefer
       `notesmd-cli search-content <query>` over grepping `~/notes` by hand.
   '';
@@ -97,11 +84,6 @@ let
       pkgs.nodejs_24
     ];
     text = ''
-      # We always hand pi-playwright a nix-provided executablePath (see AGENTS.md), so
-      # skip Playwright's own postinstall browser download — it would just fail/waste
-      # time trying to fetch binaries we never use.
-      export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-
       cfg="$HOME/.pi/agent"
       mkdir -p "$cfg"
       settings="$cfg/settings.json"
