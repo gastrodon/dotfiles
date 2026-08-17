@@ -16,7 +16,11 @@
     ../../module/actual.nix
     ../../module/pibot.nix
     ../../module/tailscale-funnel.nix
+    ../../module/home-assistant.nix
   ];
+
+  # Backs the rpi4b kiosk (hosts/rpi/graphical.nix points Firefox at homeassistant.local:8123).
+  services.homeAssistantJob.enable = true;
 
   services.tailscaleFunnel = {
     enable = true;
