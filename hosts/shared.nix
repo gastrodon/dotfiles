@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  free-code,
   obsidian-local-rest-api,
   ...
 }:
@@ -40,7 +39,7 @@ in
     ../module/terminal.nix
     ../module/identity.nix
     (import ../module/i3 { inherit palette local; })
-    (import ../module/home-manager { inherit palette free-code obsidian-local-rest-api; })
+    (import ../module/home-manager { inherit palette obsidian-local-rest-api; })
     ../module/steam
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })

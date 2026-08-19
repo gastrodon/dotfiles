@@ -18,8 +18,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    free-code.url = "git+ssh://git@github.com/gastrodon/free-code?ref=refs/tags/0.2.6";
-
     devenv.url = "github:cachix/devenv";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
 
@@ -60,7 +58,6 @@
       devenv,
       devenv-nixpkgs,
       disko,
-      free-code,
       obsidian-local-rest-api,
       ...
     }@inputs:
@@ -142,7 +139,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -155,7 +152,7 @@
 
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -195,7 +192,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit free-code obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix

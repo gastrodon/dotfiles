@@ -1,6 +1,5 @@
 {
   palette,
-  free-code,
   obsidian-local-rest-api,
 }:
 {
@@ -24,7 +23,7 @@ in
       identity = config.identity;
       hostname = config.networking.hostName;
       desktop = config.desktop;
-      inherit palette free-code obsidian-local-rest-api;
+      inherit palette obsidian-local-rest-api;
     };
 
     users.${config.identity.username} = {

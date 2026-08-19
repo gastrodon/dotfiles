@@ -1,11 +1,32 @@
 {
   pkgs,
-  free-code,
   ...
 }:
 let
   hosts = import ../hosts.nix;
   obsidianMcp = import ./obsidian-mcp.nix;
+
+  # Wraps upstream claude-code (nixpkgs) with declarative MCP server and
+  # settings config, generated via pkgs.formats.json and passed through
+  # --mcp-config / --settings.
+  mkClaude =
+    {
+      settings ? { },
+      mcpServers ? { },
+      package ? pkgs.claude-code,
+    }:
+    let
+      fmt = pkgs.formats.json { };
+      mcpConfigFile = fmt.generate "claude-mcp-config.json" { inherit mcpServers; };
+      settingsFile = fmt.generate "claude-settings.json" settings;
+      extraArgs = pkgs.lib.concatStringsSep " " (
+        pkgs.lib.optional (mcpServers != { }) "--mcp-config ${mcpConfigFile}"
+        ++ pkgs.lib.optional (settings != { }) "--settings ${settingsFile}"
+      );
+    in
+    pkgs.writeShellScriptBin "claude" ''
+      exec ${pkgs.lib.getExe package} ${extraArgs} "$@"
+    '';
 
   # Available GitHub MCP toolsets:
   #   context          - current user and teams
@@ -162,7 +183,7 @@ let
     };
   };
 
-  claude = free-code.lib.mkClaude pkgs {
+  claude = mkClaude {
     inherit mcpServers;
     settings = {
       model = "sonnet";
@@ -182,7 +203,7 @@ let
     };
   };
 
-  claudeEmailBase = free-code.lib.mkClaude pkgs {
+  claudeEmailBase = mkClaude {
     mcpServers = {
       email = {
         command = "${emailMcpWrapper}/bin/email-mcp-wrapped";
@@ -201,7 +222,5 @@ in
   home.packages = [
     claude
     claudeEmail
-    pkgs.bubblewrap # sandbox runtime
-    pkgs.socat # sandbox IPC
   ];
 }
