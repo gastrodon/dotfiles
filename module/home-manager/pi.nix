@@ -57,23 +57,66 @@ let
     ];
   };
 
-  # Global instructions, same role as this repo's top-level AGENTS.md — pi loads
-  # ~/.pi/agent/AGENTS.md at startup (docs/usage.md). Nix is authoritative: overwritten
-  # on every launch, no interactive editor writes here the way /settings does for settings.json.
+  piModels = (pkgs.formats.json { }).generate "pi-models.json" {
+    providers.ollama = {
+      baseUrl = "http://127.0.0.1:11434/v1";
+      api = "openai-completions";
+      apiKey = "ollama";
+      compat = {
+        supportsDeveloperRole = false;
+        supportsReasoningEffort = false;
+      };
+      # qwen3:8b, not qwen2.5-coder:7b: the coder model emits tool calls as prose
+      # JSON rather than a tool_calls field, so pi never executes anything.
+      models = [
+        {
+          id = "qwen3:8b";
+          name = "Qwen3 8B (Stone)";
+          reasoning = true;
+          # Must match OLLAMA_CONTEXT_LENGTH on stone: ollama truncates silently
+          # rather than erroring, and pi only compacts if it thinks the window is full.
+          contextWindow = 40960;
+          maxTokens = 8192;
+        }
+      ];
+    };
+  };
+
+  # Global instructions, same role as CLAUDE.md — pi loads ~/.pi/agent/AGENTS.md at
+  # startup (docs/usage.md). Nix is authoritative: overwritten on every launch, no
+  # interactive editor writes here the way /settings does for settings.json.
+  # Kept vendor-neutral: naming Claude Code/MCP here led local models to answer as Claude.
   agentsFile = pkgs.writeText "pi-AGENTS.md" ''
     # Global instructions (stone)
 
-    - Obsidian vault is at `~/notes` — plain markdown files, read/write directly. No REST API/MCP needed.
-    - GitHub: use `gh` directly (already on PATH), not an MCP server.
-    - server1/server2: use `ssh server1-agent` / `ssh server2-agent`, not `ssh server1`/`ssh server2` —
-      these authenticate as `claude@`, matching the scoped access ssh-mcp already grants Claude Code,
-      rather than eva's own login.
-    - For searching/comprehending the vault (not just reading a known file), prefer
-      `notesmd-cli search-content <query>` over grepping `~/notes` by hand.
-    - This machine is NixOS: there's no ambient `apt`/`pip install`, and a binary missing
-      from PATH (e.g. `python3`) usually just isn't installed rather than needing a package
-      manager invocation. Reach for `, <command>` (comma, nix-community/comma) to run it
-      once from nixpkgs without a permanent install — it's the fast path for one-off tools.
+    ## Tools
+
+    You have four tools: `read`, `write`, `edit`, and `bash`. That is the whole surface —
+    there are no plugins or external tool servers. Anything that is not reading, writing or
+    editing a file is a shell command through `bash`: listing, searching, git, running
+    programs, network calls.
+
+    - Read a file with `read`, not `cat`. Change one with `edit`, not `sed -i` or a rewrite.
+    - `read` returns the file's raw text. It contains no line numbers, so never put line
+      numbers or `12:` style prefixes in `oldText` -- they will not match.
+    - `read` a file immediately before you `edit` it. `oldText` must match the file byte for
+      byte and must appear exactly once: if it is not unique, extend it with the lines above
+      and below until it is, rather than retrying the same text.
+    - `newText` must repeat everything `oldText` contained except the part being changed,
+      including any heading or context lines you added to make it unique.
+    - `write` is for new files and full rewrites only; prefer `edit` on files that exist.
+    - Search with `rg` and find with `fd` inside `bash`.
+    - Put independent shell work in a single `bash` call instead of many round trips.
+
+    ## This machine
+
+    - Obsidian vault is at `~/notes` — plain markdown files, read and edit them directly.
+      To search the vault by meaning rather than open a file you already know, use
+      `notesmd-cli search-content <query>` instead of grepping `~/notes` by hand.
+    - GitHub: `gh` is on PATH and already authenticated.
+    - server1/server2: connect with `ssh server1-agent` / `ssh server2-agent`, never plain
+      `ssh server1` / `ssh server2`. The `-agent` aliases log in as the scoped agent account;
+      the bare hostnames use eva's own login, which is not yours to use.
   '';
 
   # Re-asserts our declared packages/instructions on every launch, merging packages into
@@ -106,4 +149,8 @@ in
     pi
     notesmdCli
   ];
+
+  # This module is imported only by stone, so Pi's local Ollama provider never
+  # appears on the Nomad/Linear worker hosts.
+  home.file.".pi/agent/models.json".source = piModels;
 }

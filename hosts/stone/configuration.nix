@@ -125,6 +125,26 @@
   };
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
+
+  # Native CUDA-backed Ollama, available to LAN clients as stone:11434.
+  services.ollama = {
+    enable = true;
+    acceleration = "cuda";
+    host = "0.0.0.0";
+    openFirewall = true;
+    loadModels = [ "qwen3:8b" ];
+    # Native 40960 window fits in 8 GB only with a quantised KV cache (7.3 GB,
+    # fully on GPU); at f16 it spills to CPU and collapses to 9.7 tok/s. It is also
+    # the smallest window where pi's stock compaction has room to do anything.
+    # Measurements in EVA-152. contextWindow in pi.nix must match, or ollama
+    # silently drops history instead of erroring.
+    environmentVariables = {
+      OLLAMA_CONTEXT_LENGTH = "40960";
+      OLLAMA_FLASH_ATTENTION = "1"; # required for quantised KV
+      OLLAMA_KV_CACHE_TYPE = "q4_0";
+    };
+  };
+
   powerManagement.cpuFreqGovernor = "performance";
 
   swapDevices = [
