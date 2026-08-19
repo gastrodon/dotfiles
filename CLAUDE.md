@@ -48,8 +48,19 @@ Runs `nixos-rebuild build` (no switch, no root required). Emits `./result` which
 ## Repo Structure
 
 ```
-configuration.nix            # System entry point. Imports all modules. Defines palette.
-hardware-configuration.nix   # Generated hardware config — rarely touch this.
+hosts/
+  shared.nix                  # Shared NixOS config imported by every host. Imports all modules. Defines palette.
+  stone/                      # Desktop
+    configuration.nix         # Host entry point
+    hardware-configuration.nix
+  twink/                      # Laptop
+    configuration.nix
+    hardware-configuration.nix
+  server/
+    configuration.nix
+    hardware-configuration.nix
+  rpi/
+    default.nix
 module/
   identity.nix               # username, name, email, SSH key (eva / Eva Harris)
   users.nix                  # User account definition
@@ -104,30 +115,28 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 
 ## Key Patterns
 
-**Solarized Dark palette** — defined in `configuration.nix` and threaded into i3 and home-manager via module args. When adding color-aware modules, accept `{ palette, ... }` and pass it from `configuration.nix`.
+**Solarized Dark palette** — defined in `hosts/shared.nix` and threaded into i3 and home-manager via module args. When adding color-aware modules, accept `{ palette, ... }` and pass it from `hosts/shared.nix`.
 
 **Identity** — user info (username, email, SSH key) lives in `module/identity.nix` and is available as `config.identity` throughout. Use it instead of hardcoding "eva".
 
-**Home Manager modules** — new HM config goes in `module/home-manager/<name>.nix`, then imported in `module/home-manager/default.nix`. HM modules receive `{ identity, palette, claude-code-nix, pkgs, lib, config, ... }`.
+**Home Manager modules** — new HM config goes in `module/home-manager/<name>.nix`, then imported in `module/home-manager/default.nix`. HM modules receive `{ identity, palette, free-code, pkgs, lib, config, ... }`.
 
-**NixOS modules** — new system-level config goes in `module/<name>.nix` (or a subdir with `default.nix`), then imported in `configuration.nix`.
+**NixOS modules** — new system-level config goes in `module/<name>.nix` (or a subdir with `default.nix`), then imported in `hosts/shared.nix` (all hosts) or `hosts/<host>/configuration.nix` (host-specific).
 
 **Custom packages** — local packages are in `package/` and exposed as `local.packages` (list) or `local.cmd`, `local.sys`, `local.rend`. Pass `local` to modules that need custom scripts/binaries.
 
-**NUR** — Firefox extensions use NUR. The overlay is set up in `configuration.nix`.
-
-**claude-code-nix** — fetched as a flake in `configuration.nix`, passed to home-manager, used in `claude.nix`.
+**NUR** — Firefox extensions use NUR. The overlay is set up in `flake.nix`.
 
 ## Where to Add Common Things
 
 | Task | File |
 |------|------|
-| Install a system package | `configuration.nix` → `environment.systemPackages` |
+| Install a system package | `hosts/shared.nix` (all hosts) or `hosts/<host>/configuration.nix` (one host) → `environment.systemPackages` |
 | Install a user package | `module/home-manager/default.nix` → `home.packages` |
 | Add a shell alias | `module/home-manager/zsh/default.nix` → `shellAliases` |
 | Add a shell function/init | `module/home-manager/zsh/default.nix` → `initContent` |
 | Configure a new program | New `module/home-manager/<program>.nix`, import in `default.nix` |
-| Add a system service | New `module/<service>.nix`, import in `configuration.nix` |
+| Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` |
 | Add a custom script | `package/cmd/default.nix` |
 | Add an i3 keybind | `module/i3/config/keybinds.nix` |
 | Add an i3 autostart | `module/i3/config/exec.nix` |
