@@ -57,9 +57,9 @@ let
     ];
   };
 
-  # Global instructions, same role as CLAUDE.md — pi loads ~/.pi/agent/AGENTS.md at
-  # startup (docs/usage.md). Nix is authoritative: overwritten on every launch, no
-  # interactive editor writes here the way /settings does for settings.json.
+  # Global instructions, same role as this repo's top-level AGENTS.md — pi loads
+  # ~/.pi/agent/AGENTS.md at startup (docs/usage.md). Nix is authoritative: overwritten
+  # on every launch, no interactive editor writes here the way /settings does for settings.json.
   agentsFile = pkgs.writeText "pi-AGENTS.md" ''
     # Global instructions (stone)
 
