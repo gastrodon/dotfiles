@@ -187,7 +187,11 @@ let
     inherit mcpServers;
     settings = {
       model = "sonnet";
-      advisorModel = "best";
+      # "best" is a valid alias for the top-level `model` field but not for
+      # advisorModel: the advisor picker/validator only accepts "opus" or
+      # "sonnet" (resolved against opus-4-6/opus-4-7/sonnet-4-6). "opus" is
+      # the strongest of the two, preserving the original "best advisor" intent.
+      advisorModel = "opus";
       effortLevel = "medium";
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
