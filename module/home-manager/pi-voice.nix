@@ -33,6 +33,10 @@ let
       export ELEVENLABS_API_KEY
 
       export PI_VOICE_PROVIDER="openai"
+      # Super+C — confirmed free in module/home-manager/i3.nix (only Mod4+Shift+c is bound,
+      # to "reload"). Push-to-talk is a global X11 hook (uiohook), independent of i3's own
+      # bindsym grabs either way, but a free combo avoids i3 also firing on the same keypress.
+      export PI_VOICE_KEY="super+c"
 
       export OPENAI_BASE_URL="http://127.0.0.1:8000/v1"
       export OPENAI_API_KEY="speaches-no-auth-required"
