@@ -1,19 +1,17 @@
 {
   pkgs,
+  claude-code-nix,
   ...
 }:
 let
   hosts = import ../hosts.nix;
   obsidianMcp = import ./obsidian-mcp.nix;
 
-  # Wraps upstream claude-code (nixpkgs) with declarative MCP server and
-  # settings config, generated via pkgs.formats.json and passed through
-  # --mcp-config / --settings.
   mkClaude =
     {
       settings ? { },
       mcpServers ? { },
-      package ? pkgs.claude-code,
+      package ? claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default,
     }:
     let
       fmt = pkgs.formats.json { };
