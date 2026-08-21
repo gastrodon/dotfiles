@@ -399,7 +399,7 @@ in
             notification = false;
           }
           {
-            command = "${pkgs.xorg.xset}/bin/xset s off -dpms";
+            command = "${pkgs.xset}/bin/xset s off -dpms";
             notification = false;
           }
           {

@@ -70,7 +70,7 @@
               width = 1920;
               height = 1080;
             };
-            xrandr = "${pkgs.xorg.xrandr}/bin/xrandr";
+            xrandr = "${pkgs.xrandr}/bin/xrandr";
           in
           pkgs.writeShellScript "stone-monitor-layout" ''
             connected=$(${xrandr} --query | ${pkgs.gawk}/bin/awk '/ connected/ {print $1}')

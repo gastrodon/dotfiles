@@ -9,12 +9,12 @@ let
 
   # Rotate the connected output 90° left; detect its name at runtime (HDMI-1 vs HDMI-A-1 varies by kernel). No input device to wake it, so never blank.
   rotate = pkgs.writeShellScript "rpi-monitor-rotate" ''
-    ${pkgs.xorg.xrandr}/bin/xrandr --query \
+    ${pkgs.xrandr}/bin/xrandr --query \
       | ${pkgs.gawk}/bin/awk '/ connected/ {print $1}' \
       | while read -r out; do
-          ${pkgs.xorg.xrandr}/bin/xrandr --output "$out" --rotate left
+          ${pkgs.xrandr}/bin/xrandr --output "$out" --rotate left
         done
-    ${pkgs.xorg.xset}/bin/xset s off -dpms
+    ${pkgs.xset}/bin/xset s off -dpms
   '';
 
   # Fresh profile each boot so a crash never leaves a "restore session?" prompt over the dashboard.

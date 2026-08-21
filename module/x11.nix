@@ -23,12 +23,12 @@
   services.libinput.enable = true;
 
   environment.systemPackages = with pkgs; [
-    xorg.xrdb
+    xrdb
     xmodmap
-    xorg.xinit
+    xinit
     xrandr
     xclip
-    xfce.exo # exo-open: URL launcher for URxvt
+    xfce4-exo # exo-open: URL launcher for URxvt
     rxvt-unicode-unwrapped
   ];
 
