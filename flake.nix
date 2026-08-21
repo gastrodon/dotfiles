@@ -48,6 +48,11 @@
       url = "github:gastrodon/pibot";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -167,6 +172,7 @@
           { nixpkgs.overlays = [ inputs.nix-minecraft.overlays.default ]; }
           inputs.pibot.nixosModules.linearAgent
           inputs.pibot.nixosModules.piAgent
+          inputs.hermes-agent.nixosModules.default
         ];
       };
 
