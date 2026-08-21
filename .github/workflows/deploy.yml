@@ -7,8 +7,8 @@ name: Deploy
 #     --target-host root@<addr> --impure
 # ...once per box, with the box list discovered instead of hardcoded.
 #
-# This workflow is inert until three things exist, none of which happen
-# automatically:
+# EVA-154. This workflow is inert until three things exist, none of which
+# happen automatically:
 #   1. Repo secrets: TS_OAUTH_CLIENT_ID, TS_OAUTH_CLIENT_SECRET (a Tailscale
 #      OAuth client scoped to tag:ci-deploy) and CI_DEPLOY_SSH_KEY (the
 #      private half of keys/ci-deploy.pub, module/ci-deploy.nix).
@@ -16,8 +16,9 @@ name: Deploy
 #      grant tag:ci-deploy -> tag:server on tcp:22.
 #   3. keys/ci-deploy.pub committed and rolled out (module/ci-deploy.nix) so
 #      the deploy key is actually in root's authorized_keys on the boxes.
-# The `if:` below just skips the job — not a hard failure — until secrets 1)
-# exist.
+# See the EVA-154 PR description for the full setup checklist and the
+# security review this design came out of. The `if:` below just skips the
+# job — not a hard failure — until secrets 1) exist.
 on:
   workflow_run:
     workflows: ["CI"]
