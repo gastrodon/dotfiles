@@ -82,7 +82,8 @@ in
               {
                 enable = true;
                 pkg = pkgs.callPackage ../../package/obsidian-plugin/local-rest-api {
-                  obsidianLocalRestApi = obsidian-local-rest-api.packages.${pkgs.system}.default;
+                  obsidianLocalRestApi =
+                    obsidian-local-rest-api.packages.${pkgs.stdenv.hostPlatform.system}.default;
                 };
                 settings = {
                   apiKey = obsidianMcp.apiKey;
