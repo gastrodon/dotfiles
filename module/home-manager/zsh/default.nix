@@ -30,7 +30,7 @@
 
     oh-my-zsh = {
       enable = true;
-      custom = "$HOME/.config/oh-my-zsh";
+      custom = "${config.home.homeDirectory}/.config/oh-my-zsh";
       theme = "liner";
     };
 

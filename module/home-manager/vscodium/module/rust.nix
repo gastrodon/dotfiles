@@ -49,7 +49,7 @@ in
       "rust-analyzer.inlayHints.typeHints.enable" = false;
       "rust-analyzer.rustfmt.rangeFormatting.enable" = true;
       "rust-analyzer.typing.autoClosingAngleBrackets.enable" = true;
-      "rust-client.rustupPath" = "~/.cargo/bin/rustup";
+      "rust-client.rustupPath" = "${config.home.homeDirectory}/.cargo/bin/rustup";
       "rust.clippy_preference" = "on";
       "lldb.suppressUpdateNotifications" = true;
       "files.readonlyInclude" = {
