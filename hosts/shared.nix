@@ -4,6 +4,7 @@
   pkgs,
   obsidian-local-rest-api,
   claude-code-nix,
+  pi-voice,
   ...
 }:
 let
@@ -40,7 +41,7 @@ in
     ../module/terminal.nix
     ../module/identity.nix
     (import ../module/i3 { inherit palette local; })
-    (import ../module/home-manager { inherit palette obsidian-local-rest-api claude-code-nix; })
+    (import ../module/home-manager { inherit palette obsidian-local-rest-api claude-code-nix pi-voice; })
     ../module/steam
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })

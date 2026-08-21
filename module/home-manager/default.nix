@@ -2,6 +2,7 @@
   palette,
   obsidian-local-rest-api,
   claude-code-nix,
+  pi-voice,
 }:
 {
   config,
@@ -24,7 +25,7 @@ in
       identity = config.identity;
       hostname = config.networking.hostName;
       desktop = config.desktop;
-      inherit palette obsidian-local-rest-api claude-code-nix;
+      inherit palette obsidian-local-rest-api claude-code-nix pi-voice;
     };
 
     users.${config.identity.username} = {

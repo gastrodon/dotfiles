@@ -32,6 +32,14 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
+    # Push-to-talk voice daemon for pi (module/home-manager/pi.nix). Upstream ships no Nix
+    # packaging; this fork adds a flake.nix (bun2nix) plus a lazy-loaded whisper import to stop
+    # the Electron main process crashing on startup regardless of configured provider.
+    pi-voice = {
+      url = "github:auto-patcher/pi-voice";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     ifunny-re = {
       url = "git+ssh://git@github.com/open-ifunny/app-tools";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -66,6 +74,7 @@
       disko,
       obsidian-local-rest-api,
       claude-code-nix,
+      pi-voice,
       ...
     }@inputs:
     let
@@ -146,7 +155,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -159,7 +168,7 @@
 
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -199,7 +208,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix
