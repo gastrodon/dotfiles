@@ -50,4 +50,20 @@ let
 in
 {
   home.packages = [ wrapped ];
+
+  # pi-voice embeds `@earendil-works/pi-coding-agent` in-process (services/pi-session.ts) rather
+  # than shelling out to the `pi` CLI, but createAgentSession()'s extension loader doesn't
+  # reliably honor its own module-alias map for imports *inside* a dynamically loaded extension
+  # (jiti) — for an extension whose directory tree has no real node_modules anywhere in its
+  # ancestry (true of anything under ~/.pi/agent/git/..., which has none), resolution falls
+  # through to whatever's in Bun's own global install cache instead, and pi-black's strict version
+  # gate then sees a version pi-voice never installed and never agreed to (confirmed:
+  # "Pi Black supports Pi 0.84.1; running Pi is 0.84.2", even against an SDK pinned to exactly
+  # 0.84.1). Providing a real node_modules/@earendil-works reachable via the same directory
+  # walk-up starting from ~/.pi/agent fixes it — confirmed end-to-end in an isolated repro
+  # (pi-black loads cleanly, and a tool-using prompt completes correctly). Sourced from
+  # pi-voice's own flake (extracted from the exact same build pi-session.ts embeds, so this can
+  # never drift out of sync with it the way a separately pinned copy could).
+  home.file.".pi/agent/node_modules/@earendil-works".source =
+    "${pi-voice.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent-sdk}/@earendil-works";
 }

@@ -757,11 +757,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787290286,
-        "narHash": "sha256-w69GGov5xbA+jkWKpHkzOfqlCSgPL58R7amUFSzGEQQ=",
+        "lastModified": 1787293383,
+        "narHash": "sha256-6bZcUIb7j58cmeNATE8sEYayq78jP//vzewXumdNgUg=",
         "owner": "auto-patcher",
         "repo": "pi-voice",
-        "rev": "bb3292d583050d33fe9c99eee8af52e2a72e4d10",
+        "rev": "85ec26f705dbbbca93bf205f62571dfbb595d5b5",
         "type": "github"
       },
       "original": {
