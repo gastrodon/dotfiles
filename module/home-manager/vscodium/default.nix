@@ -49,7 +49,7 @@ let
               version = openRemoteSshVersion;
             };
             vsix = fetchurl {
-              name = "jeanp413-open-remote-ssh.zip";
+              name = "jeanp413-open-remote-ssh.vsix";
               url = "https://open-vsx.org/api/jeanp413/open-remote-ssh/${openRemoteSshVersion}/file/jeanp413.open-remote-ssh-${openRemoteSshVersion}.vsix";
               sha256 = openRemoteSshSha256;
             };
