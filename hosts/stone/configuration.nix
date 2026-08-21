@@ -129,7 +129,7 @@
   # Native CUDA-backed Ollama, available to LAN clients as stone:11434.
   services.ollama = {
     enable = true;
-    acceleration = "cuda";
+    package = pkgs.ollama-cuda;
     host = "0.0.0.0";
     openFirewall = true;
     loadModels = [ "qwen3:8b" ];
