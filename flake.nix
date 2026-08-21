@@ -2,12 +2,12 @@
   description = "Eva's NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
     flake-utils.url = "github:numtide/flake-utils";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -46,6 +46,12 @@
       url = "github:gastrodon/pibot";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Not follows'd on purpose: nixpkgs' claude-code lags upstream npm releases by
+    # weeks-to-months (missing models/features in the CLI menus). This flake tracks
+    # the npm package directly and updates fast; pin it to nixpkgs and we're back
+    # to the same staleness problem.
+    claude-code-nix.url = "github:sadjow/claude-code-nix";
   };
 
   outputs =
@@ -59,6 +65,7 @@
       devenv-nixpkgs,
       disko,
       obsidian-local-rest-api,
+      claude-code-nix,
       ...
     }@inputs:
     let
@@ -139,7 +146,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -152,7 +159,7 @@
 
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -192,7 +199,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix
