@@ -9,6 +9,10 @@
   programs.firefox = {
     enable = true;
 
+    # home.stateVersion pins us to the legacy ~/.mozilla/firefox path already;
+    # set explicitly to silence the 26.05 XDG-default warning without a profile move.
+    configPath = ".mozilla/firefox";
+
     policies = {
       DisableTelemetry = true;
       DisableFirefoxStudies = true;
