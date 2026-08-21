@@ -33,7 +33,7 @@ in
       ];
     };
 
-    programs.vscode.profiles.default.userSettings = {
+    programs.vscodium.profiles.default.userSettings = {
       "go.formatTool" = "gofumpt";
       "go.useLanguageServer" = true;
       "go.lintTool" = "staticcheck";

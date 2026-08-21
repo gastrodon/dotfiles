@@ -39,7 +39,7 @@ in
       ];
     };
 
-    programs.vscode.profiles.default.userSettings = {
+    programs.vscodium.profiles.default.userSettings = {
       "rust-analyzer.check.command" = "clippy";
       "rust-analyzer.checkOnSave" = true;
       "rust-analyzer.rustc.source" = "${pkgs.rustPlatform.rustLibSrc}";

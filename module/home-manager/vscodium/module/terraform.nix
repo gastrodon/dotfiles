@@ -30,7 +30,7 @@ in
       ];
     };
 
-    programs.vscode.profiles.default.userSettings = {
+    programs.vscodium.profiles.default.userSettings = {
       "terraform.experimentalFeatures.validateOnSave" = true;
       "terraform.languageServer.enable" = true;
       "[terraform]" = {

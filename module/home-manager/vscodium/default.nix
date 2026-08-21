@@ -65,7 +65,7 @@ let
       nix-ide = {
         enable = true;
         extensions = [ jnoortheen.nix-ide ];
-        packages = [ nixfmt-rfc-style ];
+        packages = [ nixfmt ];
       };
       direnv = {
         enable = true;
@@ -114,7 +114,7 @@ in
       inherit packages;
     };
 
-    programs.vscode = {
+    programs.vscodium = {
       enable = true;
       package = pkgs.vscodium;
 
