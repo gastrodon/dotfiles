@@ -132,7 +132,7 @@ in
       home.file.".claude/project.md".text =
         let
           hostnames = builtins.sort builtins.lessThan (
-            builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.matchBlocks)
+            builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.settings)
           );
           hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
         in

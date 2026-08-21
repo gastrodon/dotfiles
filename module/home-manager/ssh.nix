@@ -41,30 +41,32 @@ in
     enable = true;
     enableDefaultConfig = false;
 
-    matchBlocks = {
+    # programs.ssh.settings is freeform: keys are literal ssh_config(5) directive
+    # names (PascalCase), not the nix-friendly aliases matchBlocks used.
+    settings = {
       "*" = {
-        identityFile = "~/.ssh/id_ed25519";
-        identitiesOnly = true;
-        addKeysToAgent = "yes";
-        extraOptions.SetEnv = "TERM=xterm-256color";
+        IdentityFile = "~/.ssh/id_ed25519";
+        IdentitiesOnly = true;
+        AddKeysToAgent = "yes";
+        SetEnv.TERM = "xterm-256color";
       };
 
-      stone.hostname = hosts.stone;
-      server1.hostname = hosts.server1;
-      server2.hostname = hosts.server2;
-      twink.hostname = hosts.twink;
+      stone.HostName = hosts.stone;
+      server1.HostName = hosts.server1;
+      server2.HostName = hosts.server2;
+      twink.HostName = hosts.twink;
 
       # claude@ identity, not eva's — for agents (pi) that should carry the same
       # scoped access ssh-mcp already grants Claude Code, not eva's own login.
       "server1-agent" = {
-        hostname = hosts.server1;
-        user = "claude";
-        identityFile = "/run/secrets/claude-ssh-privkey-local";
+        HostName = hosts.server1;
+        User = "claude";
+        IdentityFile = "/run/secrets/claude-ssh-privkey-local";
       };
       "server2-agent" = {
-        hostname = hosts.server2;
-        user = "claude";
-        identityFile = "/run/secrets/claude-ssh-privkey-local";
+        HostName = hosts.server2;
+        User = "claude";
+        IdentityFile = "/run/secrets/claude-ssh-privkey-local";
       };
     };
   };
