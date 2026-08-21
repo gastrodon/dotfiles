@@ -4,8 +4,7 @@
 # patches for why the local Whisper provider still isn't safe to select (crashes the daemon) and
 # how the `openai` provider gets pointed at a local server instead of real OpenAI.
 #
-# Two providers are wired up here, both selected per-project (`.pi/pi-voice.json`, not something
-# Nix should own):
+# Two providers are wired up here:
 # - `elevenlabs` — eva's own key (secrets.yaml, out of ring), read into the daemon's own env by
 #   this wrapper only, never the model, same pattern as the AWS secret in claude.nix.
 # - `openai` — repointed at the local speaches server (../speaches.nix) instead of real OpenAI,
@@ -13,6 +12,11 @@
 #   OPENAI_STT_MODEL/OPENAI_TTS_MODEL/OPENAI_TTS_VOICE to select speaches' own model/voice ids
 #   instead of OpenAI's. No secret involved (speaches has no auth); the API key is a dummy value
 #   the SDK requires be non-empty. Port/model ids must match ../speaches.nix's own defaults.
+#
+# `openai` (local speaches) is also the default provider, via PI_VOICE_PROVIDER — pi-voice's own
+# fallback (used only when a project has no .pi/pi-voice.json) — so no per-project config file is
+# needed for the common case. A project can still drop its own .pi/pi-voice.json to override this
+# (e.g. to pick elevenlabs, or a different key binding), which always takes priority.
 {
   pkgs,
   lib,
@@ -27,6 +31,8 @@ let
     text = ''
       ELEVENLABS_API_KEY="$(< /run/secrets/elevenlabs/api_key)"
       export ELEVENLABS_API_KEY
+
+      export PI_VOICE_PROVIDER="openai"
 
       export OPENAI_BASE_URL="http://127.0.0.1:8000/v1"
       export OPENAI_API_KEY="speaches-no-auth-required"
