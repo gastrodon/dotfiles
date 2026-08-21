@@ -45,7 +45,25 @@ in
   services.displayManager.defaultSession = "none+i3";
 
   # `e` forces the connector on regardless of HDMI HPD — vc4 KMS flaps HPD at boot and X caches it disconnected (black monitor).
-  boot.kernelParams = [ "video=HDMI-A-2:1920x1080@60e" ];
+  #
+  # The Pi 4's onboard Bluetooth hangs off the PL011 UART (ttyAMA0), but nixpkgs'
+  # sd-image-aarch64.nix parks a kernel console on it. hci_uart then can't reach the
+  # controller: every command times out (-110), the baudrate switch fails, and BlueZ
+  # ends up reporting no adapter at all. Keep ttyS0 (mini UART on the GPIO header)
+  # and tty0 (HDMI); drop only ttyAMA0.
+  #
+  # mkForce because kernelParams concatenates and there's no way to subtract a single
+  # entry. The non-console values are rebuilt from the options that generate them so
+  # they can't drift — but a param appended by some *future* module would be silently
+  # dropped, so check here first if a kernel param ever goes missing.
+  boot.kernelParams = lib.mkForce [
+    "video=HDMI-A-2:1920x1080@60e"
+    "console=ttyS0,115200n8"
+    "console=tty0"
+    "nohibernate"
+    "loglevel=${toString config.boot.consoleLogLevel}"
+    "lsm=${lib.concatStringsSep "," config.security.lsm}"
+  ];
 
   services.libinput.enable = true;
   hardware.graphics.enable = true;

@@ -12,7 +12,6 @@
     ../../module/nomad-client.nix
     ../../module/claude-user.nix
     ../../module/claude-code.nix
-    ../../module/pi.nix
     ../../module/linear.nix
     ../../module/pxe-boot-server.nix
   ];
@@ -33,6 +32,12 @@
     mode = "0600";
   };
 
+  # pi + pi-black — stone-only, and needs no system-level wiring (auth is interactive,
+  # no sops secrets), so it goes straight into home-manager rather than via a module/ wrapper.
+  home-manager.users.${config.identity.username}.imports = [
+    ../../module/home-manager/pi.nix
+  ];
+
   ifunnyRe.waydroidUser = config.identity.username;
 
   networking.hostName = "stone";
@@ -44,7 +49,10 @@
 
   desktop.extra.i3config = {
     workspaceOutputAssign = [
-      { workspace = "10"; output = "DP-3"; }
+      {
+        workspace = "10";
+        output = "DP-3";
+      }
     ];
     startup = [
       {

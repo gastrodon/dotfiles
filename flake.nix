@@ -96,7 +96,11 @@
 
       # Thin PXE netboot image (see hosts/netboot.nix + installer-payload.nix).
       mkNetboot =
-        { targetSystem, diskConfig, substituter }:
+        {
+          targetSystem,
+          diskConfig,
+          substituter,
+        }:
         nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
@@ -230,7 +234,10 @@
       packages.x86_64-linux =
         let
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          local = import ./package { inherit pkgs; lib = nixpkgs.lib; };
+          local = import ./package {
+            inherit pkgs;
+            lib = nixpkgs.lib;
+          };
         in
         local.cmd // { inherit (local) sys rend; };
 

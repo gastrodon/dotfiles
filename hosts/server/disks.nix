@@ -1,6 +1,9 @@
 # Single-disk layout for the generic server boxes (one 120GB SSD). Doubles as a
 # NixOS module (default `device`, inert) and a disko CLI target (--argstr device at install).
-{ device ? "/dev/sda", ... }:
+{
+  device ? "/dev/sda",
+  ...
+}:
 {
   disko.devices.disk.main = {
     inherit device;
