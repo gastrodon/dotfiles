@@ -5,6 +5,9 @@
   pkgs,
   ...
 }:
+let
+  hosts = import ../../module/hosts.nix;
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -17,6 +20,7 @@
     ../../module/pibot.nix
     ../../module/tailscale-funnel.nix
     ../../module/home-assistant.nix
+    ../../module/ollama.nix
   ];
 
   # Backs the rpi4b kiosk (hosts/rpi/graphical.nix points Firefox at homeassistant.local:8123).
@@ -25,6 +29,43 @@
   services.tailscaleFunnel = {
     enable = true;
     target = "3456";
+  };
+
+  # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
+  # the host-networked job to server1 so the worker has a stable endpoint.
+  services.ollamaJob = {
+    enable = true;
+    nodeAddress = hosts.server1;
+    models = [
+      "granite3.3:2b"
+      "qwen2.5-coder:1.5b"
+      "qwen2.5:1.5b"
+      "qwen3:1.7b"
+      "llama3.2:1b"
+      "qwen2.5-coder:7b"
+    ];
+  };
+
+  # Ollama stays opt-in for pibot while the CPU candidates are being measured.
+  # Keep provider=anthropic as default until EVA-196 (tool-calling) is resolved.
+  services.piAgent = {
+    provider = "anthropic";
+    model = "claude-sonnet-5";
+    thinkingLevel = "high";
+    ollama = {
+      enable = true;
+      baseUrl = "http://${hosts.server1}:11434/v1";
+      model = "qwen2.5-coder:7b";
+    };
+  };
+
+  services.linearAgent = {
+    defaultModel = "anthropic/claude-sonnet-5";
+    allowedModels = [
+      "anthropic/claude-sonnet-5"
+      "ollama/granite3.3:2b"
+      "ollama/qwen2.5-coder:7b"
+    ];
   };
 
   # module path has no --argstr to supply disks.nix's `device`; pin the default (inert on the running system).
