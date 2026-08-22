@@ -7,6 +7,12 @@
 let
   kioskUrl = "http://homeassistant.local:8123/";
 
+  # DIAL/YouTube-Lounge cast receiver (EVA-186/EVA-187 discovery): shows up in
+  # the YouTube/YouTube Music apps' native Cast menu, plays through mpv. See
+  # package/cast-receiver for the adapter (yt-cast-receiver -> mpv JSON IPC).
+  castReceiver = pkgs.callPackage ../../package/cast-receiver { };
+  castDialPort = 4000;
+
   # Rotate the connected output 90° left; detect its name at runtime (HDMI-1 vs HDMI-A-1 varies by kernel). No input device to wake it, so never blank.
   rotate = pkgs.writeShellScript "rpi-monitor-rotate" ''
     ${pkgs.xrandr}/bin/xrandr --query \
@@ -81,4 +87,40 @@ in
     alsa.enable = true;
     pulse.enable = true;
   };
+
+  # Dedicated video/audio player (EVA-187): mpv + yt-dlp for playing YouTube
+  # URLs with video on the kiosk HDMI output and audio on the paired BT
+  # speaker. Packages only for now — hwdec flags, BT sink targeting, and a
+  # trigger mechanism are still being tuned hands-on against the real hardware.
+  environment.systemPackages = with pkgs; [
+    mpv
+    yt-dlp
+  ];
+
+  # Cast receiver service: audio-only for now (no video/BT-sink tuning done
+  # yet — that's EVA-187), self-spawns its own mpv with a fixed IPC socket.
+  # Runs as a user unit so it inherits the auto-logged-in eva session's
+  # PipeWire (the BT speaker is that session's default sink already).
+  systemd.user.services.cast-receiver = {
+    description = "DIAL/YouTube-Lounge cast receiver (mpv-backed)";
+    wantedBy = [ "default.target" ];
+    environment = {
+      DEVICE_NAME = "Bedroom Pi";
+      DIAL_PORT = toString castDialPort;
+      MPV_SOCKET = "%t/mpv-cast.sock";
+      MPV_BIN = "${pkgs.mpv}/bin/mpv";
+      YTDLP_BIN = "${pkgs.yt-dlp}/bin/yt-dlp";
+      AUDIO_ONLY = "1";
+    };
+    serviceConfig = {
+      ExecStart = "${castReceiver}/bin/cast-receiver";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
+
+  # DIAL HTTP (device discovery/description) + SSDP multicast discovery, so
+  # the YouTube/YouTube Music apps can actually find the receiver on the LAN.
+  networking.firewall.allowedTCPPorts = [ castDialPort ];
+  networking.firewall.allowedUDPPorts = [ 1900 ];
 }

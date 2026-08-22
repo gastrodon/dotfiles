@@ -1,0 +1,25 @@
+{
+  "name": "cast-receiver",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "yt-cast-receiver + mpv IPC adapter: makes a Linux box a DIAL/Lounge-API cast target for the YouTube/YouTube Music apps, backed by mpv for actual playback.",
+  "bin": {
+    "cast-receiver": "dist/index.js"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "yt-cast-receiver": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
