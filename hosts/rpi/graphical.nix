@@ -13,6 +13,18 @@ let
   castReceiver = pkgs.callPackage ../../package/cast-receiver { };
   castDialPort = 4000;
 
+  # The paired BT speaker auto-powers-off after a stretch with no active audio
+  # stream (firmware power-saving, not something BlueZ/PipeWire can disable —
+  # see EVA-191). A permanent, genuinely-silent loop keeps the A2DP link
+  # looking "active" so that timer never fires. This is a separate mpv
+  # instance from cast-receiver's own — that one is truly idle between casts,
+  # which is exactly the state that would otherwise let the speaker sleep.
+  # PipeWire mixes both streams into one output, so silence + real audio is
+  # just real audio; nothing to hear when a cast starts.
+  silenceLoop = pkgs.runCommand "silence.wav" { nativeBuildInputs = [ pkgs.ffmpeg ]; } ''
+    ffmpeg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -t 5 -c:a pcm_s16le "$out"
+  '';
+
   # Rotate the connected output 90° left; detect its name at runtime (HDMI-1 vs HDMI-A-1 varies by kernel). No input device to wake it, so never blank.
   rotate = pkgs.writeShellScript "rpi-monitor-rotate" ''
     ${pkgs.xrandr}/bin/xrandr --query \
@@ -123,4 +135,14 @@ in
   # the YouTube/YouTube Music apps can actually find the receiver on the LAN.
   networking.firewall.allowedTCPPorts = [ castDialPort ];
   networking.firewall.allowedUDPPorts = [ 1900 ];
+
+  systemd.user.services.bt-keepalive = {
+    description = "Silent keepalive loop to stop the paired BT speaker auto-power-off";
+    wantedBy = [ "default.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.mpv}/bin/mpv --no-video --no-terminal --loop-file=inf ${silenceLoop}";
+      Restart = "always";
+      RestartSec = 5;
+    };
+  };
 }
