@@ -1,24 +1,12 @@
 name: Deploy
 
-# Rolls the `server` config out to every live server box once CI's build job
-# has confirmed it builds cleanly on main. This is the automated version of
-# eva running:
-#   NIXPKGS_ALLOW_UNFREE=1 nixos-rebuild switch --flake .#server \
-#     --target-host root@<addr> --impure
-# ...once per box, with the box list discovered instead of hardcoded.
+# Rolls the `server` config out to every live server box, the automated
+# equivalent of running nixos-rebuild switch --target-host against each one.
 #
-# EVA-154. This workflow is inert until three things exist, none of which
-# happen automatically:
-#   1. Repo secrets: TS_OAUTH_CLIENT_ID, TS_OAUTH_CLIENT_SECRET (a Tailscale
-#      OAuth client scoped to tag:ci-deploy) and CI_DEPLOY_SSH_KEY (the
-#      private half of keys/ci-deploy.pub, module/ci-deploy.nix).
-#   2. Tailnet ACL: tag:server and tag:ci-deploy defined in tagOwners, plus a
-#      grant tag:ci-deploy -> tag:server on tcp:22.
-#   3. keys/ci-deploy.pub committed and rolled out (module/ci-deploy.nix) so
-#      the deploy key is actually in root's authorized_keys on the boxes.
-# See the EVA-154 PR description for the full setup checklist and the
-# security review this design came out of. The `if:` below just skips the
-# job — not a hard failure — until secrets 1) exist.
+# Inert until repo secrets TS_OAUTH_CLIENT_ID, TS_OAUTH_CLIENT_SECRET,
+# CI_DEPLOY_SSH_KEY exist, the tailnet ACL grants tag:ci-deploy -> tag:server
+# on tcp:22, and keys/ci-deploy.pub (module/ci-deploy.nix) is rolled out to
+# root's authorized_keys. The `if:` below just skips the job until then.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -37,7 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          # deploy exactly what CI validated, not whatever's newest on main.
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: cachix/install-nix-action@v31
@@ -45,9 +32,6 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
-      # Ephemeral + tagged: this identity is gone from the tailnet the moment
-      # the job ends, so there's no standing CI node to revoke later — just
-      # the OAuth client, which eva can disable independently.
       - name: join tailnet
         uses: tailscale/github-action@v3
         with:
@@ -60,12 +44,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.CI_DEPLOY_SSH_KEY }}
 
-      # Ask the tailnet who's tagged tag:server rather than hitting Nomad's
-      # HTTP API — same live membership (server boxes advertise both), one
-      # fewer credential (no Nomad read token to scope/rotate for CI), and
-      # it's the same ACL grant already needed for SSH. Swap this for a
-      # `nomad node status` query if node membership and tag:server ever
-      # diverge.
+      # Discovered via the tailnet tag rather than Nomad's API, since it's
+      # the same ACL grant already needed for SSH.
       - name: discover server nodes
         id: discover
         run: |
@@ -84,17 +64,13 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
-      # Serial, fail-open across hosts (one bad box doesn't block the rest),
-      # non-zero overall exit if any box failed. Good enough for a 2-3 box
-      # cluster; if the fleet grows, matrix this over discover's output
-      # instead for parallelism, or move to colmena/deploy-rs, which also
-      # buy health-checked rollback that raw nixos-rebuild doesn't have.
+      # Serial, fail-open across hosts: one bad box doesn't block the rest,
+      # but the job exits non-zero overall if any box failed.
       - name: deploy
         env:
           NIXPKGS_ALLOW_UNFREE: "1"
-          # host keys are unpinned (each run is a fresh runner, TOFU every
-          # time) — acceptable here because the tailnet ACL, not the host
-          # key, is what actually gates which boxes this job can reach.
+          # Host keys are unpinned since each run is a fresh runner; the
+          # tailnet ACL, not the host key, gates which boxes this reaches.
           NIX_SSHOPTS: "-o StrictHostKeyChecking=accept-new"
         run: |
           set -euo pipefail
