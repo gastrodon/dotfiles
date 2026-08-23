@@ -122,7 +122,7 @@
         };
 
       # One rpi host (./hosts/rpi); boards differ only in the args below.
-      # native builds hit cache.nixos.org (graphical hosts want this); cross builds miss cache but keep headless SD builds fast.
+      # native builds hit cache.nixos.org; cross builds (rpi2b only, 32-bit armv7l) miss cache but keep SD builds fast.
       mkRpi =
         hostName:
         {
@@ -220,6 +220,7 @@
 
       nixosConfigurations.rpi3b-plus = mkRpi "rpi3b-plus" {
         address = "192.168.0.241";
+        native = true;
       };
 
       nixosConfigurations.rpi4b = mkRpi "rpi4b" {

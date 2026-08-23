@@ -25,8 +25,9 @@ jobs:
           nix shell nixpkgs#nixfmt -c sh -c \
             'find . -name "*.nix" ! -path "./.git/*" | xargs nixfmt --check'
 
-  # rpi4b (native, needs a real aarch64 builder) and rpi2b's sdImage (broken on nixpkgs
-  # 26.05 independent of CI) are excluded.
+  # pi targets run on ubuntu-24.04-arm (free on public repos) since they build aarch64-linux
+  # natively; everything else builds x86_64-linux on ubuntu-latest. rpi2b's sdImage is excluded
+  # (broken on nixpkgs 26.05, armv7l is32bit, independent of CI).
   build:
     name: build (${{ matrix.target }}, ${{ matrix.channel }})
     needs: nixfmt
@@ -48,6 +49,7 @@ jobs:
           - rpi3b-plus-sdimage
         include:
           - { target: rpi4b, runs-on: ubuntu-24.04-arm }
+          - { target: rpi3b-plus-sdimage, runs-on: ubuntu-24.04-arm }
     steps:
       - uses: actions/checkout@v5
 
