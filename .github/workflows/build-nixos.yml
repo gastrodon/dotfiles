@@ -28,42 +28,26 @@ jobs:
   # rpi4b (native, needs a real aarch64 builder) and rpi2b's sdImage (broken on nixpkgs
   # 26.05 independent of CI) are excluded.
   build:
-    name: build (${{ matrix.name }})
+    name: build (${{ matrix.target }}, ${{ matrix.channel }})
     needs: nixfmt
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix['runs-on'] || 'ubuntu-latest' }}
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
       matrix:
+        channel: [current, latest]
+        target:
+          - stone
+          - twink
+          - server
+          - server-netboot
+          - rpi4b
+          - stone-installer
+          - twink-installer
+          - server-live-media
+          - rpi3b-plus-sdimage
         include:
-          - { name: stone,             attr: nixosConfigurations.stone.config.system.build.toplevel }
-          - { name: twink,             attr: nixosConfigurations.twink.config.system.build.toplevel }
-          - { name: server,            attr: nixosConfigurations.server.config.system.build.toplevel }
-          - { name: server-netboot,    attr: nixosConfigurations.server-netboot.config.system.build.toplevel }
-          - {
-              name: stone-installer,
-              attr: nixosConfigurations.stone-installer.config.system.build.isoImage,
-              artifact: iso,
-              path: result/iso/*.iso,
-            }
-          - {
-              name: twink-installer,
-              attr: nixosConfigurations.twink-installer.config.system.build.isoImage,
-              artifact: iso,
-              path: result/iso/*.iso,
-            }
-          - {
-              name: server-live-media,
-              attr: nixosConfigurations.server-live-media.config.system.build.isoImage,
-              artifact: iso,
-              path: result/iso/*.iso,
-            }
-          - {
-              name: rpi3b-plus-sdimage,
-              attr: nixosConfigurations.rpi3b-plus.config.system.build.sdImage,
-              artifact: sdimage,
-              path: result/sd-image/*.img.zst,
-            }
+          - { target: rpi4b, runs-on: ubuntu-24.04-arm }
     steps:
       - uses: actions/checkout@v5
 
@@ -71,16 +55,45 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: resolve target
+        id: vars
+        run: |
+          case "${{ matrix.target }}" in
+            stone)              attr=nixosConfigurations.stone.config.system.build.toplevel ;;
+            twink)               attr=nixosConfigurations.twink.config.system.build.toplevel ;;
+            server)              attr=nixosConfigurations.server.config.system.build.toplevel ;;
+            server-netboot)      attr=nixosConfigurations.server-netboot.config.system.build.toplevel ;;
+            rpi4b)               attr=nixosConfigurations.rpi4b.config.system.build.toplevel ;;
+            stone-installer)     attr=nixosConfigurations.stone-installer.config.system.build.isoImage
+                                  artifact=iso; path='result/iso/*.iso' ;;
+            twink-installer)     attr=nixosConfigurations.twink-installer.config.system.build.isoImage
+                                  artifact=iso; path='result/iso/*.iso' ;;
+            server-live-media)   attr=nixosConfigurations.server-live-media.config.system.build.isoImage
+                                  artifact=iso; path='result/iso/*.iso' ;;
+            rpi3b-plus-sdimage)  attr=nixosConfigurations.rpi3b-plus.config.system.build.sdImage
+                                  artifact=sdimage; path='result/sd-image/*.img.zst' ;;
+          esac
+          {
+            echo "attr=$attr"
+            echo "artifact=$artifact"
+            echo "path=$path"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: flake update
+        if: matrix.channel == 'latest'
+        run: nix flake update --impure
 
       - name: build
-        run: nix build ".#${{ matrix.attr }}" --impure
+        run: nix build ".#${{ steps.vars.outputs.attr }}" --impure
 
       - name: upload artifact
-        if: matrix.artifact != ''
+        if: matrix.channel == 'current' && steps.vars.outputs.artifact != ''
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ matrix.artifact }}-${{ matrix.name }}
-          path: ${{ matrix.path }}
+          name: ${{ steps.vars.outputs.artifact }}-${{ matrix.target }}
+          path: ${{ steps.vars.outputs.path }}
 
   release:
     name: release
