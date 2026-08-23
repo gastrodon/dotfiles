@@ -39,8 +39,6 @@
     ../../module/home-manager/pi.nix
   ];
 
-  ifunnyRe.waydroidUser = config.identity.username;
-
   networking.hostName = "stone";
   services.nomadClient.datacenter = "stone";
 

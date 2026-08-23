@@ -2,17 +2,12 @@
   "nodes": {
     "bun2nix": {
       "inputs": {
-        "flake-parts": "flake-parts_2",
+        "flake-parts": "flake-parts_3",
         "nixpkgs": [
-          "ifunny-re",
-          "ifunny-cli",
+          "obsidian-local-rest-api",
           "nixpkgs"
         ],
-        "systems": [
-          "ifunny-re",
-          "ifunny-cli",
-          "systems"
-        ],
+        "systems": "systems_4",
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
@@ -25,7 +20,6 @@
       },
       "original": {
         "owner": "nix-community",
-        "ref": "2.1.1",
         "repo": "bun2nix",
         "type": "github"
       }
@@ -34,35 +28,11 @@
       "inputs": {
         "flake-parts": "flake-parts_4",
         "nixpkgs": [
-          "obsidian-local-rest-api",
-          "nixpkgs"
-        ],
-        "systems": "systems_6",
-        "treefmt-nix": "treefmt-nix_3"
-      },
-      "locked": {
-        "lastModified": 1782772816,
-        "narHash": "sha256-s9BuFv0mRuZx9C1MF8qPHRdcAK14ONi0A5m6E2wqOoM=",
-        "owner": "nix-community",
-        "repo": "bun2nix",
-        "rev": "5a39d717029e94163ac223aee8d5c9946cafed1c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "bun2nix",
-        "type": "github"
-      }
-    },
-    "bun2nix_3": {
-      "inputs": {
-        "flake-parts": "flake-parts_5",
-        "nixpkgs": [
           "pi-voice",
           "nixpkgs"
         ],
-        "systems": "systems_7",
-        "treefmt-nix": "treefmt-nix_4"
+        "systems": "systems_5",
+        "treefmt-nix": "treefmt-nix_3"
       },
       "locked": {
         "lastModified": 1784665499,
@@ -269,29 +239,6 @@
     "flake-parts_2": {
       "inputs": {
         "nixpkgs-lib": [
-          "ifunny-re",
-          "ifunny-cli",
-          "bun2nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777988971,
-        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_3": {
-      "inputs": {
-        "nixpkgs-lib": [
           "nur",
           "nixpkgs"
         ]
@@ -310,7 +257,7 @@
         "type": "github"
       }
     },
-    "flake-parts_4": {
+    "flake-parts_3": {
       "inputs": {
         "nixpkgs-lib": [
           "obsidian-local-rest-api",
@@ -332,7 +279,7 @@
         "type": "github"
       }
     },
-    "flake-parts_5": {
+    "flake-parts_4": {
       "inputs": {
         "nixpkgs-lib": [
           "pi-voice",
@@ -374,25 +321,7 @@
     },
     "flake-utils_2": {
       "inputs": {
-        "systems": "systems_3"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_3": {
-      "inputs": {
-        "systems": "systems_8"
+        "systems": "systems_6"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -470,52 +399,6 @@
         "type": "github"
       }
     },
-    "ifunny-cli": {
-      "inputs": {
-        "bun2nix": "bun2nix",
-        "nixpkgs": [
-          "ifunny-re",
-          "nixpkgs"
-        ],
-        "systems": "systems_4"
-      },
-      "locked": {
-        "lastModified": 1783234980,
-        "narHash": "sha256-OrNNxyt4mkT9TTfxv35s/IoSbny3s2hIo2NIwMpI//U=",
-        "ref": "refs/heads/main",
-        "rev": "a31ac6fbcc4649e466854b4b222bb637afdd48a9",
-        "revCount": 34,
-        "type": "git",
-        "url": "ssh://git@github.com/open-ifunny/cli"
-      },
-      "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/open-ifunny/cli"
-      }
-    },
-    "ifunny-re": {
-      "inputs": {
-        "flake-utils": "flake-utils_2",
-        "ifunny-cli": "ifunny-cli",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "waydroid-script": "waydroid-script"
-      },
-      "locked": {
-        "lastModified": 1783279651,
-        "narHash": "sha256-IW/eSAbjCC/dSF6qmONLxr9HrG0G1BuORboHdZx8/eY=",
-        "ref": "refs/heads/main",
-        "rev": "ab1811b4a2e8ee8cdb6445a5bac537c94c865d87",
-        "revCount": 12,
-        "type": "git",
-        "url": "ssh://git@github.com/open-ifunny/app-tools"
-      },
-      "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/open-ifunny/app-tools"
-      }
-    },
     "nix": {
       "inputs": {
         "flake-compat": [
@@ -562,7 +445,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems_5"
+        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1784258664,
@@ -707,7 +590,7 @@
     },
     "nur": {
       "inputs": {
-        "flake-parts": "flake-parts_3",
+        "flake-parts": "flake-parts_2",
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
@@ -726,7 +609,7 @@
     },
     "obsidian-local-rest-api": {
       "inputs": {
-        "bun2nix": "bun2nix_2",
+        "bun2nix": "bun2nix",
         "flake-utils": [
           "flake-utils"
         ],
@@ -750,8 +633,8 @@
     },
     "pi-voice": {
       "inputs": {
-        "bun2nix": "bun2nix_3",
-        "flake-utils": "flake-utils_3",
+        "bun2nix": "bun2nix_2",
+        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -798,7 +681,6 @@
         "disko": "disko",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
-        "ifunny-re": "ifunny-re",
         "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
@@ -911,36 +793,6 @@
     },
     "systems_5": {
       "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_6": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_7": {
-      "locked": {
         "lastModified": 1776166891,
         "narHash": "sha256-bI8yrEGjrohR5hkQox7UrxDH7XqrYMwI8SL/LrJ1+S8=",
         "owner": "nix-systems",
@@ -954,7 +806,7 @@
         "type": "github"
       }
     },
-    "systems_8": {
+    "systems_6": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -994,8 +846,7 @@
     "treefmt-nix_2": {
       "inputs": {
         "nixpkgs": [
-          "ifunny-re",
-          "ifunny-cli",
+          "obsidian-local-rest-api",
           "bun2nix",
           "nixpkgs"
         ]
@@ -1017,28 +868,6 @@
     "treefmt-nix_3": {
       "inputs": {
         "nixpkgs": [
-          "obsidian-local-rest-api",
-          "bun2nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775636079,
-        "narHash": "sha256-pc20NRoMdiar8oPQceQT47UUZMBTiMdUuWrYu2obUP0=",
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "rev": "790751ff7fd3801feeaf96d7dc416a8d581265ba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "type": "github"
-      }
-    },
-    "treefmt-nix_4": {
-      "inputs": {
-        "nixpkgs": [
           "pi-voice",
           "bun2nix",
           "nixpkgs"
@@ -1055,22 +884,6 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
-        "type": "github"
-      }
-    },
-    "waydroid-script": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1767603363,
-        "narHash": "sha256-zSHZlhHJHWZRE3I5pYWhD4o8aNpa8rTiEtl2qJTuRjw=",
-        "owner": "casualsnek",
-        "repo": "waydroid_script",
-        "rev": "d5289cfd8929e86e7f0dc89ecadcef8b66930eec",
-        "type": "github"
-      },
-      "original": {
-        "owner": "casualsnek",
-        "repo": "waydroid_script",
         "type": "github"
       }
     }

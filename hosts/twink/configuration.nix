@@ -11,8 +11,6 @@
     ../../module/claude-code.nix
   ];
 
-  ifunnyRe.waydroidUser = config.identity.username;
-
   networking.hostName = "twink";
 
   desktop.terminal = pkgs.ghostty;

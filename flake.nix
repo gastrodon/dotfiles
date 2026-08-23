@@ -40,11 +40,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    ifunny-re = {
-      url = "git+ssh://git@github.com/open-ifunny/app-tools";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -162,7 +157,6 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
-          inputs.ifunny-re.nixosModules.waydroid
         ];
       };
 
@@ -215,7 +209,6 @@
           home-manager.nixosModules.home-manager
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
-          inputs.ifunny-re.nixosModules.waydroid
         ];
       };
 
