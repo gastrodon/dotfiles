@@ -64,6 +64,7 @@ in
   # (pi-black loads cleanly, and a tool-using prompt completes correctly). Sourced from
   # pi-voice's own flake (extracted from the exact same build pi-session.ts embeds, so this can
   # never drift out of sync with it the way a separately pinned copy could).
-  home.file.".pi/agent/node_modules/@earendil-works".source =
-    "${pi-voice.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent-sdk}/@earendil-works";
+  home.file.".pi/agent/node_modules/@earendil-works".source = "${
+    pi-voice.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent-sdk
+  }/@earendil-works";
 }

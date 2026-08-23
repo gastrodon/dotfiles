@@ -25,7 +25,12 @@ in
       identity = config.identity;
       hostname = config.networking.hostName;
       desktop = config.desktop;
-      inherit palette obsidian-local-rest-api claude-code-nix pi-voice;
+      inherit
+        palette
+        obsidian-local-rest-api
+        claude-code-nix
+        pi-voice
+        ;
     };
 
     users.${config.identity.username} = {
@@ -83,8 +88,7 @@ in
               {
                 enable = true;
                 pkg = pkgs.callPackage ../../package/obsidian-plugin/local-rest-api {
-                  obsidianLocalRestApi =
-                    obsidian-local-rest-api.packages.${pkgs.stdenv.hostPlatform.system}.default;
+                  obsidianLocalRestApi = obsidian-local-rest-api.packages.${pkgs.stdenv.hostPlatform.system}.default;
                 };
                 settings = {
                   apiKey = obsidianMcp.apiKey;

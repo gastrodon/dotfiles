@@ -8,7 +8,12 @@
 # ships a CUDA container image, and stone already has nvidia-container-toolkit wired for CDI
 # GPU passthrough (hosts/stone/configuration.nix), so this rides the same path `services.ollama`
 # would if it were containerized instead of native.
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.speaches;
 in
