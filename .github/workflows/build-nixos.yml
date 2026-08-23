@@ -25,8 +25,10 @@ jobs:
           nix shell nixpkgs#nixfmt -c sh -c \
             'find . -name "*.nix" ! -path "./.git/*" | xargs nixfmt --check'
 
+  # rpi4b (native, needs a real aarch64 builder) and rpi2b's sdImage (broken on nixpkgs
+  # 26.05 independent of CI) are excluded.
   build:
-    name: build (${{ matrix.host }}, ${{ matrix.target }})
+    name: build (${{ matrix.name }})
     needs: nixfmt
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -34,10 +36,34 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { host: stone,  target: build }
-          - { host: twink,  target: build }
-          - { host: server, target: build }
-          - { host: server, target: iso   }
+          - { name: stone,             attr: nixosConfigurations.stone.config.system.build.toplevel }
+          - { name: twink,             attr: nixosConfigurations.twink.config.system.build.toplevel }
+          - { name: server,            attr: nixosConfigurations.server.config.system.build.toplevel }
+          - { name: server-netboot,    attr: nixosConfigurations.server-netboot.config.system.build.toplevel }
+          - {
+              name: stone-installer,
+              attr: nixosConfigurations.stone-installer.config.system.build.isoImage,
+              artifact: iso,
+              path: result/iso/*.iso,
+            }
+          - {
+              name: twink-installer,
+              attr: nixosConfigurations.twink-installer.config.system.build.isoImage,
+              artifact: iso,
+              path: result/iso/*.iso,
+            }
+          - {
+              name: server-live-media,
+              attr: nixosConfigurations.server-live-media.config.system.build.isoImage,
+              artifact: iso,
+              path: result/iso/*.iso,
+            }
+          - {
+              name: rpi3b-plus-sdimage,
+              attr: nixosConfigurations.rpi3b-plus.config.system.build.sdImage,
+              artifact: sdimage,
+              path: result/sd-image/*.img.zst,
+            }
     steps:
       - uses: actions/checkout@v5
 
@@ -47,39 +73,27 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: build
-        run: |
-          if [ "${{ matrix.target }}" = "iso" ]; then
-            nix build \
-              ".#nixosConfigurations.${{ matrix.host }}-installer.config.system.build.isoImage" \
-              --impure
-          else
-            nix build \
-              ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" \
-              --impure
-          fi
+        run: nix build ".#${{ matrix.attr }}" --impure
 
-      - name: upload iso
-        if: matrix.target == 'iso'
+      - name: upload artifact
+        if: matrix.artifact != ''
         uses: actions/upload-artifact@v6
         with:
-          name: iso-${{ matrix.host }}
-          path: result/iso/*.iso
+          name: ${{ matrix.artifact }}-${{ matrix.name }}
+          path: ${{ matrix.path }}
 
   release:
-    name: release (${{ matrix.host }})
+    name: release
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    strategy:
-      matrix:
-        host: [server]
     steps:
       - name: download iso
         uses: actions/download-artifact@v7
         with:
-          name: iso-${{ matrix.host }}
+          name: iso-server-live-media
 
       - name: create release
         run: |
