@@ -141,6 +141,7 @@
             {
               networking.hostName = hostName;
               clusterNet.address = address;
+              nixpkgs.config.allowUnfree = true;
             }
           ]
           ++ modules
