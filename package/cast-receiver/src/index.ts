@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import YouTubeCastReceiver from "yt-cast-receiver";
 import MpvIpc from "./mpvIpc.js";
 import MpvPlayer from "./MpvPlayer.js";
@@ -27,10 +27,21 @@ function waitForSocket(path: string, timeoutMs = 8000): Promise<void> {
 
 async function main() {
   console.log(`[proto] launching mpv (${AUDIO_ONLY ? "audio-only" : "with video window"})...`);
+  // A leftover socket file from a previous run makes waitForSocket() below
+  // return immediately and race the connect before the fresh mpv is actually
+  // listening (ECONNREFUSED -> systemd crash-loop). Clear it first so we truly
+  // wait for the new mpv to create its own socket.
+  try {
+    rmSync(SOCKET_PATH, { force: true });
+  } catch {
+    /* nothing to remove */
+  }
   const mpvArgs = [
     "--idle=yes",
     `--input-ipc-server=${SOCKET_PATH}`,
-    "--ytdl-format=bv*[vcodec^=avc1]+ba/b",
+    // Audio-only casts don't need a video stream; requesting one is wasteful
+    // and adds a second, often more fragile, googlevideo fetch.
+    `--ytdl-format=${AUDIO_ONLY ? "bestaudio/best" : "bv*[vcodec^=avc1]+ba/b"}`,
     "--no-terminal",
   ];
   if (YTDLP_BIN) mpvArgs.push(`--script-opts=ytdl_hook-ytdl_path=${YTDLP_BIN}`);

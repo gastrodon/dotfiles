@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
+    # yt-dlp tracks YouTube's frequently-changing player internals; the 26.05
+    # release pin lags far enough that resolved stream URLs 403. Pull *just*
+    # yt-dlp from unstable (scoped overlay on the rpi4b cast box).
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     flake-utils.url = "github:numtide/flake-utils";
 
     home-manager = {
@@ -61,6 +66,7 @@
     {
       self,
       nixpkgs,
+      nixpkgs-unstable,
       home-manager,
       sops-nix,
       nur,
@@ -227,7 +233,17 @@
       nixosConfigurations.rpi4b = mkRpi "rpi4b" {
         address = "192.168.0.242";
         native = true;
-        modules = [ ./hosts/rpi/graphical.nix ];
+        modules = [
+          ./hosts/rpi/graphical.nix
+          # Current yt-dlp for the cast receiver (26.05's is too old — 403s).
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                yt-dlp = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.yt-dlp;
+              })
+            ];
+          }
+        ];
       };
 
       devShells.x86_64-linux.default = devenv.lib.mkShell {

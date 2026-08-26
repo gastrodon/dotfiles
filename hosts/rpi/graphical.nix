@@ -116,6 +116,11 @@ in
   systemd.user.services.cast-receiver = {
     description = "DIAL/YouTube-Lounge cast receiver (mpv-backed)";
     wantedBy = [ "default.target" ];
+    # Global user units (/etc/systemd/user) otherwise start for every user with
+    # a systemd --user session — e.g. a root SSH login — where there is no
+    # PipeWire/mpv env, so the copy crash-loops and competes for the DIAL/SSDP
+    # receiver, breaking real casts. Restrict to the auto-login session's user.
+    unitConfig.ConditionUser = config.identity.username;
     environment = {
       DEVICE_NAME = "Bedroom Pi";
       DIAL_PORT = toString castDialPort;
@@ -139,6 +144,8 @@ in
   systemd.user.services.bt-keepalive = {
     description = "Silent keepalive loop to stop the paired BT speaker auto-power-off";
     wantedBy = [ "default.target" ];
+    # Same reason as cast-receiver: eva-session only, never a stray root login.
+    unitConfig.ConditionUser = config.identity.username;
     serviceConfig = {
       ExecStart = "${pkgs.mpv}/bin/mpv --no-video --no-terminal --loop-file=inf ${silenceLoop}";
       Restart = "always";
