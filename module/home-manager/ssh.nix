@@ -56,6 +56,15 @@ in
       server2.HostName = hosts.server2;
       twink.HostName = hosts.twink;
 
+      # `mso`, not `root`, but the session runs as uid 0).
+      dg4244 = {
+        HostName = hosts.dg4244;
+        User = "mso";
+        IdentityFile = "~/.ssh/dg4244_rsa";
+        HostKeyAlgorithms = "+ssh-rsa";
+        PubkeyAcceptedAlgorithms = "+ssh-rsa";
+      };
+
       # claude@ identity, not eva's — for agents (pi) that should carry the same
       # scoped access ssh-mcp already grants Claude Code, not eva's own login.
       "server1-agent" = {
