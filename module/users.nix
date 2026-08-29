@@ -24,6 +24,7 @@ in
       "video" # Access video devices (brightness control)
       "audio" # Access audio devices
       "plugdev" # Access USB devices (oscilloscope, etc.)
+      "dialout" # Access USB serial devices (Ender 3 printer on /dev/ttyUSB0, etc.)
     ];
 
     openssh.authorizedKeys.keyFiles = [ githubKeys ];

@@ -15,6 +15,7 @@
     ../../module/linear.nix
     ../../module/pxe-boot-server.nix
     ../../module/pi-voice.nix
+    ../../module/cad.nix
   ];
 
   # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
