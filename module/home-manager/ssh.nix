@@ -57,8 +57,9 @@ in
       twink.HostName = hosts.twink;
 
       # `mso`, not `root`, but the session runs as uid 0).
-      dg4244 = {
-        HostName = hosts.dg4244;
+      # Key file on disk is still named after the modem model (dg4244_rsa).
+      modem = {
+        HostName = hosts.modem;
         User = "mso";
         IdentityFile = "~/.ssh/dg4244_rsa";
         HostKeyAlgorithms = "+ssh-rsa";
