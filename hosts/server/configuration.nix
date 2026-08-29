@@ -19,6 +19,7 @@ in
     ../../module/actual.nix
     ../../module/pibot.nix
     ../../module/tailscale-funnel.nix
+    ../../module/ci-deploy.nix
     ../../module/home-assistant.nix
     ../../module/ollama.nix
   ];
