@@ -16,7 +16,6 @@
     ../../module/pxe-boot-server.nix
     ../../module/pi-voice.nix
     ../../module/hw-bench.nix
-    ../../module/cad.nix
   ];
 
   # Hardware bench: Uno + camera are physically attached to stone.
