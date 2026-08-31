@@ -52,8 +52,6 @@ in
       };
 
       stone.HostName = hosts.stone;
-      server1.HostName = hosts.server1;
-      server2.HostName = hosts.server2;
       twink.HostName = hosts.twink;
 
       # `mso`, not `root`, but the session runs as uid 0).
@@ -66,18 +64,13 @@ in
         PubkeyAcceptedAlgorithms = "+ssh-rsa";
       };
 
-      # claude@ identity, not eva's — for agents (pi) that should carry the same
-      # scoped access ssh-mcp already grants Claude Code, not eva's own login.
-      "server1-agent" = {
-        HostName = hosts.server1;
-        User = "claude";
-        IdentityFile = "/run/secrets/claude-ssh-privkey-local";
-      };
-      "server2-agent" = {
-        HostName = hosts.server2;
-        User = "claude";
-        IdentityFile = "/run/secrets/claude-ssh-privkey-local";
-      };
+      # No server1/server2 aliases here (dropped -- the hardcoded-IP alias
+      # pattern went stale against DHCP-leased addresses; hosts.server1/
+      # server2 in module/hosts.nix remains the live source of truth,
+      # consumed directly where it's actually load-bearing: claude.nix's
+      # MCP SSH profiles, hosts/server/configuration.nix's Ollama wiring,
+      # and pi.nix's AGENTS.md text, all independently). Reach them with
+      # `ssh -i /run/secrets/claude-ssh-privkey-local claude@<ip>` directly.
     };
   };
 
