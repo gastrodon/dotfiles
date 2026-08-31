@@ -117,6 +117,12 @@ let
     - server1/server2: connect with `ssh server1-agent` / `ssh server2-agent`, never plain
       `ssh server1` / `ssh server2`. The `-agent` aliases log in as the scoped agent account;
       the bare hostnames use eva's own login, which is not yours to use.
+    - No direct web access otherwise, but `web search <query>` / `web fetch <url>` exist
+      (headless Playwright, `gastrodon/dotfiles`' `package/web`) once the system has been
+      switched to a build that includes them -- `which web` first, since a session can predate
+      the switch. Uses Bing, not DuckDuckGo/Google (both actively block headless automation;
+      Bing doesn't). `fetch` prints a page's rendered text; `search` prints title/url/snippet
+      per result with Bing's tracking-redirect links already decoded to real URLs.
   '';
 
   # Re-asserts our declared packages/instructions on every launch, merging packages into
