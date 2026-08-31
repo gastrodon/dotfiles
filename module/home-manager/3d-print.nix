@@ -16,5 +16,12 @@
     # the `dialout` group (module/users.nix; a user-account property,
     # unaffected by whether this package is home- or system-scoped).
     cura-appimage
+
+    # Inkscape — for sketching/annotating diagrams by hand when describing
+    # geometry in words gets unwieldy (e.g. marking up a dimension or shape
+    # feature visually instead). Grouped with the other design tools here
+    # since the use case is the same hardware/CAD design workflow, not
+    # general graphic design.
+    inkscape
   ];
 }
