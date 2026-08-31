@@ -47,7 +47,6 @@ in
         ./i3blocks.nix
         ./xresources.nix
         ./passage.nix
-        ./3d-print.nix
       ];
 
       programs.obsidian = {

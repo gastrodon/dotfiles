@@ -40,8 +40,10 @@
 
   # pi + pi-black — stone-only, and needs no system-level wiring (auth is interactive,
   # no sops secrets), so it goes straight into home-manager rather than via a module/ wrapper.
+  # 3d-print (FreeCAD) — stone-only, same reasoning: only stone has the printer/CAD workflow.
   home-manager.users.${config.identity.username}.imports = [
     ../../module/home-manager/pi.nix
+    ../../module/home-manager/3d-print.nix
   ];
 
   networking.hostName = "stone";
