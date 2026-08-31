@@ -15,8 +15,12 @@
     ../../module/linear.nix
     ../../module/pxe-boot-server.nix
     ../../module/pi-voice.nix
+    ../../module/hw-bench.nix
     ../../module/cad.nix
   ];
+
+  # Hardware bench: Uno + camera are physically attached to stone.
+  hwBench.enable = true;
 
   # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
   services.pxeBootServer = {
