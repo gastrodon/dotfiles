@@ -117,6 +117,45 @@ in
     "armv7l-linux"
   ];
 
+  # Cap rollback history to the last N system generations. Without this, every
+  # `nixos-rebuild switch` pins its whole closure alive forever (gc roots the
+  # profile generation), and /nix/store grows unbounded across NixOS version
+  # bumps in particular. This trims both the GRUB boot menu and the actual
+  # profile + store on disk, so `nixos-rebuild switch --rollback` (or picking
+  # an older entry at boot) still works for the last N, and older ones get
+  # reclaimed automatically.
+  boot.loader.grub.configurationLimit = 10;
+
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    persistent = true;
+  };
+
+  systemd.services.trim-system-generations = {
+    description = "Keep only the last N NixOS system generations";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      ${pkgs.nix}/bin/nix-env -p /nix/var/nix/profiles/system --delete-generations +${toString config.boot.loader.grub.configurationLimit}
+    '';
+  };
+
+  systemd.timers.trim-system-generations = {
+    description = "Daily system generation trim";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+
+  # Run after the trim so the same daily pass both drops old generations and
+  # reclaims the store paths that were only kept alive by them.
+  systemd.services.nix-gc = {
+    after = [ "trim-system-generations.service" ];
+    requires = [ "trim-system-generations.service" ];
+  };
+
   services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
 
