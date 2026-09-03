@@ -337,6 +337,24 @@
         "type": "github"
       }
     },
+    "flake-utils_3": {
+      "inputs": {
+        "systems": "systems_7"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "ghostty": {
       "flake": false,
       "locked": {
@@ -500,6 +518,22 @@
         "owner": "NixOS",
         "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-playwright": {
+      "locked": {
+        "lastModified": 1783079170,
+        "narHash": "sha256-Iwqi/HUUut0bmViXcTIlD00Ae7uUk1LzNUD/Xfkz8nI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f2676046a1cba86d6f86a64f5b6d427b2f4dec96",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f2676046a1cba86d6f86a64f5b6d427b2f4dec96",
         "type": "github"
       }
     },
@@ -673,19 +707,43 @@
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "nixpkgs-playwright": "nixpkgs-playwright",
+        "psyduck": "psyduck"
       },
       "locked": {
-        "lastModified": 1786992895,
-        "narHash": "sha256-lF+0BzkAEKNdrnTtKsxqm9VwREXsIskphVujxg4B3CU=",
+        "lastModified": 1788417292,
+        "narHash": "sha256-KYNTnZfKwWmDiyr00lc932sZZV19PdVoS8y2iM5rUD4=",
         "owner": "gastrodon",
         "repo": "pibot",
-        "rev": "8e3f3555fec5a85effc7e3971027ab4b43ed8e99",
+        "rev": "534a08d28748892a1cf9ed701e9d4e669f062e51",
         "type": "github"
       },
       "original": {
         "owner": "gastrodon",
         "repo": "pibot",
+        "type": "github"
+      }
+    },
+    "psyduck": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "nixpkgs": [
+          "pibot",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785895309,
+        "narHash": "sha256-z1dTjsManOjKisY5Kq48zoEUGcpJCs51Pf+B4Sn8CkY=",
+        "owner": "gastrodon",
+        "repo": "psyduck",
+        "rev": "41870d05ed683f44eb4141cc8c86e006f31a1d12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gastrodon",
+        "repo": "psyduck",
         "type": "github"
       }
     },
@@ -824,6 +882,21 @@
       }
     },
     "systems_6": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_7": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
