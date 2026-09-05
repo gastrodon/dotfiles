@@ -13,7 +13,15 @@ in
     ../../module/avahi.nix
     ../../module/nomad-client.nix
     ../../module/cluster-net.nix
+    ../../module/sops.nix
+    ../../module/tailscale.nix
   ];
+
+  # Reach the pi directly over the tailnet instead of hopping through a
+  # LAN-only box — see module/tailscale.nix. The claude age key that decrypts
+  # secrets.claude.yaml still needs planting via `./bootstrap <hostname> <ip>`
+  # before the first switch that turns this on.
+  services.tailscaleClient.enable = true;
 
   home-manager = {
     useGlobalPkgs = true;

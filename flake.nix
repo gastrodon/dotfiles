@@ -144,6 +144,7 @@
             "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
             ./hosts/rpi
             home-manager.nixosModules.home-manager
+            sops-nix.nixosModules.sops
             {
               networking.hostName = hostName;
               clusterNet.address = address;

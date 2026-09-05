@@ -12,6 +12,8 @@ let
   cfg = config.services.tailscaleFunnel;
 in
 {
+  imports = [ ./tailscale.nix ];
+
   options.services.tailscaleFunnel = {
     enable = lib.mkEnableOption "Tailscale Funnel fronting a local port";
 
@@ -23,18 +25,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.tailscale = {
-      enable = true;
-      openFirewall = true;
-      authKeyFile = config.sops.secrets."tailscale/auth_key".path;
-      # Funnel needs a fetched TLS cert; the node must be reachable and MagicDNS/HTTPS on.
-      extraSetFlags = [ "--ssh=false" ];
-    };
-
-    sops.secrets."tailscale/auth_key" = {
-      sopsFile = ../secrets.claude.yaml;
-      format = "yaml";
-    };
+    services.tailscaleClient.enable = true;
 
     # Apply the funnel mapping once tailscaled is authed. Idempotent re-apply.
     systemd.services.tailscale-funnel = {

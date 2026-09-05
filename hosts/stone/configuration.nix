@@ -16,7 +16,12 @@
     ../../module/pxe-boot-server.nix
     ../../module/pi-voice.nix
     ../../module/hw-bench.nix
+    ../../module/tailscale.nix
   ];
+
+  # Reach stone directly over the tailnet instead of hopping through a
+  # LAN-only box — see module/tailscale.nix.
+  services.tailscaleClient.enable = true;
 
   # Hardware bench: Uno + camera are physically attached to stone.
   hwBench.enable = true;
