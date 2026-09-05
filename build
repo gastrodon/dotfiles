@@ -11,131 +11,117 @@ if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
   ssh-add -q "$HOME/.ssh/id_ed25519" >/dev/null 2>&1 || true
 fi
 
+usage() {
+  cat >&2 <<EOF
+Usage: $0 <build|switch> [hostname] [--sdimage|--serve-pxe]
+
+Commands:
+  build              Build configuration
+  switch             Switch to new configuration + restart i3
+
+Options:
+  --sdimage          Build SD card image (rpi* only)
+  --serve-pxe        Build + serve netboot (server only; foreground)
+
+Examples:
+  $0 build stone
+  $0 build rpi4b --sdimage
+  $0 build server --serve-pxe
+  $0 switch twink
+EOF
+  exit 1
+}
+
+[[ $# -lt 1 ]] && usage
+
+COMMAND="$1"
 HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
+FLAG="${3:-}"
 
-case "${1:-build}" in
+case "$COMMAND" in
+  build|switch) ;;
+  *) usage ;;
+esac
+
+case "$FLAG" in
+  --|--sdimage|--serve-pxe|"") ;;
+  *) usage ;;
+esac
+
+build_config() {
+  echo "Building configuration for $HOSTNAME..."
+  nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+}
+
+switch_config() {
+  echo "Switching to configuration for $HOSTNAME..."
+  nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+  i3-msg restart 2>/dev/null || true
+}
+
+build_sdimage() {
+  if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
+    echo "Error: --sdimage only supported for rpi2b|rpi3b-plus|rpi4b" >&2
+    exit 1
+  fi
+  echo "Building SD image for $HOSTNAME..."
+  nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}.config.system.build.sdImage" --impure
+  echo "SD image at: $(readlink result)/sd-image/"
+}
+
+serve_pxe() {
+  if [[ "$HOSTNAME" != "server" ]]; then
+    echo "Error: --serve-pxe only supported for server" >&2
+    exit 1
+  fi
+
+  PXE_DIR="${PXE_DIR:-/var/lib/pxe}"
+
+  if [[ ! -d "$PXE_DIR" ]]; then
+    echo "Error: $PXE_DIR doesn't exist — must run on the PXE boot server (stone)." >&2
+    echo "       (services.pxeBootServer creates it; set PXE_DIR to override.)" >&2
+    exit 1
+  fi
+
+  echo "Building thin netboot image for server..."
+  NB="$SCRIPT_DIR#nixosConfigurations.server-netboot.config.system.build"
+  kernel=$(nix build --no-link --print-out-paths --impure "$NB.kernel")
+  initrd=$(nix build --no-link --print-out-paths --impure "$NB.netbootRamdisk")
+  ipxe=$(nix build --no-link --print-out-paths --impure "$NB.netbootIpxeScript")
+  toplevel=$(nix build --no-link --print-out-paths --impure \
+    "$SCRIPT_DIR#nixosConfigurations.server.config.system.build.toplevel")
+
+  echo "Staging boot files into $PXE_DIR..."
+  install -m 0644 "$kernel/bzImage" "$PXE_DIR/bzImage"
+  install -m 0644 "$initrd/initrd" "$PXE_DIR/initrd"
+  install -m 0644 "$ipxe/netboot.ipxe" "$PXE_DIR/netboot.ipxe"
+
+  echo "Copying target closure into $PXE_DIR/cache..."
+  nix copy --to "file://$PXE_DIR/cache?compression=zstd" "$toplevel"
+
+  echo ""
+  echo "PXE server ready. Serving from $PXE_DIR"
+  echo "Boxes will chain http://<stone>:8080/netboot.ipxe and pull closure at install time."
+  echo "Press Ctrl+C when done netbooting."
+  echo ""
+
+  trap - EXIT
+  while true; do sleep 1; done
+}
+
+case "$COMMAND" in
   build)
-    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
-      echo "Error: Unknown hostname '$HOSTNAME'"
-      echo "Set NIXOS_HOSTNAME=stone|twink|server to build for a specific host"
-      exit 1
-    fi
-    echo "Building configuration for $HOSTNAME..."
-    nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
-    ;;
-  switch)
-    if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" && "$HOSTNAME" != "server" ]]; then
-      echo "Error: Unknown hostname '$HOSTNAME'"
-      echo "Set NIXOS_HOSTNAME=stone|twink|server to switch a specific host"
-      exit 1
-    fi
-    echo "Switching to configuration for $HOSTNAME..."
-    nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
-    i3-msg restart 2>/dev/null || true
-    ;;
-  iso)
-    if [[ -z "${2:-}" ]]; then
-      echo "Error: iso requires --auto or --live flag"
-      echo "Usage: $0 iso [--auto | --live] [hostname]"
-      exit 1
-    fi
-
-    ISO_MODE="$2"
-    HOSTNAME="${3:-${NIXOS_HOSTNAME:-$(hostname)}}"
-
-    case "$ISO_MODE" in
-      --auto)
-        if [[ "$HOSTNAME" == "server" ]]; then
-          echo "Error: server has no autoinstall ISO — use: $0 iso --live server"
-          exit 1
-        fi
-        if [[ "$HOSTNAME" != "stone" && "$HOSTNAME" != "twink" ]]; then
-          echo "Error: Unknown hostname '$HOSTNAME'"
-          echo "Set NIXOS_HOSTNAME=stone|twink to build an autoinstall ISO"
-          exit 1
-        fi
-        echo "Building autoinstall ISO for $HOSTNAME..."
-        nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-installer.config.system.build.isoImage" --impure
-        echo "ISO at: $(readlink result)/iso/"
-        ;;
-      --live)
-        if [[ "$HOSTNAME" != "server" ]]; then
-          echo "Error: --live is only supported for server hostname"
-          exit 1
-        fi
-        echo "Building live-media ISO for $HOSTNAME..."
-        nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}-live-media.config.system.build.isoImage" --impure
-        echo "ISO at: $(readlink result)/iso/"
-        echo ""
-        echo "To dd onto USB media:"
-        echo "  dd if=$(readlink result)/iso/*.iso of=/dev/sdX bs=4M status=progress"
-        echo "  (replace /dev/sdX with your USB device)"
-        ;;
-      *)
-        echo "Error: Unknown ISO mode '$ISO_MODE'"
-        echo "Usage: $0 iso [--auto | --live] [hostname]"
-        exit 1
-        ;;
+    case "$FLAG" in
+      "") build_config ;;
+      --sdimage) build_sdimage ;;
+      --serve-pxe) serve_pxe ;;
     esac
     ;;
-  netboot)
-    # Thin PXE netboot for the server boxes: build the image, stage the boot
-    # files + target closure into stone's PXE payload dir. Run this on stone.
-    PXE_DIR="${PXE_DIR:-/var/lib/pxe}"
-    NB="$SCRIPT_DIR#nixosConfigurations.server-netboot.config.system.build"
-
-    if [[ ! -d "$PXE_DIR" ]]; then
-      echo "Error: $PXE_DIR doesn't exist — run this on the PXE boot server (stone)."
-      echo "       (services.pxeBootServer creates it; set PXE_DIR to override.)"
+  switch)
+    if [[ -n "$FLAG" ]]; then
+      echo "Error: switch does not support flags" >&2
       exit 1
     fi
-
-    echo "Building thin netboot image for server..."
-    kernel=$(nix build --no-link --print-out-paths --impure "$NB.kernel")
-    initrd=$(nix build --no-link --print-out-paths --impure "$NB.netbootRamdisk")
-    ipxe=$(nix build --no-link --print-out-paths --impure "$NB.netbootIpxeScript")
-    toplevel=$(nix build --no-link --print-out-paths --impure \
-      "$SCRIPT_DIR#nixosConfigurations.server.config.system.build.toplevel")
-
-    echo "Staging boot files into $PXE_DIR ..."
-    install -m 0644 "$kernel/bzImage" "$PXE_DIR/bzImage"
-    install -m 0644 "$initrd/initrd" "$PXE_DIR/initrd"
-    install -m 0644 "$ipxe/netboot.ipxe" "$PXE_DIR/netboot.ipxe"
-
-    echo "Copying target closure into $PXE_DIR/cache ..."
-    nix copy --to "file://$PXE_DIR/cache?compression=zstd" "$toplevel"
-
-    echo ""
-    echo "Staged:"
-    echo "  initrd (thin — installer env only): $(du -h "$initrd/initrd" | cut -f1)"
-    echo "  target closure served from:         $PXE_DIR/cache"
-    echo "Boxes chain http://<stone>:8080/netboot.ipxe and pull the closure at install time."
-    ;;
-  sdimage)
-    if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
-      echo "Error: Unknown hostname '$HOSTNAME'"
-      echo "Set NIXOS_HOSTNAME=rpi2b|rpi3b-plus|rpi4b to build an SD image for a specific target"
-      exit 1
-    fi
-    echo "Building SD image for $HOSTNAME..."
-    nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}.config.system.build.sdImage" --impure
-    echo "SD image at: $(readlink result)/sd-image/"
-    ;;
-  *)
-    echo "Usage: $0 [build|switch|iso|sdimage] [options]"
-    echo "  build             - Build configuration (default)"
-    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
-    echo "  switch            - Switch to new configuration"
-    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
-    echo "  iso --auto        - Build autoinstall ISO"
-    echo "                      hostname: stone|twink|server (or NIXOS_HOSTNAME=<hostname>)"
-    echo "  iso --live        - Build live-media interactive ISO"
-    echo "                      hostname: server only"
-    echo "  netboot           - Build + stage thin PXE netboot payload (server; run on stone)"
-    echo "  sdimage           - Build SD card image"
-    echo "                      hostname: rpi2b|rpi3b-plus|rpi4b (or NIXOS_HOSTNAME=<hostname>)"
-    echo ""
-    echo "Current hostname: $HOSTNAME"
-    exit 1
+    switch_config
     ;;
 esac

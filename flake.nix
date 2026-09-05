@@ -270,5 +270,15 @@
         type = "app";
         program = "${pkg}/bin/${name}";
       }) self.packages.x86_64-linux;
+
+      # Build capabilities per host (source of truth for ./build script validation)
+      buildCapabilities = {
+        stone = { };
+        twink = { };
+        server = { servePxe = true; };
+        rpi2b = { sdimage = true; };
+        rpi3b-plus = { sdimage = true; };
+        rpi4b = { sdimage = true; };
+      };
     };
 }
