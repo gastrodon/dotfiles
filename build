@@ -5,15 +5,22 @@ export NIXPKGS_ALLOW_UNFREE=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Nix's git+ssh fetcher offers every ssh-agent key; isolate to the primary one.
+# If we can't unlock it here (e.g. no TTY for the passphrase prompt), fall back
+# to the caller's existing agent rather than leaving an empty one active.
 if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+  ORIGINAL_SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}"
   eval "$(ssh-agent -s)" >/dev/null
   trap 'ssh-agent -k >/dev/null 2>&1 || true' EXIT
-  ssh-add -q "$HOME/.ssh/id_ed25519" >/dev/null 2>&1 || true
+  if ! ssh-add -q "$HOME/.ssh/id_ed25519" </dev/null >/dev/null 2>&1; then
+    ssh-agent -k >/dev/null 2>&1 || true
+    trap - EXIT
+    export SSH_AUTH_SOCK="$ORIGINAL_SSH_AUTH_SOCK"
+  fi
 fi
 
 usage() {
   cat >&2 <<EOF
-Usage: $0 <build|switch> [hostname] [--sdimage|--serve-pxe]
+Usage: $0 <build|switch> [hostname] [options]
 
 Commands:
   build              Build configuration
@@ -22,12 +29,16 @@ Commands:
 Options:
   --sdimage          Build SD card image (rpi* only)
   --serve-pxe        Build + serve netboot (server only; foreground)
+  --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
 
 Examples:
   $0 build stone
+  $0 build stone --target root@192.168.1.10
+  $0 build stone --target root@host1 --target root@host2
   $0 build rpi4b --sdimage
   $0 build server --serve-pxe
   $0 switch twink
+  $0 switch twink --target root@192.168.1.10
 EOF
   exit 1
 }
@@ -36,27 +47,74 @@ EOF
 
 COMMAND="$1"
 HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
-FLAG="${3:-}"
+shift 2 || shift $#
+
+declare -a TARGET_HOSTS=()
+FLAG=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --target)
+      [[ -z "$2" ]] && { echo "Error: --target requires an argument" >&2; exit 1; }
+      TARGET_HOSTS+=("$2")
+      shift 2
+      ;;
+    --sdimage|--serve-pxe)
+      [[ -n "$FLAG" ]] && { echo "Error: only one flag allowed (--sdimage or --serve-pxe)" >&2; exit 1; }
+      FLAG="$1"
+      shift
+      ;;
+    *)
+      echo "Error: unknown option '$1'" >&2
+      usage
+      ;;
+  esac
+done
 
 case "$COMMAND" in
   build|switch) ;;
   *) usage ;;
 esac
 
-case "$FLAG" in
-  --|--sdimage|--serve-pxe|"") ;;
-  *) usage ;;
-esac
+# Run a nixos-rebuild subcommand across all targets, continuing past per-target
+# failures (e.g. switch-to-configuration exits 4 when a remote box with a live
+# desktop session can't reload user units — system switch still lands) so one
+# bad host doesn't block the rest. Prints a summary and exits nonzero overall
+# if any target failed.
+run_multi_target() {
+  local subcmd="$1"
+  local -a failed=()
+  echo "Running '$subcmd' for $HOSTNAME on ${#TARGET_HOSTS[@]} target(s)..."
+  for target in "${TARGET_HOSTS[@]}"; do
+    echo "  → $target"
+    if ! nixos-rebuild "$subcmd" --flake "$SCRIPT_DIR#$HOSTNAME" --impure --target-host "$target"; then
+      echo "  ✗ $target failed" >&2
+      failed+=("$target")
+    fi
+  done
+  if [[ ${#failed[@]} -gt 0 ]]; then
+    echo "Failed targets: ${failed[*]}" >&2
+    return 1
+  fi
+}
 
 build_config() {
-  echo "Building configuration for $HOSTNAME..."
-  nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+  if [[ ${#TARGET_HOSTS[@]} -gt 0 ]]; then
+    run_multi_target build
+  else
+    echo "Building configuration for $HOSTNAME..."
+    nixos-rebuild build --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+  fi
 }
 
 switch_config() {
-  echo "Switching to configuration for $HOSTNAME..."
-  nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
-  i3-msg restart 2>/dev/null || true
+  if [[ ${#TARGET_HOSTS[@]} -gt 0 ]]; then
+    run_multi_target switch
+  else
+    echo "Switching to configuration for $HOSTNAME..."
+    nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
+    i3-msg restart 2>/dev/null || true
+  fi
 }
 
 build_sdimage() {
@@ -112,14 +170,26 @@ serve_pxe() {
 case "$COMMAND" in
   build)
     case "$FLAG" in
-      "") build_config ;;
-      --sdimage) build_sdimage ;;
-      --serve-pxe) serve_pxe ;;
+      "")
+        if [[ ${#TARGET_HOSTS[@]} -gt 0 ]]; then
+          build_config
+        else
+          build_config
+        fi
+        ;;
+      --sdimage)
+        [[ ${#TARGET_HOSTS[@]} -gt 0 ]] && { echo "Error: --sdimage does not support --target" >&2; exit 1; }
+        build_sdimage
+        ;;
+      --serve-pxe)
+        [[ ${#TARGET_HOSTS[@]} -gt 0 ]] && { echo "Error: --serve-pxe does not support --target" >&2; exit 1; }
+        serve_pxe
+        ;;
     esac
     ;;
   switch)
     if [[ -n "$FLAG" ]]; then
-      echo "Error: switch does not support flags" >&2
+      echo "Error: switch does not support --sdimage or --serve-pxe" >&2
       exit 1
     fi
     switch_config
