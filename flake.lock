@@ -712,11 +712,11 @@
         "psyduck": "psyduck"
       },
       "locked": {
-        "lastModified": 1788417292,
-        "narHash": "sha256-KYNTnZfKwWmDiyr00lc932sZZV19PdVoS8y2iM5rUD4=",
+        "lastModified": 1788667693,
+        "narHash": "sha256-8YLJAqNSaOMUqlUkJhX1qoixgoqBSypgC/1xPOtDP5Y=",
         "owner": "gastrodon",
         "repo": "pibot",
-        "rev": "534a08d28748892a1cf9ed701e9d4e669f062e51",
+        "rev": "1c41a1f950d9c617fb9e0af52941d638e804a5af",
         "type": "github"
       },
       "original": {

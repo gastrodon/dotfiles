@@ -31,6 +31,15 @@ in
     target = "3456";
   };
 
+  # The public face of that funnel, which is what Linear has to be pointed at:
+  # ${publicUrl}/webhook receives sessions, ${publicUrl}/oauth/callback is the
+  # registered OAuth redirect. Tied to server1's tailnet name — every server box
+  # shares this configuration and so advertises the same URL, which is correct
+  # for the webhook (only server1 is registered with Linear) but means the
+  # install flow has to be run against this URL, not against another box's own
+  # address: the OAuth state is held by whichever process issued it.
+  services.linearAgent.publicUrl = "https://server1.tailfa78b0.ts.net";
+
   # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
   # the host-networked job to server1 so the worker has a stable endpoint.
   services.ollamaJob = {

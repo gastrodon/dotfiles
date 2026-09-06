@@ -11,11 +11,6 @@
     format = "yaml";
     owner = "linear-agent";
   };
-  sops.secrets."linear/refresh_token" = {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    owner = "linear-agent";
-  };
   sops.secrets."linear/client_id" = {
     sopsFile = ../secrets.claude.yaml;
     format = "yaml";
@@ -57,10 +52,19 @@
     mode = "0400";
   };
 
+  # Only app-level material is wired here. The per-workspace Linear token is
+  # not a secret this repo carries any more: the receiver mints it itself over
+  # OAuth (${publicUrl}/oauth/start) into /var/lib/linear-agent, so
+  # re-authorizing is a browser visit rather than a `sops set` plus a redeploy.
+  # publicUrl is set per host, next to the funnel that serves it.
   services.linearAgent = {
     enable = true;
+    # eva's workspace. Both OAuth endpoints are public through the funnel, so
+    # even a caller who gets past the admin token can only install a workspace
+    # named here — and Linear is asked which workspace consented, so this is
+    # checked against Linear's answer, not the caller's.
+    allowedOrganizations = [ "f9a4dcde-1f1d-43e1-a9c6-dbded1d624b4" ];
     webhookSecretFile = config.sops.secrets."linear/webhook_secret".path;
-    refreshTokenFile = config.sops.secrets."linear/refresh_token".path;
     clientIdFile = config.sops.secrets."linear/client_id".path;
     clientSecretFile = config.sops.secrets."linear/client_secret".path;
     nomadTokenFile = config.sops.secrets."linear-agent/nomad_token".path;
