@@ -132,6 +132,12 @@ let
         "tailscaled.service"
         "tailscaled-autoconnect.service"
         "network-online.target"
+        # Ordered after the other funnel unit, not because it depends on it but
+        # because both read-modify-write the same per-node serve config and
+        # systemd would otherwise start them in parallel. Ordering makes the
+        # common case conflict-free; the retry loop below handles the rest.
+        # `After` on a unit that does not exist on this host is simply ignored.
+        "tailscale-funnel.service"
       ];
       requires = [ "tailscaled.service" ];
       wants = [ "network-online.target" ];
@@ -155,11 +161,27 @@ let
           fi
           sleep 2
         done
-        if ! timeout 15 tailscale funnel --bg \
-             --https=${toString cfg.funnelPort} \
-             http://127.0.0.1:${toString cfg.port}; then
-          echo "funnel not applied — is Funnel enabled for this node in the tailnet ACL?" >&2
-        fi
+        # Retry on serve-config contention — see the long comment in
+        # module/tailscale-funnel.nix. Two units mutate one etag-guarded config,
+        # and the loser used to fail silently while systemd reported success.
+        for _ in $(seq 1 10); do
+          if out=$(timeout 15 tailscale funnel --bg \
+                   --https=${toString cfg.funnelPort} \
+                   http://127.0.0.1:${toString cfg.port} 2>&1); then
+            exit 0
+          fi
+          case "$out" in
+            *"etag mismatch"* | *"Another client is changing"*)
+              sleep 2
+              ;;
+            *)
+              echo "funnel not applied: $out" >&2
+              exit 0
+              ;;
+          esac
+        done
+
+        echo "funnel not applied after 10 attempts — serve config stayed contended: $out" >&2
         exit 0
       '';
     };

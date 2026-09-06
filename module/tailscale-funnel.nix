@@ -58,13 +58,46 @@ in
           fi
           sleep 2
         done
-        # If Funnel isn't yet enabled for this node in the tailnet ACL the CLI
-        # blocks; bound it and exit clean so the switch completes. A later
-        # `systemctl restart tailscale-funnel` (after the ACL grants funnel)
-        # applies it for real.
-        if ! timeout 15 tailscale funnel --bg ${cfg.target}; then
-          echo "funnel not applied — is Funnel enabled for this node in the tailnet ACL?" >&2
-        fi
+
+        # RETRY, BECAUSE THE SERVE CONFIG IS SHARED MUTABLE STATE.
+        #
+        # `tailscale funnel` and `tailscale serve` both read-modify-write one
+        # per-node serve config, guarded by an etag. Any other unit doing the
+        # same thing concurrently loses with:
+        #
+        #   Another client is changing the serve config; please try again.
+        #   sending serve config: Preconditions failed: etag mismatch
+        #
+        # This is not hypothetical: module/testbench-web.nix installs a second
+        # funnel unit, both are wantedBy multi-user.target, and systemd starts
+        # them in parallel — so on any given boot one of the two mappings could
+        # silently fail to apply. It was caught after a reboot left the Linear
+        # webhook's 443 mapping missing while testbench's 8443 mapping was fine.
+        #
+        # Ordering alone would not be enough (anything else touching the config
+        # races too), so retry on the conflict rather than only sequencing.
+        for attempt in $(seq 1 10); do
+          if out=$(timeout 15 tailscale funnel --bg ${cfg.target} 2>&1); then
+            exit 0
+          fi
+          case "$out" in
+            *"etag mismatch"* | *"Another client is changing"*)
+              sleep 2
+              ;;
+            *)
+              # A real failure, and NOT necessarily an ACL problem — the old
+              # message asserted that and sent at least one investigation down
+              # the wrong path. Print what actually happened and let the reader
+              # decide.
+              echo "funnel not applied: $out" >&2
+              echo "if this mentions Funnel not being enabled, grant it for this node in the tailnet ACL and restart this unit" >&2
+              exit 0
+              ;;
+          esac
+        done
+
+        echo "funnel not applied after 10 attempts — serve config stayed contended: $out" >&2
+        # Still exit clean: a failed funnel must not wedge a nixos-rebuild.
         exit 0
       '';
     };
