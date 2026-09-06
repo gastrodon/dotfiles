@@ -50,8 +50,29 @@
   systemd.services.derive-hostname = {
     description = "Set transient hostname from primary LAN IPv4";
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
+
+    # DELIBERATELY NOT `network-online.target`, WHICH IS THE OBVIOUS CHOICE AND
+    # IS WRONG HERE.
+    #
+    # Nothing in NixOS provides network-online.target on its own — it is
+    # satisfied by whichever *-wait-online service the active networking backend
+    # ships. hosts/shared.nix enables NetworkManager, so the disk-booted boxes
+    # get NetworkManager-wait-online and the unit fires. The netboot node
+    # deliberately has no NetworkManager and no networkd (useNetworkd = false,
+    # plain dhcpcd), so nothing satisfies the target, the job stays queued
+    # forever, and this unit — along with everything ordered after it — never
+    # runs at all.
+    #
+    # Caught by booting the netboot image under QEMU before it ever reached a
+    # real box: four minutes in, zero failed units, and the hostname still
+    # `nixos`. It fails silently and looks healthy, which is the worst shape for
+    # something that decides a node's cluster identity.
+    #
+    # So order on network.target, which is always reached, and do the waiting in
+    # the script where it can be bounded and logged. That also makes this work
+    # unchanged under NetworkManager, networkd or bare dhcpcd rather than
+    # depending on which one a host happens to use.
+    after = [ "network.target" ];
 
     # Both of these read the hostname once, at startup, and never revisit it.
     # Nomad takes its node name from it — losing that race registers the node
@@ -80,12 +101,41 @@
     # outside world, so a box with several interfaces names itself after the one
     # carrying its traffic rather than after whichever `ip addr` happens to list
     # first.
+    # Poll rather than assume the address is already there. DHCP has not
+    # necessarily completed when network.target is reached, and the previous
+    # version simply did nothing if it found no address — leaving the node
+    # named `nixos` with no error anywhere. Waiting here, with a bound and a
+    # loud failure at the end, turns a silent misidentification into something
+    # `systemctl status derive-hostname` explains.
     script = ''
-      ip=$(ip -4 route get 1.1.1.1 \
-        | awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
-      if [ -n "$ip" ]; then
-        hostnamectl --transient set-hostname "ip-''${ip//./-}"
-      fi
+      # 180s, not 60. Under QEMU the first netboot test leased an address at
+      # t+58s — dhcpcd solicits IPv6 router advertisements before settling IPv4
+      # — which would have been inside a 60s bound by a second and a half. A
+      # real LAN is far quicker, but the cost of a generous bound is a slower
+      # boot in a case that is already broken, and the cost of a tight one is a
+      # node silently joining the cluster under the wrong identity.
+      for _ in $(seq 1 180); do
+        ip=$(ip -4 route get 1.1.1.1 2>/dev/null \
+          | awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
+        if [ -n "$ip" ]; then
+          hostnamectl --transient set-hostname "ip-''${ip//./-}"
+          echo "hostname set to ip-''${ip//./-}"
+          exit 0
+        fi
+        sleep 1
+      done
+
+      # Non-zero so the failure is visible in `systemctl status` and in the
+      # journal, rather than this exiting 0 having done nothing.
+      #
+      # Note what this does NOT do: `before = nomad.service` is ordering only,
+      # not a requirement, so Nomad still starts and will register the node
+      # under the fallback name. Making that a hard dependency would mean a
+      # node with no DHCP lease runs no workloads at all — defensible, since
+      # such a node is useless anyway, but a bigger behavioural change than
+      # belongs in a hostname unit. Left as ordering plus a loud failure.
+      echo "no IPv4 source address after 60s — hostname left underived" >&2
+      exit 1
     '';
   };
 }
