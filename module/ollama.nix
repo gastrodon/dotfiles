@@ -1,3 +1,19 @@
+# NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
+#
+# The job spec moved to ~/code/home-infra/infra/ollama.nomad.hcl. What is left here is the
+# host-level half that a container cannot do for itself: the firewall port, the
+# state directory with correct ownership, and the host-volume declaration.
+#
+# The job JSON and the `ollama-job-register` oneshot that used to POST it at
+# activation were removed deliberately. That unit ran on every boot and rebuild
+# and re-POSTed the module's own spec under the same job ID, so leaving it in
+# place while the spec also lived in home-infra would have meant two sources of
+# truth with the stale one winning on every reboot.
+#
+# Keep this module ENABLED. `enable = false` would take the firewall rule and
+# the tmpfiles rule with it, and the job would then run with no reachable port
+# and no directory to mount.
+#
 # Ollama as a Nomad service job. The host only provides Nomad, Podman, and a
 # persistent host volume; the model server and its models live in the job.
 {
@@ -8,7 +24,6 @@
 }:
 let
   cfg = config.services.ollamaJob;
-  json = pkgs.formats.json { };
 
   entrypoint = pkgs.writeText "ollama-entrypoint.sh" ''
     set -eu
@@ -34,81 +49,7 @@ let
     wait "$server_pid"
   '';
 
-  jobJson = json.generate "ollama.json" {
-    Job = {
-      ID = "ollama";
-      Name = "ollama";
-      Type = "service";
-      Datacenters = [ "home" ];
-
-      TaskGroups = [
-        {
-          Name = "ollama";
-          Count = 1;
-
-          Constraints = [
-            {
-              LTarget = "\${meta.pi_worker}";
-              RTarget = "true";
-              Operand = "=";
-            }
-          ]
-          ++ lib.optional (cfg.nodeAddress != null) {
-            LTarget = "\${attr.unique.network.ip-address}";
-            RTarget = cfg.nodeAddress;
-            Operand = "=";
-          };
-
-          Volumes.ollama = {
-            Name = "ollama";
-            Type = "host";
-            Source = "ollama";
-            ReadOnly = false;
-          };
-
-          Tasks = [
-            {
-              Name = "ollama";
-              Driver = "podman";
-
-              Config = {
-                image = cfg.image;
-                network_mode = "host";
-                entrypoint = [
-                  "/bin/sh"
-                  "/opt/ollama-entrypoint.sh"
-                ];
-                volumes = [ "${entrypoint}:/opt/ollama-entrypoint.sh:ro" ];
-              };
-
-              VolumeMounts = [
-                {
-                  Volume = "ollama";
-                  Destination = "/root/.ollama";
-                  ReadOnly = false;
-                }
-              ];
-
-              Env = {
-                OLLAMA_CONTEXT_LENGTH = toString cfg.contextLength;
-                OLLAMA_HOST = "0.0.0.0:${toString cfg.port}";
-                OLLAMA_KEEP_ALIVE = "-1";
-                OLLAMA_MAX_LOADED_MODELS = "1";
-                OLLAMA_MODELS = "/root/.ollama/models";
-                OLLAMA_NUM_PARALLEL = "1";
-              };
-
-              Resources = {
-                CPU = cfg.cpu;
-                MemoryMB = cfg.memoryMB;
-              };
-            }
-          ];
-        }
-      ];
-    };
-  };
-in
+  in
 {
   options.services.ollamaJob = {
     enable = lib.mkEnableOption "Ollama as a Nomad service job";
@@ -170,48 +111,6 @@ in
 
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
-    systemd.services.ollama-job-register = {
-      description = "Register the Ollama Nomad job";
-      after = [ "nomad-acl-bootstrap.service" ];
-      requires = [ "nomad-acl-bootstrap.service" ];
-      wantedBy = [ "multi-user.target" ];
-      environment.NOMAD_ADDR = "http://127.0.0.1:4646";
-      path = with pkgs; [
-        curl
-        coreutils
-      ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      script = ''
-        set -u
-        umask 077
-        tmp=$(mktemp)
-        trap 'rm -f "$tmp"' EXIT
-        tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path} > "$tmp"
-        token=$(cat "$tmp")
-
-        for _ in $(seq 1 60); do
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
-            -H "X-Nomad-Token: $token" \
-            -X POST "$NOMAD_ADDR/v1/jobs" \
-            --data @${jobJson}) || code=000
-          case "$code" in
-            200)
-              echo "ollama job registered"
-              exit 0
-              ;;
-            *)
-              sleep 2
-              ;;
-          esac
-        done
-        echo "ollama job registration failed after retries" >&2
-        exit 1
-      '';
-    };
-
-    networking.firewall.allowedTCPPorts = [ cfg.port ];
+        networking.firewall.allowedTCPPorts = [ cfg.port ];
   };
 }

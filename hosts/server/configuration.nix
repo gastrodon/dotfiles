@@ -21,7 +21,26 @@ in
     ../../module/tailscale-funnel.nix
     ../../module/home-assistant.nix
     ../../module/ollama.nix
+    ../../module/testbench-web.nix
+    # Firewall + data directories for the Nomad jobs that now live in
+    # ~/code/home-infra. See that module's header for where the line between
+    # the two repos is drawn and why.
+    ../../module/cluster-services.nix
   ];
+
+  # The testbench 3D viewer. The job serves a directory; the page itself
+  # is pushed into it from the testbench repo (`nix run .#deploy`), so
+  # publishing a new model never touches this host's configuration.
+  services.testbenchWeb = {
+    enable = true;
+    # 8443, not 443: module/tailscale-funnel.nix already owns 443 on this
+    # host for the Linear webhook receiver, and the viewer has no business
+    # sharing that mount. Nothing is public until this host is rebuilt.
+    #
+    # This page has no authentication. Set to null to keep it tailnet+LAN
+    # only, which is what it was before.
+    funnelPort = 8443;
+  };
 
   # Backs the rpi4b kiosk (hosts/rpi/graphical.nix points Firefox at homeassistant.local:8123).
   services.homeAssistantJob.enable = true;

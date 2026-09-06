@@ -1,3 +1,19 @@
+# NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
+#
+# The job spec moved to ~/code/home-infra/infra/home-assistant.nomad.hcl. What is left here is the
+# host-level half that a container cannot do for itself: the firewall port, the
+# state directory with correct ownership, and the host-volume declaration.
+#
+# The job JSON and the `home-assistant-register` oneshot that used to POST it at
+# activation were removed deliberately. That unit ran on every boot and rebuild
+# and re-POSTed the module's own spec under the same job ID, so leaving it in
+# place while the spec also lived in home-infra would have meant two sources of
+# truth with the stale one winning on every reboot.
+#
+# Keep this module ENABLED. `enable = false` would take the firewall rule and
+# the tmpfiles rule with it, and the job would then run with no reachable port
+# and no directory to mount.
+#
 # Home Assistant as a Nomad service job (podman driver), for the rpi4b kiosk to
 # point at. Three things have to line up:
 #
@@ -21,7 +37,6 @@ let
   cfg = config.services.homeAssistantJob;
 
   yaml = pkgs.formats.yaml { };
-  json = pkgs.formats.json { };
 
   # NOTE: only the `homeassistant` provider can create the owner account during
   # onboarding, so it stays listed even though the kiosk never uses it. Dropping it
@@ -44,72 +59,7 @@ let
     http.server_port = cfg.port;
   };
 
-  jobJson = json.generate "home-assistant.json" {
-    Job = {
-      ID = "home-assistant";
-      Name = "home-assistant";
-      Type = "service";
-      Datacenters = [ "home" ];
-
-      TaskGroups = [
-        {
-          Name = "ha";
-          Count = 1;
-
-          # The server boxes have no static hostname (derive-hostname sets a
-          # transient ip-a-b-c-d from DHCP), so this target can drift. If the job
-          # goes pending, check `nomad node status` names first.
-          Constraints = [
-            {
-              LTarget = "\${attr.unique.hostname}";
-              Operand = "=";
-              RTarget = cfg.nodeName;
-            }
-          ];
-
-          Volumes.hass = {
-            Name = "hass";
-            Type = "host";
-            Source = "hass";
-            ReadOnly = false;
-          };
-
-          Tasks = [
-            {
-              Name = "home-assistant";
-              Driver = "podman";
-
-              Config = {
-                image = cfg.image;
-                # HA's discovery is SSDP/mDNS — it finds nothing behind a bridge.
-                network_mode = "host";
-                # configuration.yaml is generated, so mount it read-only over the
-                # writable state volume. HA never writes this file itself.
-                volumes = [ "${configYaml}:/config/configuration.yaml:ro" ];
-              };
-
-              VolumeMounts = [
-                {
-                  Volume = "hass";
-                  Destination = "/config";
-                  ReadOnly = false;
-                }
-              ];
-
-              Env.TZ = config.time.timeZone;
-
-              Resources = {
-                CPU = cfg.cpu;
-                MemoryMB = cfg.memoryMB;
-              };
-            }
-          ];
-        }
-      ];
-    };
-  };
-
-  # Every server box runs this module, but only one may claim the mDNS name — two
+    # Every server box runs this module, but only one may claim the mDNS name — two
   # publishers is a collision. Gate on "is HA actually serving here?" rather than on
   # hostname: the boxes have no static hostname (derive-hostname/DHCP set it well
   # after boot), so a name comparison races startup and, worse, silently succeeds as
@@ -202,52 +152,7 @@ in
     # A record alias has no static-file equivalent to fall back on.
     services.avahi.publish.userServices = true;
 
-    # Same shape as pi-agent-register (module/pibot.nix): idempotent oneshot that
-    # POSTs the jobspec once Nomad's ACL bootstrap has landed. Runs on all three
-    # boxes; re-registering an identical spec is a no-op.
-    systemd.services.home-assistant-register = {
-      description = "Register the home-assistant Nomad job";
-      after = [ "nomad-acl-bootstrap.service" ];
-      requires = [ "nomad-acl-bootstrap.service" ];
-      wantedBy = [ "multi-user.target" ];
-      environment.NOMAD_ADDR = "http://127.0.0.1:4646";
-      path = with pkgs; [
-        curl
-        coreutils
-      ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      script = ''
-        set -u
-        umask 077
-        tmp=$(mktemp)
-        trap 'rm -f "$tmp"' EXIT
-        tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path} > "$tmp"
-        token=$(cat "$tmp")
-
-        for _ in $(seq 1 60); do
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
-            -H "X-Nomad-Token: $token" \
-            -X POST "$NOMAD_ADDR/v1/jobs" \
-            --data @${jobJson}) || code=000
-          case "$code" in
-            200)
-              echo "home-assistant job registered"
-              exit 0
-              ;;
-            *)
-              sleep 2
-              ;;
-          esac
-        done
-        echo "home-assistant registration failed after retries" >&2
-        exit 1
-      '';
-    };
-
-    systemd.services.homeassistant-mdns-alias = {
+        systemd.services.homeassistant-mdns-alias = {
       description = "Publish ${cfg.aliasName} over mDNS for the kiosk";
       after = [
         "network-online.target"

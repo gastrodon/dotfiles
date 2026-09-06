@@ -168,6 +168,22 @@
         ];
       };
 
+      # The diskless netboot cluster node (EVA-298/299). One image, all three
+      # OptiPlexes — see hosts/cluster-node/configuration.nix for why identity
+      # is derived at boot rather than baked per box.
+      #
+      # No home-manager, no NUR, no disko, no pibot modules: this configuration
+      # deliberately shares nothing with `server` above except the modules it
+      # names, because the closure has to fit in RAM (7.7 GiB on the smallest
+      # box) and `server` currently closes over 18.1 GiB.
+      nixosConfigurations.cluster-node = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hosts/cluster-node/configuration.nix
+          sops-nix.nixosModules.sops
+        ];
+      };
+
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
