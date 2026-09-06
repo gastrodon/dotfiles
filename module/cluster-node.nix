@@ -37,6 +37,7 @@ in
     ./podman.nix
     ./nomad-server.nix
     ./sops.nix
+    ./derive-hostname.nix
   ];
 
   options.services.clusterNode = {
@@ -82,48 +83,6 @@ in
   config = lib.mkMerge [
     {
       networking.useDHCP = lib.mkDefault true;
-
-      # EVA-301. Promoted verbatim from hosts/server/configuration.nix, where
-      # it already existed and already did exactly what that ticket describes
-      # — the ticket wanted a unit written from scratch, but the unit was
-      # written months ago and simply never lived anywhere a netbooting node
-      # would inherit it. `before = nomad.service` is the load-bearing line:
-      # Nomad takes its node name from the system hostname at startup and never
-      # revisits it, so losing this race registers the node under whatever
-      # transient name DHCP happened to produce first.
-      #
-      # Deriving from the IP rather than from a per-box constant is what makes
-      # ONE image serve all three boxes: identity comes from the DHCP
-      # reservation, so the image stays interchangeable and a node that reboots
-      # re-registers as the same Nomad node instead of a new one.
-      networking.hostName = "";
-
-      systemd.services.derive-hostname = {
-        description = "Set transient hostname from primary LAN IPv4";
-        wantedBy = [ "multi-user.target" ];
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        before = [
-          "nomad.service"
-          "tailscaled.service"
-        ];
-        path = [
-          pkgs.iproute2
-          pkgs.gawk
-          pkgs.systemd
-        ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-        script = ''
-          ip=$(ip -4 route get 1.1.1.1 \
-            | awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
-          if [ -n "$ip" ]; then
-            hostnamectl --transient set-hostname "ip-''${ip//./-}"
-          fi
-        '';
-      };
 
       # Deliberately short. A cluster node is a place to run containers, not a
       # workstation — every package here is resident in RAM on a box that has

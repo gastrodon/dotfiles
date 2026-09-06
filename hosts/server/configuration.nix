@@ -26,6 +26,10 @@ in
     # ~/code/home-infra. See that module's header for where the line between
     # the two repos is drawn and why.
     ../../module/cluster-services.nix
+    # EC2-style ip-a-b-c-d hostname, and the NetworkManager setting that stops
+    # it being overruled (EVA-192). Shared with the netboot node so the two
+    # cannot drift.
+    ../../module/derive-hostname.nix
   ];
 
   # The testbench 3D viewer. The job serves a directory; the page itself
@@ -52,12 +56,28 @@ in
 
   # The public face of that funnel, which is what Linear has to be pointed at:
   # ${publicUrl}/webhook receives sessions, ${publicUrl}/oauth/callback is the
-  # registered OAuth redirect. Tied to server1's tailnet name — every server box
-  # shares this configuration and so advertises the same URL, which is correct
-  # for the webhook (only server1 is registered with Linear) but means the
-  # install flow has to be run against this URL, not against another box's own
-  # address: the OAuth state is held by whichever process issued it.
-  services.linearAgent.publicUrl = "https://server1.tailfa78b0.ts.net";
+  # registered OAuth redirect. Every server box shares this configuration and so
+  # advertises the same URL, which is correct for the webhook (only one box is
+  # registered with Linear) but means the install flow has to be run against
+  # this URL, not against another box's own address: the OAuth state is held by
+  # whichever process issued it.
+  #
+  # RENAMED FROM server1.tailfa78b0.ts.net (EVA-192/EVA-273). tailscaled takes
+  # its MagicDNS name from the system hostname, and the hostname is now derived
+  # from the address (module/derive-hostname.nix) instead of being restored to
+  # `server1` by NetworkManager. So this box is `ip-192-168-0-58` on the tailnet
+  # now, and this URL had to move with it.
+  #
+  # This is a ONE-TIME change rather than the start of more churn, and the
+  # difference matters: the old name was stable only by accident — it depended
+  # on an /etc/hosts entry happening to defeat a systemd unit. The new one is
+  # stable by construction, because 192.168.0.58 is a DHCP reservation on the
+  # router now. That is what EVA-273 was actually asking for.
+  #
+  # Changing this string is not sufficient on its own: the webhook URL
+  # registered in Linear's OAuth app settings has to be updated by hand to
+  # match, and until it is, AgentSessionEvent deliveries 404.
+  services.linearAgent.publicUrl = "https://ip-192-168-0-58.tailfa78b0.ts.net";
 
   # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
   # the host-networked job to server1 so the worker has a stable endpoint.
@@ -99,9 +119,6 @@ in
   # module path has no --argstr to supply disks.nix's `device`; pin the default (inert on the running system).
   _module.args.device = "/dev/sda";
 
-  # EC2-style empty hostname; derive-hostname below sets ip-a-b-c-d from the DHCP IPv4.
-  networking.hostName = "";
-
   # Legacy BIOS/GRUB (OptiPlex only netboots in legacy mode). disko installs GRUB onto disks.nix's EF02 partition — don't set grub.device.
   boot.loader.grub.enable = true;
 
@@ -123,34 +140,6 @@ in
   services.openssh.settings = {
     PasswordAuthentication = false;
     KbdInteractiveAuthentication = false;
-  };
-
-  # Transient hostname ip-a-b-c-d from the primary LAN IPv4; runs before nomad/avahi so the node registers under it.
-  systemd.services.derive-hostname = {
-    description = "Set transient hostname from primary LAN IPv4";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    before = [
-      "nomad.service"
-      "avahi-daemon.service"
-    ];
-    path = [
-      pkgs.iproute2
-      pkgs.gawk
-      pkgs.systemd
-    ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      ip=$(ip -4 route get 1.1.1.1 \
-        | awk '{ for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit } }')
-      if [ -n "$ip" ]; then
-        hostnamectl --transient set-hostname "ip-''${ip//./-}"
-      fi
-    '';
   };
 
   environment.systemPackages = with pkgs; [ pciutils ];
