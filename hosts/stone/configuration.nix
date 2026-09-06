@@ -27,11 +27,43 @@
   hwBench.enable = true;
 
   # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
+  #
+  # This is the *installer* PXE path: dnsmasq + nginx + iPXE chainloading
+  # hosts/installer-payload.nix, which partitions a disk and runs nixos-install.
+  # It stays here, and stays off, for actual OS installs. It is NOT what boots
+  # the diskless cluster nodes — see the pixiecore block below, which is a
+  # different tool doing a different job.
   services.pxeBootServer = {
     enable = false;
     interface = "enp7s0";
     hostAddress = "192.168.0.77";
   };
+
+  # PXE/RAM boot server for the diskless cluster nodes (EVA-298 / EVA-300).
+  #
+  # THE DAEMON IS NOT HERE. pixiecore runs as a Nomad job scheduled onto this
+  # host's own datacenter — see ~/code/home-infra/infra/pixiecore.nomad.hcl.
+  # That is deliberate: it keeps images, kernel arguments, restarts and upgrades
+  # deployable with `bin/deploy` instead of requiring a privileged rebuild of
+  # this desktop every time the node image changes.
+  #
+  # These four ports are the one thing a container genuinely cannot do for
+  # itself. A Nomad job can bind whatever it likes, but it cannot open the host
+  # firewall in front of it — so without this the daemon starts, listens
+  # correctly, and receives nothing.
+  #
+  # This is the whole of the NixOS surface netboot needs on stone. After it
+  # lands, nothing about netboot should ever require touching this file again.
+  networking.firewall.allowedUDPPorts = [
+    # proxy-DHCP. pixiecore runs with --dhcp-no-bind, so it answers only the PXE
+    # parts of a DHCP conversation and leaves ordinary lease handling to the
+    # dg4244 — the two coexist rather than competing for port 67.
+    67
+    # TFTP: how a PXE ROM fetches its first-stage loader before it can speak HTTP.
+    69
+    # proxy-DHCP boot server port.
+    4011
+  ];
 
   # Eva-readable copy of claude's SSH privkey so Claude Code (as eva) can auth as claude@server via ssh-mcp.
   sops.secrets."claude-ssh-privkey-local" = {
@@ -164,8 +196,20 @@
     }
   ];
 
-  # Minecraft "Open to LAN" on a pinned port — direct-connect via stone.local:25565.
-  networking.firewall.allowedTCPPorts = [ 25565 ];
+  networking.firewall.allowedTCPPorts = [
+    # Minecraft "Open to LAN" on a pinned port — direct-connect via stone.local:25565.
+    25565
+
+    # pixiecore's HTTP, serving bzImage and the ~1.5 GB initrd to booting nodes
+    # (EVA-300; see the netboot block above).
+    #
+    # Not 80, which is pixiecore's default: this is a desktop, and claiming the
+    # privileged HTTP port on it to serve a 1.5 GB initrd is both antisocial and
+    # a collision waiting to happen. Not 8080 either — services.pxeBootServer
+    # above claims that for its nginx, and the two paths should be able to
+    # coexist while the installer one is still wanted.
+    8064
+  ];
 
   environment.systemPackages = [
     pkgs.prismlauncher
