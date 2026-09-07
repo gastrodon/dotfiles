@@ -223,6 +223,8 @@ in
       SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="hw-bench/ftdi", GROUP="dialout", MODE="0660"
       # ESP32-S2 in ROM bootloader — how the HD-WF1 appears once GPIO0 is held low at power-on.
       SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", SYMLINK+="hw-bench/esp32", GROUP="dialout", MODE="0660"
+      # USB-TMC test instruments (e.g. the DSO2C10 pocket scope) bind to usbmisc, not tty.
+      SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="049f", ATTRS{idProduct}=="505e", SYMLINK+="hw-bench/scope0", GROUP="dialout", MODE="0660"
     ''
     + lib.optionalString (cfg.camera.usbId != null) (
       let
