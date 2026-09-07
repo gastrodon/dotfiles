@@ -135,7 +135,20 @@ let
       AWS_SECRET_ACCESS_KEY="$(< /run/secrets/aws/iam_secret)"
       export AWS_SECRET_ACCESS_KEY
       export AWS_REGION="us-east-1"
-      exec uvx awslabs.aws-api-mcp-server@latest "$@"
+      # `--with 'mcp<2.0'` is load-bearing, not caution. awslabs.aws-api-mcp-server
+      # does not constrain its `mcp` SDK dependency, so uv resolves the newest —
+      # currently 2.1.1 — and the SDK renamed `McpError` to `MCPError` in 2.x.
+      # The server still imports the old name, so it dies at import with
+      #
+      #   ImportError: cannot import name 'McpError' from 'mcp.shared.exceptions'
+      #
+      # and because that happens during MCP startup, the failure is silent from
+      # the model's side: the server simply never registers and the aws tools are
+      # absent, with nothing in the session to say why. That cost a session's
+      # worth of assuming AWS access existed when it did not.
+      #
+      # Revisit when upstream pins its own dependency or adopts the new name.
+      exec uvx --with 'mcp<2.0' awslabs.aws-api-mcp-server@latest "$@"
     '';
   };
 
