@@ -61,6 +61,7 @@ let
 
   volumeRoot = "${mountPoint}/volumes";
   stateSource = "${mountPoint}/nomad";
+  containersSource = "${mountPoint}/containers";
 
   # /run, not /etc or /var: tmpfs, so it cannot survive a reboot. A stale
   # fragment describing volumes that this boot has not proven durable is
@@ -195,26 +196,74 @@ let
         exit 0
       '';
 
+  # Bind a directory onto durable storage, but ONLY if it would otherwise be
+  # volatile. The condition is as important as the action: on a disk-booted node
+  # these paths are already on the root SSD, and relocating .5's live Nomad node
+  # identity and Raft log onto an empty directory is a way to lose a cluster
+  # rather than save one.
+  mkDurableBind =
+    {
+      target,
+      source,
+      mode,
+      what,
+    }:
+    ''
+      backing=$(findmnt --noheadings --output FSTYPE --target ${target} 2>/dev/null || true)
+      case "$backing" in
+        tmpfs | ramfs | overlay | "")
+          install -d -m ${mode} -o 0 -g 0 ${source}
+          install -d -m ${mode} -o 0 -g 0 ${target}
+          if ! mountpoint -q ${target}; then
+            mount --bind ${source} ${target}
+            echo "bound ${source} -> ${target} (${what})"
+          fi
+          ;;
+        *)
+          echo "${target} already durable on $backing -- left alone."
+          ;;
+      esac
+    '';
+
   # Nomad's OWN state, which is not a host volume and cannot be one: it has to
   # exist before the agent starts, and a host volume is mounted by Nomad, for a
-  # task, after it has started. Conditional on the target actually being
-  # volatile, so a disk-booted node's live identity is left exactly where it is.
-  bindState = lib.optionalString cfg.bindStateDir ''
-    state_backing=$(findmnt --noheadings --output FSTYPE --target /var/lib/nomad 2>/dev/null || true)
-    case "$state_backing" in
-      tmpfs | ramfs | overlay | "")
-        install -d -m 0700 -o 0 -g 0 ${stateSource}
-        install -d -m 0700 -o 0 -g 0 /var/lib/nomad
-        if ! mountpoint -q /var/lib/nomad; then
-          mount --bind ${stateSource} /var/lib/nomad
-          echo "bound ${stateSource} -> /var/lib/nomad (node id, raft, variables keyring)"
-        fi
-        ;;
-      *)
-        echo "/var/lib/nomad already durable on $state_backing -- left alone."
-        ;;
-    esac
-  '';
+  # task, after it has started. Since 1.9 this also holds the wrapped root key
+  # that every Nomad Variable is encrypted under, so on an all-netboot cluster
+  # losing it means losing every stored credential.
+  bindState = lib.optionalString cfg.bindStateDir (mkDurableBind {
+    target = "/var/lib/nomad";
+    source = stateSource;
+    mode = "0700";
+    what = "node id, raft, variables keyring";
+  });
+
+  # Podman's image and container store. Making Nomad's state durable WITHOUT
+  # this is actively worse than making neither durable, which is how it was
+  # found on 2026-09-10: the client came back remembering allocations that
+  # podman had forgotten, logged
+  #
+  #   Failed Restoring Task: failed to restore task; will not run until server
+  #   is contacted
+  #
+  # and re-pulled every image. Two costs, neither obvious:
+  #
+  #   1. Every boot depends on the registry being reachable. A node rebooting
+  #      during a Docker Hub outage does not come back.
+  #   2. The images live in RAM. Measured 4.8 GB of tmpfs on .17 -- on a box
+  #      that netboots, image storage is a straight subtraction from usable
+  #      memory, and it grows with every image ever pulled.
+  #
+  # Cost of the fix, stated plainly: image storage moves onto a spinning SMR
+  # disk, so the first pull of a NEW image gets slower. Reboots get much
+  # faster, and reboot is the deploy mechanism here, so that is the right way
+  # round. 0755 matches what podman already uses.
+  bindContainers = lib.optionalString cfg.bindContainersDir (mkDurableBind {
+    target = "/var/lib/containers";
+    source = containersSource;
+    mode = "0755";
+    what = "podman image + container store";
+  });
+
 in
 {
   options.services.nomadStorage = {
@@ -281,6 +330,24 @@ in
         never "Nomad starts with a volume backed by RAM". It exists so the
         netboot image can be booted under QEMU with no disk attached without
         the agent being dead on arrival.
+      '';
+    };
+
+    bindContainersDir = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Bind /data/containers onto /var/lib/containers when, and only when,
+        /var/lib/containers would otherwise land on volatile storage.
+
+        Podman's image and container store. On a netbooted node this is tmpfs,
+        which has two consequences that only became visible once Nomad's own
+        state was made durable: the client remembers allocations podman has
+        forgotten and re-pulls every image on every boot, and the images
+        themselves occupy RAM (4.8 GB measured on .17).
+
+        Ordered before podman as well as before Nomad. Binding over a directory
+        podman already has open would leave it writing to a hidden inode.
       '';
     };
 
@@ -504,8 +571,19 @@ in
       # requiredBy, not wantedBy, and this is the load-bearing line: a failure
       # here must stop nomad.service, because a Nomad that starts without this
       # fragment is a Nomad that has silently dropped every host volume.
-      before = [ "nomad.service" ];
-      requiredBy = [ "nomad.service" ];
+      # podman.service is already running by the time nomad starts, so binding
+      # over /var/lib/containers after podman has opened it would leave podman
+      # writing to a hidden inode. Ordered before both, and REQUIRED by both, so
+      # neither can start without this having succeeded.
+      before = [
+        "nomad.service"
+        "podman.service"
+        "podman.socket"
+      ];
+      requiredBy = [
+        "nomad.service"
+        "podman.service"
+      ];
 
       # wantedBy multi-user.target, though, so a node that fails this check
       # still finishes booting and is still reachable over SSH to be fixed.
@@ -560,6 +638,7 @@ in
         echo "${mountPoint} is backed by $backing -- durable."
 
         ${bindState}
+        ${bindContainers}
 
         # ${volumeRoot} is the marker that says "this disk carries the cluster's
         # stateful services". It is created once, by the disk-prep runbook, and
