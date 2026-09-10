@@ -47,6 +47,11 @@
     # brought up — see ifunny-etl/PORTED.md. Harmless while nothing listens.
     5672
     15672
+
+    # module/ollama.nix — the model server. Without this the API answers only
+    # on its own host, which is how it looked "running" while pibot's
+    # http://<node>:11434/v1 endpoint timed out.
+    11434
   ];
 
   # Bind-mount targets for the disk-backed jobs, created before any job starts.
@@ -60,10 +65,18 @@
   # /data/mysql is the fix for EVA-325, where the datadir was
   # `--datadir=/dev/shm/mysql-data` and every task restart silently destroyed
   # the whole database. It happened twice.
-  systemd.tmpfiles.rules = [
-    "d /data 0755 root root -"
-    "d /data/mysql 0700 999 999 -"
-  ];
+  # NO tmpfiles rules for /data here, deliberately, and this is a correction
+  # rather than an omission.
+  #
+  # This module used to declare `d /data 0755` and `d /data/mysql 0700 999 999`.
+  # systemd-tmpfiles runs early and unconditionally, so on a node whose data
+  # disk failed to mount those rules create the directories on the ROOT
+  # filesystem -- tmpfs, on a netbooted node -- and the later mount hides them.
+  # Nomad then places MySQL onto a directory in RAM that looks entirely
+  # correct and evaporates at the next reboot. That is EVA-325's shape again.
+  #
+  # module/nomad-storage.nix owns /data now and creates nothing: it proves the
+  # backing store is durable first, and only then reads what is already there.
 
   # NOT SET HERE, ON PURPOSE — the EVA-192 hostname fix.
   #

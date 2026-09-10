@@ -393,6 +393,40 @@ in
         # deploy can update it in place, and the jobspec marks its own
         # volume_mount read-only instead. That keeps the container unable to
         # scribble on the site while leaving the publish path open.
+        # A shared scratch volume for jobs that cooperate on one dataset —
+        # the distributed reverse-engineering workflow (EVA-369) is the case
+        # that prompted it: several workers fanning out over one corpus of
+        # extracted assets and compiler artifacts.
+        #
+        # Nomad host volumes are NOT exclusive. Several allocations on the same
+        # node can each declare `volume { source = "shared" }` and every one of
+        # them gets the same directory bind-mounted. That is the whole feature,
+        # and it needs no NFS, no CSI plugin and no new daemon.
+        #
+        # DECLARE THIS ON EXACTLY ONE NODE. That is not a limitation to work
+        # around, it is the correctness property. If two nodes both carried a
+        # `shared` directory, two jobs claiming the same volume could be placed
+        # on different boxes and quietly operate on different data — the same
+        # class of failure as the empty-volume trap, wearing a different hat.
+        # One directory on one box means "sharing" is enforced by construction:
+        # Nomad can only place the claimants where the volume exists, so they
+        # co-locate whether or not anyone remembered to constrain them.
+        #
+        # 1777, i.e. /tmp's mode, and for /tmp's reason. Jobs sharing this will
+        # not agree on a uid — podman here is rootful so a container's uid is
+        # the host's, and EVA-369's workers run under the `exec` driver as root
+        # while other jobs do not. World-writable with the sticky bit lets any
+        # of them write while stopping one from deleting another's output. On a
+        # single-tenant home cluster of first-party jobs that is the honest
+        # trade; if it ever hosts something less trusted, this is the line to
+        # revisit first.
+        shared = {
+          uid = 0;
+          gid = 0;
+          mode = "1777";
+          comment = "multi-job scratch (EVA-369); sticky like /tmp — declare on ONE node only";
+        };
+
         testbench = {
           uid = 0;
           gid = 0;

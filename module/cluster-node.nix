@@ -43,6 +43,17 @@ in
     # disk-booted and netbooted halves of the fleet cannot drift on the one
     # question a netbooted node most needs answered correctly.
     ./nomad-storage.nix
+
+    # The service ports the cluster's jobs listen on. Netbooted nodes were
+    # missing this entirely, and the symptom was not an error: on 2026-09-10
+    # traefik, mysql, rabbitmq and ollama all reported healthy on .17/.58 while
+    # answering nothing from off-box, because the lean image opened only
+    # 22/4646/4647/4648. Ingress was down and every job looked fine.
+    #
+    # Safe to share with the disk-booted form now that this module carries no
+    # tmpfiles rules for /data — see the note in it for why those were a
+    # data-loss hazard rather than a convenience.
+    ./cluster-services.nix
   ];
 
   options.services.clusterNode = {
