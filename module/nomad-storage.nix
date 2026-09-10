@@ -571,19 +571,35 @@ in
       # requiredBy, not wantedBy, and this is the load-bearing line: a failure
       # here must stop nomad.service, because a Nomad that starts without this
       # fragment is a Nomad that has silently dropped every host volume.
-      # podman.service is already running by the time nomad starts, so binding
-      # over /var/lib/containers after podman has opened it would leave podman
-      # writing to a hidden inode. Ordered before both, and REQUIRED by both, so
-      # neither can start without this having succeeded.
+      # Ordered before podman.service so the bind lands before the daemon opens
+      # /var/lib/containers — binding over a directory podman already has open
+      # would leave it writing to a hidden inode.
+      #
+      # DELIBERATELY *NOT* before podman.socket. That creates an ordering cycle
+      # and systemd resolves it by deleting a unit, nondeterministically:
+      #
+      #   Found ordering cycle: podman.socket/start after
+      #   nomad-host-volumes.service/start after basic.target/start after
+      #   sockets.target/start - after podman.socket
+      #   Job podman.socket/start deleted to break ordering cycle
+      #
+      # sockets.target wants podman.socket, and this unit is a normal service so
+      # it implicitly orders after basic.target, which is after sockets.target.
+      # Naming podman.socket in `before` closes the loop. Observed 2026-09-10:
+      # .17 booted with podman.socket dropped and every containerised job died
+      # on `dial unix ///run/podman/podman.sock: no such file or directory`,
+      # while .58 booted from the identical image and was fine — because the
+      # cycle-breaking picks a victim arbitrarily.
+      #
+      # Ordering before podman.socket buys nothing anyway: the socket only
+      # listens. podman.service is what touches the storage, it is socket-
+      # activated, and the thing that connects is Nomad — which is ordered after
+      # this unit and cannot start without it.
       before = [
         "nomad.service"
         "podman.service"
-        "podman.socket"
       ];
-      requiredBy = [
-        "nomad.service"
-        "podman.service"
-      ];
+      requiredBy = [ "nomad.service" ];
 
       # wantedBy multi-user.target, though, so a node that fails this check
       # still finishes booting and is still reachable over SSH to be fixed.
