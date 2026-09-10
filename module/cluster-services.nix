@@ -26,10 +26,19 @@
   # an assumption, so each port says what it is rather than being a bare number
   # in a list.
   networking.firewall.allowedTCPPorts = [
-    # infra/traefik.nomad.hcl — the single ingress point (EVA-332). 8090 is the
-    # `web` entrypoint that the Tailscale Funnel will eventually point at;
-    # without this rule Traefik listens correctly and answers nothing from
-    # anywhere but its own host, which is exactly how it first came up.
+    # infra/traefik.nomad.hcl — the single ingress point (EVA-332). Without
+    # this rule Traefik listens correctly and answers nothing from anywhere but
+    # its own host, which is exactly how it first came up.
+    #
+    # 80, moved from 8090 on 2026-09-10. DNS carries an address and not a port,
+    # so once blocky answers `<service>.gastrodon.io -> <traefik>` (EVA-281) a
+    # client goes to :80. On 8090 every internal name resolved and then
+    # connected to nothing.
+    80
+
+    # 8090 kept alongside it, deliberately and temporarily. Anything with the
+    # old address cached or written down keeps working through the transition;
+    # remove it once nothing has used it for a while. Costs one firewall rule.
     8090
 
     # Traefik's dashboard/API. LAN-only and deliberately never funnelled — the
