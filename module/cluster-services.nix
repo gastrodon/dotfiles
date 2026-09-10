@@ -52,6 +52,22 @@
     # on its own host, which is how it looked "running" while pibot's
     # http://<node>:11434/v1 endpoint timed out.
     11434
+
+    # Home Assistant and the testbench viewer. These are BACKEND ports, reached
+    # by traefik from whichever node it landed on — not ports a human dials.
+    #
+    # Their absence was invisible until routing existed. With the jobs pinned by
+    # IP and traefik on the same box, loopback made it work; once the jobs moved
+    # to volume-based placement and traefik ended up on a different node, both
+    # routes timed out with HTTP 000 while Nomad reported every task `running`
+    # and every health check green. Measured 2026-09-10: from .58,
+    # `.17:11434` reachable, `.17:8123` and `.17:8087` BLOCKED.
+    #
+    # The general rule this is an instance of: any port a service listens on
+    # must be open cluster-wide the moment that service stops being pinned to
+    # one box, because "the client" is now traefik on an arbitrary node.
+    8123
+    8087
   ];
 
   # Bind-mount targets for the disk-backed jobs, created before any job starts.
