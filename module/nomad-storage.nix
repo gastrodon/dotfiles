@@ -377,12 +377,28 @@ in
           comment = "acme.json private keys; traefik image runs as root";
         };
 
-        # DELIBERATELY ABSENT: testbench-web. Its content lives in
-        # /home/eva/testbench-web, owned by the human user, and is pushed there
-        # by `nix run .#deploy` from the testbench repo. It is read-only to the
-        # container and re-creatable from source, so it is a deploy target
-        # rather than durable state — and moving it would break the deploy
-        # command without making anything safer.
+        # testbench-web's 12 MB of generated site. This was originally left out
+        # on the grounds that the content lives in /home/eva/testbench-web and
+        # is pushed there by `nix run .#deploy` from the testbench repo, making
+        # it a deploy target rather than durable state.
+        #
+        # That reasoning does not survive netboot, and .17 proved it on
+        # 2026-09-10: the node's root is tmpfs, so /home/eva does not persist
+        # and there is nothing for a deploy to push *into* that outlives a
+        # reboot. Re-creatable-from-source is not the same as
+        # re-created-automatically — nothing re-runs that deploy on boot, so
+        # without a volume the site is simply gone until a human notices.
+        #
+        # read_only is NOT set here: the volume declaration stays writable so a
+        # deploy can update it in place, and the jobspec marks its own
+        # volume_mount read-only instead. That keeps the container unable to
+        # scribble on the site while leaving the publish path open.
+        testbench = {
+          uid = 0;
+          gid = 0;
+          mode = "0755";
+          comment = "generated site; served read-only, published by the testbench repo's deploy";
+        };
       };
     };
   };
