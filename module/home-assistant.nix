@@ -1,8 +1,13 @@
 # NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
 #
 # The job spec moved to ~/code/home-infra/infra/home-assistant.nomad.hcl. What is left here is the
-# host-level half that a container cannot do for itself: the firewall port, the
-# state directory with correct ownership, and the host-volume declaration.
+# host-level half that a container cannot do for itself: the firewall port and
+# the state directory with correct ownership.
+#
+# The host-volume declaration that used to live here is gone (EVA-302).
+# module/nomad-storage.nix owns Nomad host volumes now, because deciding
+# whether a path is durable enough to hand the scheduler is a question about
+# the disk rather than a question about Home Assistant.
 #
 # The job JSON and the `home-assistant-register` oneshot that used to POST it at
 # activation were removed deliberately. That unit ran on every boot and rebuild
@@ -18,7 +23,7 @@
 # point at. Three things have to line up:
 #
 #   1. State — HA's /config (SQLite recorder, .storage registries) is node-local,
-#      so the job is pinned to one box via a host_volume + a node constraint.
+#      so the job is pinned to one box via a node constraint.
 #      Pinning is deliberate-for-now; EVA-169 researches making it movable.
 #   2. Name — the kiosk hardcodes http://homeassistant.local:8123/. The Pi gets no
 #      networking.extraHosts (hosts/rpi doesn't import hosts/shared.nix) but does
@@ -109,7 +114,7 @@ in
     stateDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/lib/hass";
-      description = "Host path backing the `hass` Nomad host volume (HA's /config).";
+      description = "Host path bind-mounted as HA's /config by infra/home-assistant.nomad.hcl.";
     };
 
     port = lib.mkOption {
@@ -138,12 +143,23 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Declared on every box so the volume exists wherever the pin is moved to.
-    services.nomad.settings.client.host_volume.hass = {
-      path = cfg.stateDir;
-      read_only = false;
-    };
-
+    # NO `services.nomad.settings.client.host_volume.hass` HERE ANY MORE.
+    #
+    # It used to declare a `hass` volume at ${cfg.stateDir} on every box. That
+    # is now module/nomad-storage.nix's job, as /data/volumes/home-assistant,
+    # and the two cannot both exist: they would be two declarations of the same
+    # kind of thing pointing at different paths, and which one a job got would
+    # depend on merge order rather than on anything anyone decided.
+    #
+    # The reason the old one had to go rather than simply being repointed is
+    # that it was unconditional. It declared the volume whether or not the path
+    # was on durable storage — which on a netbooted node means declaring a
+    # volume backed by tmpfs. Nothing used it (the job reaches /config through
+    # a raw bind mount today), so retiring it breaks nothing now.
+    #
+    # The tmpfiles rule stays: infra/home-assistant.nomad.hcl still bind-mounts
+    # ${cfg.stateDir} directly, and that directory has to exist and be
+    # root-owned before the container first starts.
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
     # module/avahi.nix leaves disable-user-service-publishing=yes, which makes the

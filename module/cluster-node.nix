@@ -38,6 +38,11 @@ in
     ./nomad-server.nix
     ./sops.nix
     ./derive-hostname.nix
+    # The data disk, and the gate that stops Nomad starting with host volumes
+    # backed by RAM. Shared with hosts/server/configuration.nix so the
+    # disk-booted and netbooted halves of the fleet cannot drift on the one
+    # question a netbooted node most needs answered correctly.
+    ./nomad-storage.nix
   ];
 
   options.services.clusterNode = {
@@ -84,6 +89,13 @@ in
     {
       networking.useDHCP = lib.mkDefault true;
 
+      # Enabled on every cluster node, including the ones with no data disk.
+      # A node without one declares no volumes and hosts no stateful jobs;
+      # that outcome is reached by looking at the disk, not by naming the box
+      # here, which is what keeps one image serving all three. See
+      # module/nomad-storage.nix.
+      services.nomadStorage.enable = true;
+
       # Deliberately short. A cluster node is a place to run containers, not a
       # workstation — every package here is resident in RAM on a box that has
       # 7.7 GiB of it.
@@ -93,6 +105,25 @@ in
         vim
         pciutils
         tmux
+
+        # e2fsprogs is not optional on a node that mounts an ext4 data disk,
+        # and its absence is not obvious until it bites. Two separate reasons:
+        #
+        #   1. `fsck.ext4`. NixOS generates a systemd-fsck@ unit for a
+        #      fileSystems entry, and without the binary that unit fails —
+        #      on a filesystem holding the cluster's only copy of its data.
+        #   2. `mkfs.ext4` / `e2label` / `blkid`, for preparing a replacement
+        #      disk *from the netbooted node itself*. That is not a corner
+        #      case: there is one drive bay and one SATA power lead per box,
+        #      so a new disk can only be formatted after it is fitted, which
+        #      is after the old one is gone. The netbooted node is the only
+        #      thing that can do it.
+        #
+        # Found the hard way on 2026-09-10: .17's 6 TB had to be formatted via
+        # `nix build nixpkgs#e2fsprogs` on the running node because the image
+        # had no mkfs. That worked, but it needs a network and a substituter at
+        # exactly the moment the box has no disk — a bad thing to depend on.
+        e2fsprogs
       ];
 
       nix.settings.experimental-features = [

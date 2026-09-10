@@ -75,7 +75,7 @@ let
     stateDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/lib/ollama";
-      description = "Host path backing the Nomad Ollama volume.";
+      description = "Host path bind-mounted as /root/.ollama by infra/ollama.nomad.hcl.";
     };
 
     port = lib.mkOption {
@@ -104,11 +104,15 @@ let
   };
 
   config = lib.mkIf cfg.enable {
-    services.nomad.settings.client.host_volume.ollama = {
-      path = cfg.stateDir;
-      read_only = false;
-    };
-
+    # NO `services.nomad.settings.client.host_volume.ollama` HERE ANY MORE —
+    # module/nomad-storage.nix owns host volumes now, and publishes this one as
+    # /data/volumes/ollama. See the equivalent note in module/home-assistant.nix
+    # for why the old declaration had to be removed in the same change rather
+    # than repointed: it declared the volume unconditionally, including on a
+    # netbooted node where ${cfg.stateDir} is tmpfs.
+    #
+    # The tmpfiles rule stays: infra/ollama.nomad.hcl still bind-mounts
+    # ${cfg.stateDir} directly.
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
         networking.firewall.allowedTCPPorts = [ cfg.port ];

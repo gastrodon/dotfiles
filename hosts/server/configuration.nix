@@ -30,7 +30,21 @@ in
     # it being overruled (EVA-192). Shared with the netboot node so the two
     # cannot drift.
     ../../module/derive-hostname.nix
+    # The /data disk and the Nomad host volumes on it (EVA-302). Shared with
+    # module/cluster-node.nix for the same reason as derive-hostname above:
+    # this configuration is also built as `server-netboot`, so the disk-booted
+    # and RAM-booted forms of the same host must agree about what counts as
+    # durable storage.
+    ../../module/nomad-storage.nix
   ];
+
+  # 192.168.0.5 keeps its 120 GB SSD and stays the disk-bootable fallback, so
+  # it has no disk labelled `nomad-data` and never will. It still enables this:
+  # /data there is an ordinary directory on the root ext4, which passes the
+  # durability gate, and it carries no /data/volumes, so it declares no host
+  # volumes and hosts no stateful jobs. Nothing about that outcome is written
+  # down per box — see module/nomad-storage.nix for why that matters.
+  services.nomadStorage.enable = true;
 
   # The testbench 3D viewer. The job serves a directory; the page itself
   # is pushed into it from the testbench repo (`nix run .#deploy`), so

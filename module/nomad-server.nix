@@ -34,6 +34,26 @@ in
         bootstrap_expect = builtins.length serverGossipAddrs;
         # Same list on every box; a peer self-joining is a no-op.
         server_join.retry_join = serverGossipAddrs;
+
+        # Preemption lets higher-priority jobs reclaim resources from lower-priority
+        # ones. Needed so batch compute (e.g. the decomp workload in the `decomp`
+        # namespace, priority 10) can use the whole cluster without risking that a
+        # real service — home-assistant, mysql, traefik — fails to place after a
+        # node reboot or a `nixos-rebuild --target-host` deploy.
+        #
+        # NOTE: default_scheduler_config only applies at INITIAL raft bootstrap.
+        # On an already-bootstrapped cluster it is inert, which is why the
+        # nomad-scheduler-config service below also applies it at runtime. Both
+        # exist on purpose: this block is the declarative intent for a fresh
+        # cluster, that service is what actually converges the running one.
+        default_scheduler_config = {
+          preemption_config = {
+            system_scheduler_enabled = true;
+            service_scheduler_enabled = true;
+            batch_scheduler_enabled = true;
+            sysbatch_scheduler_enabled = true;
+          };
+        };
       };
 
       # Co-located client — reaches the local server over loopback, no retry_join needed.
@@ -93,6 +113,47 @@ in
         esac
       done
       echo "nomad ACL bootstrap failed after retries" >&2
+      exit 1
+    '';
+  };
+
+  # Converge scheduler config on an already-bootstrapped cluster.
+  #
+  # server.default_scheduler_config above only takes effect at initial raft
+  # bootstrap, so on a live cluster it does nothing. This applies the same
+  # settings through the API, idempotently, the way nomad-acl-bootstrap does for
+  # ACLs. Safe to run on every server: the write is convergent, and whichever
+  # peer reaches the leader first wins with an identical payload.
+  systemd.services.nomad-scheduler-config = {
+    description = "Converge Nomad scheduler config (enable preemption)";
+    after = [ "nomad-acl-bootstrap.service" ];
+    requires = [ "nomad.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.nomad ];
+    environment.NOMAD_ADDR = "http://127.0.0.1:4646";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      set -u
+      umask 077
+      # operator:write is required once ACLs are on, so reuse the management token.
+      NOMAD_TOKEN=$(tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path})
+      export NOMAD_TOKEN
+
+      for _ in $(seq 1 60); do
+        if nomad operator scheduler set-config \
+             -preempt-system-scheduler=true \
+             -preempt-service-scheduler=true \
+             -preempt-batch-scheduler=true \
+             -preempt-sysbatch-scheduler=true; then
+          echo "nomad scheduler config applied (preemption enabled)"
+          exit 0
+        fi
+        sleep 2
+      done
+      echo "nomad scheduler config failed after retries" >&2
       exit 1
     '';
   };
