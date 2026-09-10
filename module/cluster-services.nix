@@ -68,7 +68,23 @@
     # one box, because "the client" is now traefik on an arbitrary node.
     8123
     8087
+
+    # infra/blocky.nomad.hcl — internal DNS for *.gastrodon.io (EVA-281).
+    # TCP as well as UDP: DNS falls back to TCP for responses that do not fit
+    # in a UDP datagram, and a resolver that answers small queries while timing
+    # out on large ones is a uniquely horrible thing to debug.
+    53
   ];
+
+  # blocky again, and this is the half that is easy to forget. DNS is UDP
+  # first — without this the resolver binds correctly, answers on its own
+  # host, and is invisible to every client on the LAN and the tailnet.
+  #
+  # That is the same shape as the traefik/ollama/home-assistant firewall gaps
+  # found earlier today, and the rule is worth stating once: a service only
+  # reachable from its own host looks completely healthy to Nomad, because the
+  # health check runs there too.
+  networking.firewall.allowedUDPPorts = [ 53 ];
 
   # Bind-mount targets for the disk-backed jobs, created before any job starts.
   #
