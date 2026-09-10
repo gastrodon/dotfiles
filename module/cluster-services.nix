@@ -83,6 +83,16 @@
     # in a UDP datagram, and a resolver that answers small queries while timing
     # out on large ones is a uniquely horrible thing to debug.
     53
+
+    # infra/gitea.nomad.hcl — the decomp artifact/results host (EVA-369,
+    # docs/artifact-hosting-plan.md in merc-reveng). Same shape as the
+    # home-assistant/testbench entries above and for the same reason: this is
+    # a BACKEND port, reached by traefik from whichever node the `gitea` host
+    # volume pins it to (.17), not a port a human dials directly. Without this
+    # rule the job comes up healthy and answers only on its own host, and
+    # traefik on .58 times out reaching it the same way .17:8123 did before
+    # this list existed.
+    3000
   ];
 
   # blocky again, and this is the half that is easy to forget. DNS is UDP
