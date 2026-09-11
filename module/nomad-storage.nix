@@ -30,11 +30,20 @@
 #
 #   .58 / .17  6 TB ext4 labelled `nomad-data`, prepped with a /data/volumes
 #              directory. /data is that disk. Volumes are declared.
-#   .5         no such label; /data is an ordinary directory on the 120 GB
-#              root SSD (durable, so the gate passes) and has no
-#              /data/volumes (so zero volumes are declared). It keeps running
-#              exactly as it does today, hosts no stateful jobs, and needed no
-#              repartitioning and no entry in any list to arrive there.
+#   .5         no disk carries that label, so there is nothing to mount at
+#              /data. The gate detects the *absence of the label itself* and
+#              runs the node as a stateless worker: zero volumes declared, no
+#              stateful jobs placed, no entry in any list required.
+#
+# CORRECTED 2026-09-11. This table used to claim .5's /data was "an ordinary
+# directory on the 120 GB root SSD (durable, so the gate passes)". That held
+# only while .5 booted from that SSD. It now netboots like the other two, so
+# its root is tmpfs, /data never came into existence, and the gate refused --
+# which stopped Nomad, dropped .5 out of Raft, and left the cluster on two
+# voters with FailureTolerance 0 until someone noticed. The gate now
+# distinguishes "disk missing entirely" from "disk present but unmounted";
+# see the long comment on that check for why that is the honest distinction
+# and what it deliberately trades away.
 #
 # Adding or removing a disk-bearing node is `mkdir /data/volumes` on its disk.
 # It is not a rebuild of the image that three machines boot from.
@@ -654,15 +663,56 @@ in
         # rather than the proxy question ("did a mount unit succeed?").
         #
         # It gets every case right without being told which case it is in:
-        #   - netbooted, disk mounted    -> ext4       -> proceed
-        #   - netbooted, disk missing    -> tmpfs (/)  -> refuse
-        #   - disk-booted .5, no label   -> ext4 (/)   -> proceed, no volumes
-        #   - /data does not exist       -> ""         -> refuse
+        #   - disk present, mounted      -> ext4       -> proceed
+        #   - disk present, not mounted  -> tmpfs/""   -> refuse (loudly)
+        #   - no data disk on this box   -> (handled before the gate, below)
         #
         # The empty case is the one an earlier draft got wrong in the other
         # direction, and it is why `|| true` is here and the check is on the
         # value rather than on findmnt's exit status: an unreadable answer must
         # land in the refuse branch, never skip past it.
+        #
+        # WHY THERE IS A CHECK BEFORE THE GATE (added 2026-09-11, EVA-369).
+        # The case list above used to include "disk-booted .5, no label -> ext4
+        # (/) -> proceed, no volumes". That was true when .5 booted from its own
+        # SSD: / was ext4, so /data inherited durable backing and the gate passed.
+        # .5 now netboots like the other two, so / is tmpfs, /data never exists,
+        # and .5 landed in the refuse branch -- Nomad refused to start, .5 left
+        # the Raft peer set, and the cluster silently dropped to two voters and
+        # FailureTolerance 0. The gate was right about the filesystem and wrong
+        # about what to conclude from it.
+        #
+        # The distinction that actually matters is NOT "is /data durable" on its
+        # own, but "is this machine SUPPOSED to have a data disk":
+        #
+        #   disk labelled ${cfg.device} exists, but /data is volatile
+        #     -> the disk failed to mount. REFUSE, loudly. This is EVA-325.
+        #   no such label anywhere on this machine
+        #     -> no data disk was ever attached. Run as a stateless worker.
+        #
+        # This still reads physical truth rather than identity -- it is the disk
+        # answering, not an IP, so it does not reintroduce the fail-open list bug
+        # described at the top of this file. It also cannot violate the module's
+        # invariant: this branch declares ZERO volumes, and zero volumes on
+        # volatile storage is not a volume on volatile storage. Stateful jobs
+        # stay pending on such a node, visibly, exactly as the false branch of
+        # `requireDurableData` already documents.
+        #
+        # Accepted tradeoff, stated rather than hidden: if a disk-bearing node's
+        # disk disappeared so completely that its LABEL vanished, that node would
+        # take this branch and start stateless instead of refusing loudly. It
+        # still declares no volumes and still loses no data -- it is quieter than
+        # a refusal, not less safe. A label present but unmountable, which is the
+        # far likelier failure, still refuses.
+        if [ ! -e ${cfg.device} ]; then
+          echo "${cfg.device} is not present on this machine."
+          echo "No data disk was ever attached here -- starting Nomad as a"
+          echo "stateless worker and declaring no host volumes."
+          rm -rf ${fragmentDir}
+          install -d -m 0755 ${fragmentDir}
+          exit 0
+        fi
+
         backing=$(findmnt --noheadings --output FSTYPE --target ${mountPoint} 2>/dev/null || true)
 
         case "$backing" in
