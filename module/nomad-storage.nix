@@ -500,6 +500,28 @@ in
           mode = "0755";
           comment = "generated site; served read-only, published by the testbench repo's deploy";
         };
+
+        # Gitea (EVA-369's artifact/results host — docs/artifact-hosting-plan.md
+        # in merc-reveng). Pinned to .17, not .58: at the time this was added
+        # .58 already carried four volumes (mysql, rabbitmq, traefik, shared)
+        # against .17's three (home-assistant, ollama, testbench), and `shared`
+        # is where decomp's batch workers do their heaviest scratch IO — Gitea
+        # wants to not compete with that on the same disk.
+        #
+        # uid/gid verified empirically, the same way every other entry here
+        # was: `podman run --rm -d -p 13000:3000 docker.io/gitea/gitea:latest`
+        # on .17, then `podman top <ctr> user,pid,comm` (gitea's own process
+        # runs as `git`) and `podman exec <ctr> id git` / `ls -lan /data`
+        # inside the container. Both agree: uid 1000, gid 1000, and the
+        # image's /data/git and /data/gitea are already 1000:1000 — the
+        # official image does not start as root and re-exec like mysql/
+        # rabbitmq do.
+        gitea = {
+          uid = 1000;
+          gid = 1000;
+          mode = "0750";
+          comment = "gitea/gitea image-default uid; confirmed live via podman top + id git";
+        };
       };
     };
   };
