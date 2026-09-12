@@ -107,6 +107,32 @@ in
       # module/nomad-storage.nix.
       services.nomadStorage.enable = true;
 
+      # Workload-identity auth against infra/vault.nomad.hcl (EVA-303). Safe to
+      # land ahead of Vault existing: measured 2026-09-09
+      # (plans/01-vault-on-nomad.md) that a Nomad agent with this block pointed
+      # at an unreachable address still starts and elects a leader normally —
+      # jobs that declare a `vault {}` block just fail their template render
+      # until Vault comes up, they don't take the agent down with them.
+      #
+      # `vault.policies` and per-job tokens do not exist any more — removed in
+      # Nomad 1.10 along with the whole legacy token flow. This is not a
+      # config choice, it's the only auth path this Nomad version has.
+      services.nomad.settings.vault = {
+        enabled = true;
+        # IP, not a DNS name: this cluster derives hostnames from DHCP and the
+        # address is the stable identity (EVA-192). Matches the constraint in
+        # infra/vault.nomad.hcl -- update both together if the pin ever moves.
+        address = "http://192.168.0.58:8200";
+        jwt_auth_backend_path = "jwt-nomad";
+
+        # Set once here so individual jobs don't each need their own
+        # `identity { name = "vault_default" ... }` block.
+        default_identity = {
+          aud = [ "vault.io" ];
+          ttl = "1h";
+        };
+      };
+
       # Deliberately short. A cluster node is a place to run containers, not a
       # workstation — every package here is resident in RAM on a box that has
       # 7.7 GiB of it.

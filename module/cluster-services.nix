@@ -93,6 +93,13 @@
     # traefik on .58 times out reaching it the same way .17:8123 did before
     # this list existed.
     3000
+
+    # infra/vault.nomad.hcl (EVA-303). 8200 is the API — every job's Vault
+    # template hits this. 8201 is Raft's own replication port; unused at
+    # count = 1, but the jobspec's `network` block reserves it and a future
+    # multi-voter Vault would need it open with no other change here.
+    8200
+    8201
   ];
 
   # blocky again, and this is the half that is easy to forget. DNS is UDP

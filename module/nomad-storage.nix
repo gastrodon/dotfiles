@@ -531,6 +531,22 @@ in
           mode = "0750";
           comment = "gitea/gitea image-default uid; confirmed live via podman top + id git";
         };
+
+        # Vault's integrated (Raft) storage (EVA-303). uid/gid verified
+        # empirically the same way as every other entry here:
+        # `podman run --rm docker.io/hashicorp/vault:2.1.0 id` ->
+        # `uid=100(vault) gid=1000(vault)`. The image does not run as root and
+        # `infra/vault.nomad.hcl` sets the task-level `user` to match, so no
+        # in-container re-exec happens the way mysql/rabbitmq do.
+        #
+        # Pinned to .58 per the jobspec's IP constraint (single-node Raft,
+        # research/EVA-303.md §4.2) -- mkdir this directory only on .58.
+        vault = {
+          uid = 100;
+          gid = 1000;
+          mode = "0700";
+          comment = "vault image-default uid/gid; confirmed via `podman run ... id`";
+        };
       };
     };
   };
