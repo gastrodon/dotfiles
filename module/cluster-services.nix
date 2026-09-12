@@ -186,4 +186,26 @@
   # that URL is re-registered. That makes it a deliberate change with a
   # follow-up step, not a drive-by, and it should land together with the
   # Traefik ingress switch rather than before it.
+
+  # Trust for infra/registry.nomad.hcl (home-infra), the LAN OCI registry
+  # pinned to .17:20500. It's plain HTTP -- a self-signed or LAN-only TLS cert
+  # buys nothing here and is one more thing to renew -- so podman needs to be
+  # told explicitly this one address is allowed unencrypted, or every pull
+  # from it fails with "http: server gave HTTP response to HTTPS client".
+  #
+  # Declared here rather than hand-edited into /etc/containers/registries.conf.d
+  # on a running box on purpose: all three cluster boxes (.17, .58, and .5)
+  # netboot from this same squashfs image (hosts/cluster-node/configuration.nix)
+  # with a tmpfs root, so anything not in the image is gone at the next
+  # reboot -- exactly the kind of silent revert this file's own header warns
+  # about. Landing it here means it travels with the image, in one place,
+  # rather than needing a per-box fixup after every PXE boot.
+  #
+  # Verified live on all three via `nixos-rebuild switch --target-host`
+  # (2026-09-12) -- this option only touches /etc/containers/registries.conf,
+  # not anything nomad.service or nomad-host-volumes.service `Requires=`, so
+  # the switch activates immediately with no service bounce and no reboot
+  # needed. The restaged netbootDir (see plans/03-netboot-cutover.md) makes it
+  # survive the *next* reboot too, whenever that happens.
+  virtualisation.containers.registries.insecure = [ "192.168.0.17:20500" ];
 }
