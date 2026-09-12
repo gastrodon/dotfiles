@@ -102,6 +102,27 @@
     8201
   ];
 
+  # Nomad's own dynamic port range (client.min_dynamic_port /
+  # max_dynamic_port, both left at their default of 20000/32000 — nothing in
+  # this repo sets either). This is EVA-324's second bug, fixed generally
+  # instead of one port at a time: every entry above exists because a job
+  # bound a STATIC port and someone noticed it was unreachable cross-node and
+  # added a rule. A job that takes a dynamic port instead (the normal case
+  # for anything that doesn't need a stable, memorable address) gets handed
+  # a number from this range at placement time, and there was no way to
+  # pre-declare a firewall rule for a port nobody picked yet — every such
+  # job was unreachable from any other node, by construction, with no fix
+  # available except "don't use dynamic ports." Opening the whole range once
+  # closes that class of bug instead of requiring a NixOS deploy every time a
+  # new job wants one. Same trust assumption as every port above: LAN-only,
+  # unauthenticated, already the model this cluster runs on.
+  networking.firewall.allowedTCPPortRanges = [
+    {
+      from = 20000;
+      to = 32000;
+    }
+  ];
+
   # blocky again, and this is the half that is easy to forget. DNS is UDP
   # first — without this the resolver binds correctly, answers on its own
   # host, and is invisible to every client on the LAN and the tailnet.
@@ -111,6 +132,17 @@
   # reachable from its own host looks completely healthy to Nomad, because the
   # health check runs there too.
   networking.firewall.allowedUDPPorts = [ 53 ];
+
+  # Same dynamic-port reasoning as the TCP range above, for anything that
+  # binds UDP instead (e.g. a future ad hoc file-distribution service using
+  # a UDP-based transfer protocol, or any job with `network { port "x" {} }`
+  # and no `static`).
+  networking.firewall.allowedUDPPortRanges = [
+    {
+      from = 20000;
+      to = 32000;
+    }
+  ];
 
   # Bind-mount targets for the disk-backed jobs, created before any job starts.
   #
