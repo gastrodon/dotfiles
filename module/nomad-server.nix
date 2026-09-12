@@ -99,90 +99,26 @@ in
   # Rootful podman socket for the Nomad podman driver.
   systemd.sockets.podman.wantedBy = [ "sockets.target" ];
 
-  # Idempotent one-shot ACL bootstrap with the known sops management token ("already done" = success).
-  systemd.services.nomad-acl-bootstrap = {
-    description = "Bootstrap Nomad ACL with the known management token";
-    after = [ "nomad.service" ];
-    requires = [ "nomad.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.nomad ];
-    environment.NOMAD_ADDR = "http://127.0.0.1:4646";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      set -u
-      umask 077
-      tmp=$(mktemp)
-      trap 'rm -f "$tmp"' EXIT
-      # Trim any trailing whitespace/newline so the token is a bare UUID.
-      tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path} > "$tmp"
-
-      for _ in $(seq 1 60); do
-        if out=$(nomad acl bootstrap "$tmp" 2>&1); then
-          echo "nomad ACL bootstrapped"
-          exit 0
-        fi
-        case "$out" in
-          *"already done"*)
-            echo "nomad ACL already bootstrapped"
-            exit 0
-            ;;
-          *"No cluster leader"* | *"connection refused"* | *EOF*)
-            sleep 2
-            ;;
-          *)
-            echo "unexpected bootstrap error: $out" >&2
-            sleep 2
-            ;;
-        esac
-      done
-      echo "nomad ACL bootstrap failed after retries" >&2
-      exit 1
-    '';
-  };
-
-  # Converge scheduler config on an already-bootstrapped cluster.
+  # ACL bootstrap and scheduler-config convergence used to live here as
+  # per-boot oneshots reading a sops-decrypted management token
+  # (`config.sops.secrets."nomad/bootstrap_token"`). Both are now one-time
+  # operator commands instead — home-infra/bin/bootstrap-acls and
+  # bin/converge-scheduler-config, run from a workstation the same way
+  # bin/deploy already is.
   #
-  # server.default_scheduler_config above only takes effect at initial raft
-  # bootstrap, so on a live cluster it does nothing. This applies the same
-  # settings through the API, idempotently, the way nomad-acl-bootstrap does for
-  # ACLs. Safe to run on every server: the write is convergent, and whichever
-  # peer reaches the leader first wins with an identical payload.
-  systemd.services.nomad-scheduler-config = {
-    description = "Converge Nomad scheduler config (enable preemption)";
-    after = [ "nomad-acl-bootstrap.service" ];
-    requires = [ "nomad.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.nomad ];
-    environment.NOMAD_ADDR = "http://127.0.0.1:4646";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      set -u
-      umask 077
-      # operator:write is required once ACLs are on, so reuse the management token.
-      NOMAD_TOKEN=$(tr -d '[:space:]' < ${config.sops.secrets."nomad/bootstrap_token".path})
-      export NOMAD_TOKEN
-
-      for _ in $(seq 1 60); do
-        if nomad operator scheduler set-config \
-             -preempt-system-scheduler=true \
-             -preempt-service-scheduler=true \
-             -preempt-batch-scheduler=true \
-             -preempt-sysbatch-scheduler=true; then
-          echo "nomad scheduler config applied (preemption enabled)"
-          exit 0
-        fi
-        sleep 2
-      done
-      echo "nomad scheduler config failed after retries" >&2
-      exit 1
-    '';
-  };
+  # Why per-boot was never actually needed: ACL bootstrap state and Raft's
+  # scheduler config both live in Nomad's own Raft log, which is durable now
+  # (EVA-302 put /var/lib/nomad on disk). Re-running "bootstrap" or
+  # "converge scheduler config" on every single boot of every node was
+  # working around a durability problem that no longer exists — the *actual*
+  # need is "run this once, ever, after a genuinely fresh Raft init," which
+  # is a rare, deliberate, human-initiated event, not boot automation. It was
+  # also the thing standing between cluster-node and dropping sops
+  # entirely: nothing else in this build reads a sops secret.
+  #
+  # server.default_scheduler_config above still applies at initial raft
+  # bootstrap; bin/converge-scheduler-config is only needed if that ever
+  # drifts on a live cluster.
 
   networking.firewall.allowedTCPPorts = [
     4646

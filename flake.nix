@@ -180,7 +180,6 @@
         system = "x86_64-linux";
         modules = [
           ./hosts/cluster-node/configuration.nix
-          sops-nix.nixosModules.sops
         ];
       };
 

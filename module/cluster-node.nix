@@ -36,7 +36,6 @@ in
     ./claude-user.nix
     ./podman.nix
     ./nomad-server.nix
-    ./sops.nix
     ./derive-hostname.nix
     # The data disk, and the gate that stops Nomad starting with host volumes
     # backed by RAM. Shared with hosts/server/configuration.nix so the
@@ -62,36 +61,11 @@ in
       default = false;
       description = ''
         This node netboots and has no OS on disk. Drops the bootloader (there
-        is nothing to install it onto) and stops sops from looking for an SSH
-        host key that a RAM-booted node regenerates on every boot.
+        is nothing to install it onto).
 
         Leave false for a node still booting off its SSD — the same module
         then describes a conventional install, so the two can be compared and
         migrated one box at a time rather than in a flag day.
-      '';
-    };
-
-    ageKeyFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = ''
-        Age identity used to decrypt sops secrets, for diskless nodes.
-
-        A netbooted node has no persistent identity: /etc/ssh/ssh_host_ed25519_key
-        is regenerated into tmpfs on every boot, so the default
-        `sops.age.sshKeyPaths` route (module/sops.nix) cannot work — the key
-        that the secrets were encrypted to is gone the moment the box reboots.
-
-        SECURITY TRADEOFF, STATED PLAINLY: setting this embeds a private key in
-        the netboot image, and that image is served over plain HTTP to anything
-        on the LAN that asks. Today, reading cluster secrets needs root on a
-        box; with this set, it needs a LAN cable. That is a real reduction in
-        the blast radius of the home network, and it should be a deliberate
-        choice rather than a side effect of turning on netboot.
-
-        Left null by default so the image builds and boots without secrets. A
-        node that cannot decrypt secrets still joins Nomad and runs jobs; what
-        it loses is the ACL bootstrap token and the Tailscale auth key.
       '';
     };
   };
@@ -193,13 +167,6 @@ in
       # is tmpfs, so a nix GC on a running node would be reclaiming space it
       # does not own. Reboot is the garbage collector here.
       nix.gc.automatic = lib.mkForce false;
-
-      # See ageKeyFile above: the SSH host key is regenerated on every boot, so
-      # it can never be the identity secrets were encrypted to.
-      sops.age.sshKeyPaths = lib.mkForce [ ];
-      sops.age.keyFile = lib.mkForce (
-        if cfg.ageKeyFile != null then toString cfg.ageKeyFile else "/run/cluster-node-age-key-absent"
-      );
 
       # Make the state directory Nomad wants exist in tmpfs before it starts;
       # on a disk-booted node this is an ordinary directory that survives, and
