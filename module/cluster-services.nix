@@ -57,6 +57,39 @@
     5672
     15672
 
+    # infra/samba.nomad.hcl — the PS2's game share (EVA-373). READ THE
+    # PARAGRAPH BELOW BEFORE TREATING THIS AS AN ORDINARY PORT.
+    #
+    # This one is SMB1/NT1, because OPL's client speaks nothing newer. SMB1 has
+    # no session encryption, its signing is off (OPL cannot do it), and it
+    # authenticates with NTLMv1, which is offline-crackable and relayable. None
+    # of that is fixable by configuration — it is the protocol. So the header
+    # comment above ("unauthenticated and open to the whole home network") is
+    # more pointed here than for any other line in this list, and this port
+    # must never be reachable from outside the LAN.
+    #
+    # THIS WAS DELIBERATELY AVOIDED AND THEN FORCED. The job originally bound
+    # 20445, inside the 20000-32000 range already open below, specifically so
+    # that serving the PS2 needed no change to this file and therefore no
+    # netboot image rebuild — the same reasoning infra/registry.nomad.hcl uses
+    # for its 20500. That does not work: **OPL's SMB port field only accepts
+    # 0-1024**, so the high-port trick is unavailable and 445 is the only
+    # realistic choice (139 is equally blocked and no better).
+    #
+    # Consequences worth knowing rather than rediscovering:
+    #   * This opens 445 on ALL THREE boxes, not just .17 where samba runs.
+    #     Nothing listens on the other two, so it is an open port with nothing
+    #     behind it — untidy, not exploitable.
+    #   * smbd needs CAP_NET_BIND_SERVICE again. The jobspec's capability drop
+    #     had removed it precisely because 20445 is unprivileged; moving to 445
+    #     puts it back. Dropping it and binding 445 fails at startup.
+    #   * Narrowing this to the console's single source address is EVA-376
+    #     Tier 1 work, and cannot be done by adding a rule here: NixOS emits
+    #     these before `extraCommands` and iptables is first-match-wins, so an
+    #     unrestricted ACCEPT on 445 would always win. Narrowing means removing
+    #     this line in the same change that adds the scoped rule.
+    445
+
     # module/ollama.nix — the model server. Without this the API answers only
     # on its own host, which is how it looked "running" while pibot's
     # http://<node>:11434/v1 endpoint timed out.
