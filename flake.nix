@@ -139,7 +139,6 @@
           modules ? [ ],
         }:
         nixpkgs.lib.nixosSystem {
-          inherit system;
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
             ./hosts/rpi
@@ -149,6 +148,10 @@
               networking.hostName = hostName;
               clusterNet.address = address;
               nixpkgs.config.allowUnfree = true;
+              # hostPlatform, not the legacy `system` arg: the nixpkgs module
+              # ignores buildPlatform on its legacy path, which silently turned
+              # the rpi2b "cross" build into native-armv7l-under-QEMU.
+              nixpkgs.hostPlatform = system;
             }
           ]
           ++ modules
@@ -239,6 +242,18 @@
       nixosConfigurations.rpi2b = mkRpi "rpi2b" {
         system = "armv7l-linux";
         sdModule = "sd-image-armv7l-multiplatform.nix";
+        modules = [
+          # base.nix (installer tools, pulled in by the sd-image module) includes
+          # efivar, which is broken on 32-bit (nixpkgs#388309). No EFI on a Pi 2
+          # anyway, and dropping it also skips cross-building zfs/testdisk/w3m.
+          {
+            disabledModules = [ "profiles/base.nix" ];
+            boot.supportedFilesystems = [
+              "vfat"
+              "ext4"
+            ];
+          }
+        ];
       };
 
       nixosConfigurations.rpi3b-plus = mkRpi "rpi3b-plus" {
