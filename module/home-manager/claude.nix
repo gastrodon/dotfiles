@@ -209,6 +209,29 @@ let
       };
       env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
       sandbox.enabled = false;
+
+      # A GUARDRAIL, NOT A BOUNDARY -- and the difference matters, so it is
+      # written down rather than assumed.
+      #
+      # The agent runs as the `eva` OS user. sops looks for an age identity at
+      # $HOME/.config/sops/age/keys.txt and finds eva's there -- the key that
+      # is a recipient of every secrets file. So the agent can decrypt
+      # everything, not by permission but by inheriting eva's identity whole.
+      # (2026-09-21: it did exactly that, repeatedly, and printed plaintext.)
+      #
+      # This rule stops `sops` specifically. It does NOT stop anything else
+      # that can read that file -- any shell command can cat the key and
+      # decrypt by other means -- so it defends against habit and accident,
+      # which is what actually went wrong, and against nothing deliberate.
+      #
+      # The real boundary is a different uid: the `claude` user already exists
+      # (uid 1001, no wheel, no sudo) and module/sops.nix already deploys its
+      # own age key. Running the agent as that user makes this failure a
+      # permission error instead of a judgement call. See EVA-372, which
+      # currently proposes deleting that user and would foreclose it.
+      permissions.deny = [
+        "Bash(sops:*)"
+      ];
       autoMemoryEnabled = true;
       autoDreamEnabled = true;
     };
