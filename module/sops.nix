@@ -38,13 +38,6 @@
     path = "/home/claude/.config/sops/age/keys.txt";
   };
 
-  # Nomad ACL management token — bootstrapped by server's nomad-acl-bootstrap; claude reads it for CLI auth (NOMAD_TOKEN).
-  sops.secrets."nomad/bootstrap_token" = lib.mkIf (config.users.users ? claude) {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    owner = "claude";
-    mode = "0400";
-  };
 
   environment.systemPackages = with pkgs; [
     age

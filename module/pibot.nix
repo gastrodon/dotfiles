@@ -21,15 +21,6 @@
     format = "yaml";
     owner = "linear-agent";
   };
-  # Same underlying value as sops.secrets."nomad/bootstrap_token" (module/sops.nix,
-  # owner=claude) but re-keyed to a copy owned by linear-agent — the receiver
-  # needs its own readable copy to authenticate its Nomad dispatch calls.
-  sops.secrets."linear-agent/nomad_token" = {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    key = "nomad/bootstrap_token";
-    owner = "linear-agent";
-  };
   # GitHub PAT bind-mounted into the pi-agent worker container for git
   # clone/push + PR creation. Root-only — the register service and the podman
   # bind-mount both run as root.
@@ -67,13 +58,11 @@
     webhookSecretFile = config.sops.secrets."linear/webhook_secret".path;
     clientIdFile = config.sops.secrets."linear/client_id".path;
     clientSecretFile = config.sops.secrets."linear/client_secret".path;
-    nomadTokenFile = config.sops.secrets."linear-agent/nomad_token".path;
   };
 
   services.piAgent = {
     enable = true;
     githubPatFile = config.sops.secrets."github/pat".path;
-    nomadBootstrapTokenFile = config.sops.secrets."nomad/bootstrap_token".path;
     authFile = config.sops.secrets."pi/auth_json".path;
   };
 }
