@@ -26,27 +26,7 @@ let
       exec ${pkgs.lib.getExe package} ${extraArgs} "$@"
     '';
 
-  # Available GitHub MCP toolsets:
-  #   context          - current user and teams
-  #   repos            - files, branches, commits, releases, search
-  #   issues           - issues CRUD, comments, sub-issues, labels
-  #   pull_requests    - PRs CRUD, reviews, merging
-  #   users            - user search
-  #   actions          - GitHub Actions, CI/CD, job logs
-  #   git              - low-level git (repo tree)
-  #   notifications    - notification management
-  #   orgs             - org search
-  #   stargazers       - star/unstar repos
-  #   projects         - projects CRUD
-  #   discussions      - discussions CRUD
-  #   gists            - gists CRUD
-  #   labels           - label management
-  #   copilot          - copilot issue assignment and reviews
-  #   dependabot       - dependabot alerts
-  #   code_security    - code scanning alerts
-  #   code_quality     - code quality findings
-  #   secret_protection     - secret scanning alerts
-  #   security_advisories   - global and repo security advisories
+  # Full toolset name reference: https://github.com/github/github-mcp-server/blob/main/README.md
   githubMcpToolsets = [
     "context"
     "repos"
@@ -135,39 +115,40 @@ let
       AWS_SECRET_ACCESS_KEY="$(< /run/secrets/aws/iam_secret)"
       export AWS_SECRET_ACCESS_KEY
       export AWS_REGION="us-east-1"
-      # `--with 'mcp<2.0'` is load-bearing, not caution. awslabs.aws-api-mcp-server
-      # does not constrain its `mcp` SDK dependency, so uv resolves the newest —
-      # currently 2.1.1 — and the SDK renamed `McpError` to `MCPError` in 2.x.
-      # The server still imports the old name, so it dies at import with
-      #
-      #   ImportError: cannot import name 'McpError' from 'mcp.shared.exceptions'
-      #
-      # and because that happens during MCP startup, the failure is silent from
-      # the model's side: the server simply never registers and the aws tools are
-      # absent, with nothing in the session to say why. That cost a session's
-      # worth of assuming AWS access existed when it did not.
-      #
-      # Revisit when upstream pins its own dependency or adopts the new name.
+      # Load-bearing, not caution — removing this silently drops the aws MCP
+      # tools with no error anywhere in the session. See wiki: AWS MCP
+      # server: the mcp SDK version pin.
       exec uvx --with 'mcp<2.0' awslabs.aws-api-mcp-server@latest "$@"
     '';
   };
 
-  emailMcpWrapper = pkgs.writeShellApplication {
-    name = "email-mcp-wrapped";
-    runtimeInputs = [ pkgs.nodejs_24 ];
+  # Lets Claude drive a running Inkscape over D-Bus (github.com/Shriinivas/inkmcp).
+  # Pinned to a commit, no tagged releases upstream. Only ONE Inkscape window
+  # is ever reachable at a time — see wiki: Inkscape MCP (inkmcp): wiring and
+  # the single-instance limit.
+  inkmcpSrc = pkgs.fetchFromGitHub {
+    owner = "Shriinivas";
+    repo = "inkmcp";
+    rev = "a46287a17e39a04f940887f2197552f45f3d448c";
+    hash = "sha256-MtstM8m+9nM6O8Lb44vIFJfl8YImfnvxX2+GwCyFDog=";
+  };
+
+  # inkex/lxml come from Inkscape's own bundled python3Env, not from here — see wiki.
+  inkmcpServerEnv = pkgs.python3.withPackages (ps: [
+    ps.fastmcp
+    ps.mcp
+  ]);
+
+  inkscapeMcpWrapper = pkgs.writeShellApplication {
+    name = "inkscape-mcp-wrapped";
+    runtimeInputs = [
+      inkmcpServerEnv
+      pkgs.glib # gdbus
+    ];
     text = ''
-      export MCP_EMAIL_IMAP_HOST="imap.porkbun.com"
-      export MCP_EMAIL_IMAP_PORT="993"
-      export MCP_EMAIL_IMAP_TLS="true"
-      export MCP_EMAIL_SMTP_HOST="smtp.porkbun.com"
-      export MCP_EMAIL_SMTP_PORT="587"
-      export MCP_EMAIL_SMTP_TLS="false"
-      export MCP_EMAIL_SMTP_STARTTLS="true"
-      MCP_EMAIL_ADDRESS="$(< /run/secrets/email/address)"
-      export MCP_EMAIL_ADDRESS
-      MCP_EMAIL_PASSWORD="$(< /run/secrets/email/password)"
-      export MCP_EMAIL_PASSWORD
-      exec npx -y @codefuturist/email-mcp stdio "$@"
+      export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+      export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=''${XDG_RUNTIME_DIR}/bus}"
+      exec python3 ${inkmcpSrc}/inkmcp/main.py "$@"
     '';
   };
 
@@ -191,6 +172,9 @@ let
       type = "http";
       url = obsidianMcp.url;
       headers.Authorization = "Bearer ${obsidianMcp.apiKey}";
+    };
+    inkscape = {
+      command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
     };
   };
 
@@ -237,24 +221,17 @@ let
     };
   };
 
-  claudeEmailBase = mkClaude {
-    mcpServers = {
-      email = {
-        command = "${emailMcpWrapper}/bin/email-mcp-wrapped";
-      };
-    };
-    settings = {
-      agent = "email-monitor";
-    };
-  };
-
-  claudeEmail = pkgs.writeShellScriptBin "claude-email" ''
-    exec ${claudeEmailBase}/bin/claude "$@"
+  # `claude rc` (remote-control) rejects the --mcp-config/--settings flags that
+  # the `claude` wrapper above always injects — it 400s with "Unknown argument"
+  # no matter where those flags are placed relative to `rc`. So this calls the
+  # bare upstream binary directly instead of going through mkClaude.
+  claudeRc = pkgs.writeShellScriptBin "claude-rc" ''
+    exec ${pkgs.lib.getExe claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default} rc "$@"
   '';
 in
 {
   home.packages = [
     claude
-    claudeEmail
+    claudeRc
   ];
 }
