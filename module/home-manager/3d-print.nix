@@ -1,5 +1,20 @@
 { pkgs, ... }:
+let
+  # Kept in sync with the pin in claude.nix's inkmcp MCP server — the extension
+  # (run inside Inkscape's own bundled python) and the MCP server (talks to it
+  # over D-Bus) come from the same repo and must match.
+  inkmcpSrc = pkgs.fetchFromGitHub {
+    owner = "Shriinivas";
+    repo = "inkmcp";
+    rev = "a46287a17e39a04f940887f2197552f45f3d448c";
+    hash = "sha256-MtstM8m+9nM6O8Lb44vIFJfl8YImfnvxX2+GwCyFDog=";
+  };
+in
 {
+  home.file.".config/inkscape/extensions/inkscape_mcp.py".source = "${inkmcpSrc}/inkscape_mcp.py";
+  home.file.".config/inkscape/extensions/inkscape_mcp.inx".source = "${inkmcpSrc}/inkscape_mcp.inx";
+  home.file.".config/inkscape/extensions/inkmcp".source = "${inkmcpSrc}/inkmcp";
+
   home.packages = with pkgs; [
     freecad
 
