@@ -54,6 +54,7 @@ in
     (import ../module/x11.nix { inherit palette; })
     ../module/podman.nix
     ../module/sops.nix
+    ../module/shared-workspace.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
