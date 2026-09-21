@@ -26,129 +26,54 @@
   # an assumption, so each port says what it is rather than being a bare number
   # in a list.
   networking.firewall.allowedTCPPorts = [
-    # infra/traefik.nomad.hcl — the single ingress point (EVA-332). Without
-    # this rule Traefik listens correctly and answers nothing from anywhere but
-    # its own host, which is exactly how it first came up.
-    #
-    # 80, moved from 8090 on 2026-09-10. DNS carries an address and not a port,
-    # so once blocky answers `<service>.gastrodon.io -> <traefik>` (EVA-281) a
-    # client goes to :80. On 8090 every internal name resolved and then
-    # connected to nothing.
+    # infra/traefik.nomad.hcl — ingress (EVA-332). 80, moved from 8090 on
+    # 2026-09-10 so *.gastrodon.io (EVA-281) resolves to the default HTTP port.
     80
+    8090 # kept temporarily for anything with the old address cached.
 
-    # 8090 kept alongside it, deliberately and temporarily. Anything with the
-    # old address cached or written down keeps working through the transition;
-    # remove it once nothing has used it for a while. Costs one firewall rule.
-    8090
-
-    # Traefik's dashboard/API. LAN-only and deliberately never funnelled — the
-    # dashboard runs with `api.insecure`, i.e. no authentication, so the
-    # firewall is the only thing in front of it.
+    # Traefik dashboard/API — LAN-only, never funnelled (runs with
+    # api.insecure, i.e. no auth).
     8091
 
-    # infra/mysql.nomad.hcl. Reachable cross-node today without an explicit
-    # rule, which is a property of how the podman driver publishes ports rather
-    # than of anything declared here; stating it makes the reachability
-    # intentional instead of incidental, and keeps it working if that changes.
+    # infra/mysql.nomad.hcl. Cross-node reachability here is incidental
+    # (podman's port publishing), not declared by this file.
     3306
 
-    # infra/rabbitmq (amqp + management UI), if/when the iFunny ETL jobs are
-    # brought up — see ifunny-etl/PORTED.md. Harmless while nothing listens.
+    # infra/rabbitmq (amqp + management UI), for the iFunny ETL jobs.
     5672
     15672
 
-    # infra/samba.nomad.hcl — the PS2's game share (EVA-373). READ THE
-    # PARAGRAPH BELOW BEFORE TREATING THIS AS AN ORDINARY PORT.
-    #
-    # This one is SMB1/NT1, because OPL's client speaks nothing newer. SMB1 has
-    # no session encryption, its signing is off (OPL cannot do it), and it
-    # authenticates with NTLMv1, which is offline-crackable and relayable. None
-    # of that is fixable by configuration — it is the protocol. So the header
-    # comment above ("unauthenticated and open to the whole home network") is
-    # more pointed here than for any other line in this list, and this port
-    # must never be reachable from outside the LAN.
-    #
-    # THIS WAS DELIBERATELY AVOIDED AND THEN FORCED. The job originally bound
-    # 20445, inside the 20000-32000 range already open below, specifically so
-    # that serving the PS2 needed no change to this file and therefore no
-    # netboot image rebuild — the same reasoning infra/registry.nomad.hcl uses
-    # for its 20500. That does not work: **OPL's SMB port field only accepts
-    # 0-1024**, so the high-port trick is unavailable and 445 is the only
-    # realistic choice (139 is equally blocked and no better).
-    #
-    # Consequences worth knowing rather than rediscovering:
-    #   * This opens 445 on ALL THREE boxes, not just .17 where samba runs.
-    #     Nothing listens on the other two, so it is an open port with nothing
-    #     behind it — untidy, not exploitable.
-    #   * smbd needs CAP_NET_BIND_SERVICE again. The jobspec's capability drop
-    #     had removed it precisely because 20445 is unprivileged; moving to 445
-    #     puts it back. Dropping it and binding 445 fails at startup.
-    #   * Narrowing this to the console's single source address is EVA-376
-    #     Tier 1 work, and cannot be done by adding a rule here: NixOS emits
-    #     these before `extraCommands` and iptables is first-match-wins, so an
-    #     unrestricted ACCEPT on 445 would always win. Narrowing means removing
-    #     this line in the same change that adds the scoped rule.
+    # infra/samba.nomad.hcl — PS2 game share (EVA-373). SMB1/NT1, forced by
+    # the PS2 client — LAN-only, must never be reachable outside it. See wiki:
+    # "PS2 SMB1 samba share — accepted risk" (EVA-373/376).
     445
 
-    # module/ollama.nix — the model server. Without this the API answers only
-    # on its own host, which is how it looked "running" while pibot's
-    # http://<node>:11434/v1 endpoint timed out.
+    # module/ollama.nix — model server.
     11434
 
-    # Home Assistant and the testbench viewer. These are BACKEND ports, reached
-    # by traefik from whichever node it landed on — not ports a human dials.
-    #
-    # Their absence was invisible until routing existed. With the jobs pinned by
-    # IP and traefik on the same box, loopback made it work; once the jobs moved
-    # to volume-based placement and traefik ended up on a different node, both
-    # routes timed out with HTTP 000 while Nomad reported every task `running`
-    # and every health check green. Measured 2026-09-10: from .58,
-    # `.17:11434` reachable, `.17:8123` and `.17:8087` BLOCKED.
-    #
-    # The general rule this is an instance of: any port a service listens on
-    # must be open cluster-wide the moment that service stops being pinned to
-    # one box, because "the client" is now traefik on an arbitrary node.
+    # Home Assistant + testbench viewer. BACKEND ports reached by traefik from
+    # whichever node it lands on, not dialed by a human directly.
     8123
     8087
 
-    # infra/blocky.nomad.hcl — internal DNS for *.gastrodon.io (EVA-281).
-    # TCP as well as UDP: DNS falls back to TCP for responses that do not fit
-    # in a UDP datagram, and a resolver that answers small queries while timing
-    # out on large ones is a uniquely horrible thing to debug.
+    # infra/blocky.nomad.hcl — internal DNS for *.gastrodon.io (EVA-281). TCP
+    # as well as UDP: DNS falls back to TCP for oversized responses.
     53
 
-    # infra/gitea.nomad.hcl — the decomp artifact/results host (EVA-369,
-    # docs/artifact-hosting-plan.md in merc-reveng). Same shape as the
-    # home-assistant/testbench entries above and for the same reason: this is
-    # a BACKEND port, reached by traefik from whichever node the `gitea` host
-    # volume pins it to (.17), not a port a human dials directly. Without this
-    # rule the job comes up healthy and answers only on its own host, and
-    # traefik on .58 times out reaching it the same way .17:8123 did before
-    # this list existed.
+    # infra/gitea.nomad.hcl — decomp artifact/results host (EVA-369). Same
+    # backend-port shape as home-assistant/testbench above.
     3000
 
-    # infra/vault.nomad.hcl (EVA-303). 8200 is the API — every job's Vault
-    # template hits this. 8201 is Raft's own replication port; unused at
-    # count = 1, but the jobspec's `network` block reserves it and a future
-    # multi-voter Vault would need it open with no other change here.
+    # infra/vault.nomad.hcl (EVA-303). 8200 is the API; 8201 is Raft
+    # replication, unused at count = 1 but reserved.
     8200
     8201
   ];
 
-  # Nomad's own dynamic port range (client.min_dynamic_port /
-  # max_dynamic_port, both left at their default of 20000/32000 — nothing in
-  # this repo sets either). This is EVA-324's second bug, fixed generally
-  # instead of one port at a time: every entry above exists because a job
-  # bound a STATIC port and someone noticed it was unreachable cross-node and
-  # added a rule. A job that takes a dynamic port instead (the normal case
-  # for anything that doesn't need a stable, memorable address) gets handed
-  # a number from this range at placement time, and there was no way to
-  # pre-declare a firewall rule for a port nobody picked yet — every such
-  # job was unreachable from any other node, by construction, with no fix
-  # available except "don't use dynamic ports." Opening the whole range once
-  # closes that class of bug instead of requiring a NixOS deploy every time a
-  # new job wants one. Same trust assumption as every port above: LAN-only,
-  # unauthenticated, already the model this cluster runs on.
+  # Nomad's dynamic port range (client.min_dynamic_port/max_dynamic_port,
+  # left at default). Closes EVA-324's second bug: a job using a
+  # Nomad-assigned dynamic port has no way to get a pre-declared firewall
+  # rule. See wiki: "Cluster firewall & port map" (EVA-324).
   networking.firewall.allowedTCPPortRanges = [
     {
       from = 20000;
@@ -156,20 +81,11 @@
     }
   ];
 
-  # blocky again, and this is the half that is easy to forget. DNS is UDP
-  # first — without this the resolver binds correctly, answers on its own
-  # host, and is invisible to every client on the LAN and the tailnet.
-  #
-  # That is the same shape as the traefik/ollama/home-assistant firewall gaps
-  # found earlier today, and the rule is worth stating once: a service only
-  # reachable from its own host looks completely healthy to Nomad, because the
-  # health check runs there too.
+  # blocky — DNS is UDP-first; without this the resolver is invisible to
+  # every client despite looking healthy to Nomad.
   networking.firewall.allowedUDPPorts = [ 53 ];
 
-  # Same dynamic-port reasoning as the TCP range above, for anything that
-  # binds UDP instead (e.g. a future ad hoc file-distribution service using
-  # a UDP-based transfer protocol, or any job with `network { port "x" {} }`
-  # and no `static`).
+  # Same dynamic-port reasoning as the TCP range above, for UDP-based jobs.
   networking.firewall.allowedUDPPortRanges = [
     {
       from = 20000;
@@ -177,68 +93,9 @@
     }
   ];
 
-  # Bind-mount targets for the disk-backed jobs, created before any job starts.
-  #
-  # Ownership is not cosmetic: rootful podman passes container uids straight
-  # through, so the mysql image's uid 999 has to own /data/mysql on the host or
-  # the server exits on its first write. Creating these lazily from inside the
-  # container is what podman does when the path is missing, and it creates them
-  # root-owned — which is how a first deploy fails on permissions.
-  #
-  # /data/mysql is the fix for EVA-325, where the datadir was
-  # `--datadir=/dev/shm/mysql-data` and every task restart silently destroyed
-  # the whole database. It happened twice.
-  # NO tmpfiles rules for /data here, deliberately, and this is a correction
-  # rather than an omission.
-  #
-  # This module used to declare `d /data 0755` and `d /data/mysql 0700 999 999`.
-  # systemd-tmpfiles runs early and unconditionally, so on a node whose data
-  # disk failed to mount those rules create the directories on the ROOT
-  # filesystem -- tmpfs, on a netbooted node -- and the later mount hides them.
-  # Nomad then places MySQL onto a directory in RAM that looks entirely
-  # correct and evaporates at the next reboot. That is EVA-325's shape again.
-  #
-  # module/nomad-storage.nix owns /data now and creates nothing: it proves the
-  # backing store is durable first, and only then reads what is already there.
+  # durable-storage ownership: see module/nomad-storage.nix
 
-  # NOT SET HERE, ON PURPOSE — the EVA-192 hostname fix.
-  #
-  # These boxes disagree about their own names. `derive-hostname` runs at boot,
-  # correctly sets ip-192-168-0-58, and is then overruled: hosts/shared.nix
-  # enables NetworkManager, whose default hostname-mode resolves the primary
-  # address back to a name, and networking.extraHosts (from module/hosts.nix)
-  # maps 192.168.0.58 → server1 in /etc/hosts. So NetworkManager restores
-  # `server1` seconds after the unit sets the derived name. 192.168.0.5 has no
-  # entry in module/hosts.nix and is the one box that keeps its derived name —
-  # the natural experiment that confirms the mechanism.
-  #
-  # The fix is one line, `networking.networkmanager.settings.main.hostname-mode
-  # = "none"`, but applying it renames two boxes, and the Tailscale MagicDNS
-  # name follows the hostname. 192.168.0.58's name is the public Funnel URL
-  # registered with Linear (EVA-273), so the rename is a webhook outage until
-  # that URL is re-registered. That makes it a deliberate change with a
-  # follow-up step, not a drive-by, and it should land together with the
-  # Traefik ingress switch rather than before it.
-
-  # Trust for infra/registry.nomad.hcl (home-infra), the LAN OCI registry
-  # pinned to .17:20500. It's plain HTTP -- a self-signed or LAN-only TLS cert
-  # buys nothing here and is one more thing to renew -- so podman needs to be
-  # told explicitly this one address is allowed unencrypted, or every pull
-  # from it fails with "http: server gave HTTP response to HTTPS client".
-  #
-  # Declared here rather than hand-edited into /etc/containers/registries.conf.d
-  # on a running box on purpose: all three cluster boxes (.17, .58, and .5)
-  # netboot from this same squashfs image (hosts/cluster-node/configuration.nix)
-  # with a tmpfs root, so anything not in the image is gone at the next
-  # reboot -- exactly the kind of silent revert this file's own header warns
-  # about. Landing it here means it travels with the image, in one place,
-  # rather than needing a per-box fixup after every PXE boot.
-  #
-  # Verified live on all three via `nixos-rebuild switch --target-host`
-  # (2026-09-12) -- this option only touches /etc/containers/registries.conf,
-  # not anything nomad.service or nomad-host-volumes.service `Requires=`, so
-  # the switch activates immediately with no service bounce and no reboot
-  # needed. The restaged netbootDir (see plans/03-netboot-cutover.md) makes it
-  # survive the *next* reboot too, whenever that happens.
+  # Trust for infra/registry.nomad.hcl — LAN OCI registry at .17:20500, plain
+  # HTTP. See wiki: "Cluster firewall & port map".
   virtualisation.containers.registries.insecure = [ "192.168.0.17:20500" ];
 }

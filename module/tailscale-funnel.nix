@@ -59,23 +59,10 @@ in
           sleep 2
         done
 
-        # RETRY, BECAUSE THE SERVE CONFIG IS SHARED MUTABLE STATE.
-        #
-        # `tailscale funnel` and `tailscale serve` both read-modify-write one
-        # per-node serve config, guarded by an etag. Any other unit doing the
-        # same thing concurrently loses with:
-        #
-        #   Another client is changing the serve config; please try again.
-        #   sending serve config: Preconditions failed: etag mismatch
-        #
-        # This is not hypothetical: module/testbench-web.nix installs a second
-        # funnel unit, both are wantedBy multi-user.target, and systemd starts
-        # them in parallel — so on any given boot one of the two mappings could
-        # silently fail to apply. It was caught after a reboot left the Linear
-        # webhook's 443 mapping missing while testbench's 8443 mapping was fine.
-        #
-        # Ordering alone would not be enough (anything else touching the config
-        # races too), so retry on the conflict rather than only sequencing.
+        # Two independent funnel units (this one + testbench-web.nix) both race
+        # the same etag-guarded serve config at boot — real incident 2026-09-06
+        # left 443 unmapped. See wiki: Tailscale Funnel serve-config race
+        # (https://linear.app/gastrodon/document/tailscale-funnel-the-serve-config-race-21d164239621).
         for attempt in $(seq 1 10); do
           if out=$(timeout 15 tailscale funnel --bg ${cfg.target} 2>&1); then
             exit 0
@@ -85,10 +72,6 @@ in
               sleep 2
               ;;
             *)
-              # A real failure, and NOT necessarily an ACL problem — the old
-              # message asserted that and sent at least one investigation down
-              # the wrong path. Print what actually happened and let the reader
-              # decide.
               echo "funnel not applied: $out" >&2
               echo "if this mentions Funnel not being enabled, grant it for this node in the tailnet ACL and restart this unit" >&2
               exit 0

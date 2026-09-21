@@ -27,12 +27,8 @@
   hwBench.enable = true;
 
   # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
-  #
-  # This is the *installer* PXE path: dnsmasq + nginx + iPXE chainloading
-  # hosts/installer-payload.nix, which partitions a disk and runs nixos-install.
-  # It stays here, and stays off, for actual OS installs. It is NOT what boots
-  # the diskless cluster nodes — see the pixiecore block below, which is a
-  # different tool doing a different job.
+  # This is NOT what boots the diskless cluster nodes — see wiki: PXE install
+  # path vs cluster netboot, don't confuse the two.
   services.pxeBootServer = {
     enable = false;
     interface = "enp7s0";
@@ -40,29 +36,14 @@
   };
 
   # PXE/RAM boot server for the diskless cluster nodes (EVA-298 / EVA-300).
-  #
-  # THE DAEMON IS NOT HERE. pixiecore runs as a Nomad job scheduled onto this
-  # host's own datacenter — see ~/code/home-infra/infra/pixiecore.nomad.hcl.
-  # That is deliberate: it keeps images, kernel arguments, restarts and upgrades
-  # deployable with `bin/deploy` instead of requiring a privileged rebuild of
-  # this desktop every time the node image changes.
-  #
-  # These four ports are the one thing a container genuinely cannot do for
-  # itself. A Nomad job can bind whatever it likes, but it cannot open the host
-  # firewall in front of it — so without this the daemon starts, listens
-  # correctly, and receives nothing.
-  #
-  # This is the whole of the NixOS surface netboot needs on stone. After it
-  # lands, nothing about netboot should ever require touching this file again.
+  # THE DAEMON IS NOT HERE — pixiecore runs as a Nomad job; see
+  # ~/code/home-infra/infra/pixiecore.nomad.hcl. These ports are just the
+  # firewall hole it can't open for itself. See wiki: PXE install path vs
+  # cluster netboot, don't confuse the two.
   networking.firewall.allowedUDPPorts = [
-    # proxy-DHCP. pixiecore runs with --dhcp-no-bind, so it answers only the PXE
-    # parts of a DHCP conversation and leaves ordinary lease handling to the
-    # dg4244 — the two coexist rather than competing for port 67.
-    67
-    # TFTP: how a PXE ROM fetches its first-stage loader before it can speak HTTP.
-    69
-    # proxy-DHCP boot server port.
-    4011
+    67 # proxy-DHCP (pixiecore runs with --dhcp-no-bind, coexists with dg4244)
+    69 # TFTP
+    4011 # proxy-DHCP boot server port
   ];
 
   # Eva-readable copy of claude's SSH privkey so Claude Code (as eva) can auth as claude@server via ssh-mcp.
@@ -175,11 +156,9 @@
     host = "0.0.0.0";
     openFirewall = true;
     loadModels = [ "qwen3:8b" ];
-    # Native 40960 window fits in 8 GB only with a quantised KV cache (7.3 GB,
-    # fully on GPU); at f16 it spills to CPU and collapses to 9.7 tok/s. It is also
-    # the smallest window where pi's stock compaction has room to do anything.
-    # Measurements in EVA-152. contextWindow in pi.nix must match, or ollama
-    # silently drops history instead of erroring.
+    # contextWindow in pi.nix must exactly match OLLAMA_CONTEXT_LENGTH here, or
+    # Ollama silently truncates history. See wiki: pi model & tool-calling
+    # behavior notes (EVA-152).
     environmentVariables = {
       OLLAMA_CONTEXT_LENGTH = "40960";
       OLLAMA_FLASH_ATTENTION = "1"; # required for quantised KV
@@ -201,13 +180,8 @@
     25565
 
     # pixiecore's HTTP, serving bzImage and the ~1.5 GB initrd to booting nodes
-    # (EVA-300; see the netboot block above).
-    #
-    # Not 80, which is pixiecore's default: this is a desktop, and claiming the
-    # privileged HTTP port on it to serve a 1.5 GB initrd is both antisocial and
-    # a collision waiting to happen. Not 8080 either — services.pxeBootServer
-    # above claims that for its nginx, and the two paths should be able to
-    # coexist while the installer one is still wanted.
+    # (EVA-300; see the netboot block above). Not 80 or 8080 — see wiki: PXE
+    # install path vs cluster netboot, don't confuse the two.
     8064
   ];
 

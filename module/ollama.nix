@@ -1,18 +1,9 @@
-# NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
-#
-# The job spec moved to ~/code/home-infra/infra/ollama.nomad.hcl. What is left here is the
-# host-level half that a container cannot do for itself: the firewall port, the
-# state directory with correct ownership, and the host-volume declaration.
-#
-# The job JSON and the `ollama-job-register` oneshot that used to POST it at
-# activation were removed deliberately. That unit ran on every boot and rebuild
-# and re-POSTed the module's own spec under the same job ID, so leaving it in
-# place while the spec also lived in home-infra would have meant two sources of
-# truth with the stale one winning on every reboot.
-#
-# Keep this module ENABLED. `enable = false` would take the firewall rule and
-# the tmpfiles rule with it, and the job would then run with no reachable port
-# and no directory to mount.
+# This module no longer defines the Nomad job (spec moved to
+# ~/code/home-infra/infra/ollama.nomad.hcl) — only the firewall port and
+# state directory with correct ownership remain here. `enable = false` also
+# drops those, not just an already-nonexistent job. See wiki:
+# Job-registration split
+# (https://linear.app/gastrodon/document/job-registration-split-firewallstate-dir-only-modules-91e3fa6c89ae).
 #
 # Ollama as a Nomad service job. The host only provides Nomad, Podman, and a
 # persistent host volume; the model server and its models live in the job.
@@ -104,17 +95,9 @@ let
   };
 
   config = lib.mkIf cfg.enable {
-    # NO `services.nomad.settings.client.host_volume.ollama` HERE ANY MORE —
-    # module/nomad-storage.nix owns host volumes now, and publishes this one as
-    # /data/volumes/ollama. See the equivalent note in module/home-assistant.nix
-    # for why the old declaration had to be removed in the same change rather
-    # than repointed: it declared the volume unconditionally, including on a
-    # netbooted node where ${cfg.stateDir} is tmpfs.
-    #
-    # The tmpfiles rule stays: infra/ollama.nomad.hcl still bind-mounts
-    # ${cfg.stateDir} directly.
+    # host_volume.ollama removed (EVA-302) — nomad-storage.nix owns it now.
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
-        networking.firewall.allowedTCPPorts = [ cfg.port ];
+    networking.firewall.allowedTCPPorts = [ cfg.port ];
   };
 }

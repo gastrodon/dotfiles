@@ -68,29 +68,13 @@ in
     target = "3456";
   };
 
-  # The public face of that funnel, which is what Linear has to be pointed at:
-  # ${publicUrl}/webhook receives sessions, ${publicUrl}/oauth/callback is the
-  # registered OAuth redirect. Every server box shares this configuration and so
-  # advertises the same URL, which is correct for the webhook (only one box is
-  # registered with Linear) but means the install flow has to be run against
-  # this URL, not against another box's own address: the OAuth state is held by
-  # whichever process issued it.
+  # ${publicUrl}/webhook and /oauth/callback are what Linear has to be pointed
+  # at; every server box shares this config so the install flow must be run
+  # against this URL specifically.
   #
-  # RENAMED FROM server1.tailfa78b0.ts.net (EVA-192/EVA-273). tailscaled takes
-  # its MagicDNS name from the system hostname, and the hostname is now derived
-  # from the address (module/derive-hostname.nix) instead of being restored to
-  # `server1` by NetworkManager. So this box is `ip-192-168-0-58` on the tailnet
-  # now, and this URL had to move with it.
-  #
-  # This is a ONE-TIME change rather than the start of more churn, and the
-  # difference matters: the old name was stable only by accident — it depended
-  # on an /etc/hosts entry happening to defeat a systemd unit. The new one is
-  # stable by construction, because 192.168.0.58 is a DHCP reservation on the
-  # router now. That is what EVA-273 was actually asking for.
-  #
-  # Changing this string is not sufficient on its own: the webhook URL
-  # registered in Linear's OAuth app settings has to be updated by hand to
-  # match, and until it is, AgentSessionEvent deliveries 404.
+  # Renamed from the old static server1.tailfa78b0.ts.net after the EVA-192
+  # hostname fix — see wiki: Cluster hostname identity. Changing this string
+  # again requires updating Linear's OAuth app config by hand, or webhooks 404.
   services.linearAgent.publicUrl = "https://ip-192-168-0-58.tailfa78b0.ts.net";
 
   # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
@@ -108,8 +92,9 @@ in
     ];
   };
 
-  # Ollama stays opt-in for pibot while the CPU candidates are being measured.
-  # Keep provider=anthropic as default until EVA-196 (tool-calling) is resolved.
+  # EVA-196: qwen2.5-coder:7b (below) emits tool calls as prose, not
+  # structured calls — confirmed broken. qwen3:8b/4b work but haven't been
+  # rolled out here. Keep provider=anthropic as default until they are.
   services.piAgent = {
     provider = "anthropic";
     model = "claude-sonnet-5";

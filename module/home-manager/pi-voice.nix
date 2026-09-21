@@ -1,22 +1,17 @@
 # pi-voice — push-to-talk voice daemon for `pi` (./pi.nix). Upstream ships no Nix packaging;
 # packaged via bun2nix in a scoped fork (github:auto-patcher/pi-voice, wired in flake.nix). See
-# that repo's default.nix for the Electron/native-addon packaging details, and its stt.ts/tts.ts
-# patches for why the local Whisper provider still isn't safe to select (crashes the daemon) and
-# how the `openai` provider gets pointed at a local server instead of real OpenAI.
+# wiki: pi-voice: the jiti/pi-black version-gate bug, for provenance details on the fork/build.
 #
 # Two providers are wired up here:
 # - `elevenlabs` — eva's own key (secrets.yaml, out of ring), read into the daemon's own env by
 #   this wrapper only, never the model, same pattern as the AWS secret in claude.nix.
-# - `openai` — repointed at the local speaches server (../speaches.nix) instead of real OpenAI,
-#   via the same OPENAI_BASE_URL/OPENAI_API_KEY env vars the SDK already reads on its own, plus
-#   OPENAI_STT_MODEL/OPENAI_TTS_MODEL/OPENAI_TTS_VOICE to select speaches' own model/voice ids
-#   instead of OpenAI's. No secret involved (speaches has no auth); the API key is a dummy value
-#   the SDK requires be non-empty. Port/model ids must match ../speaches.nix's own defaults.
+# - `openai` — repointed at the local speaches server (../speaches.nix) instead of real OpenAI.
+#   No secret involved (speaches has no auth); the API key is a dummy value the SDK requires be
+#   non-empty. Port/model ids must match ../speaches.nix's own defaults.
 #
 # `openai` (local speaches) is also the default provider, via PI_VOICE_PROVIDER — pi-voice's own
-# fallback (used only when a project has no .pi/pi-voice.json) — so no per-project config file is
-# needed for the common case. A project can still drop its own .pi/pi-voice.json to override this
-# (e.g. to pick elevenlabs, or a different key binding), which always takes priority.
+# fallback (used only when a project has no .pi/pi-voice.json). A project can drop its own
+# .pi/pi-voice.json to override this, which always takes priority.
 {
   pkgs,
   lib,
@@ -51,19 +46,9 @@ in
 {
   home.packages = [ wrapped ];
 
-  # pi-voice embeds `@earendil-works/pi-coding-agent` in-process (services/pi-session.ts) rather
-  # than shelling out to the `pi` CLI, but createAgentSession()'s extension loader doesn't
-  # reliably honor its own module-alias map for imports *inside* a dynamically loaded extension
-  # (jiti) — for an extension whose directory tree has no real node_modules anywhere in its
-  # ancestry (true of anything under ~/.pi/agent/git/..., which has none), resolution falls
-  # through to whatever's in Bun's own global install cache instead, and pi-black's strict version
-  # gate then sees a version pi-voice never installed and never agreed to (confirmed:
-  # "Pi Black supports Pi 0.84.1; running Pi is 0.84.2", even against an SDK pinned to exactly
-  # 0.84.1). Providing a real node_modules/@earendil-works reachable via the same directory
-  # walk-up starting from ~/.pi/agent fixes it — confirmed end-to-end in an isolated repro
-  # (pi-black loads cleanly, and a tool-using prompt completes correctly). Sourced from
-  # pi-voice's own flake (extracted from the exact same build pi-session.ts embeds, so this can
-  # never drift out of sync with it the way a separately pinned copy could).
+  # Don't remove this without reading the wiki doc first — it works around a jiti/pi-black
+  # version-gate bug; removing it silently reintroduces a startup crash. See wiki: pi-voice: the
+  # jiti/pi-black version-gate bug.
   home.file.".pi/agent/node_modules/@earendil-works".source = "${
     pi-voice.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent-sdk
   }/@earendil-works";

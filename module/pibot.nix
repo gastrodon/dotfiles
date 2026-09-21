@@ -21,39 +21,23 @@
     format = "yaml";
     owner = "linear-agent";
   };
-  # GitHub PAT bind-mounted into the pi-agent worker container for git
-  # clone/push + PR creation. Root-only — the register service and the podman
-  # bind-mount both run as root.
+  # GitHub PAT bind-mounted into the pi-agent worker container for git clone/push + PR creation.
   sops.secrets."github/pat" = {
     sopsFile = ../secrets.claude.yaml;
     format = "yaml";
     mode = "0400";
   };
-  # pi's auth.json — the provider credentials the worker runs on. A fresh
-  # worker box has an empty /var/lib/pi-agent/home, and pi answers every prompt
-  # on such a node with "No API key found for the selected model" and then sits
-  # idle until the run is killed, which reaches Linear as a contentless reply.
-  # Seeding it from here means a new box becomes a working worker the moment
-  # bootstrap plants claude's age key and the config is deployed — no manual
-  # login per box. pi rewrites its own copy as tokens rotate; this is only the
-  # starting point, never a clobber.
+  # pi's auth.json — seeds a fresh worker box; pi rewrites its own copy as tokens rotate. See wiki.
   sops.secrets."pi/auth_json" = {
     sopsFile = ../secrets.claude.yaml;
     format = "yaml";
     mode = "0400";
   };
 
-  # Only app-level material is wired here. The per-workspace Linear token is
-  # not a secret this repo carries any more: the receiver mints it itself over
-  # OAuth (${publicUrl}/oauth/start) into /var/lib/linear-agent, so
-  # re-authorizing is a browser visit rather than a `sops set` plus a redeploy.
-  # publicUrl is set per host, next to the funnel that serves it.
+  # Per-workspace Linear token isn't stored here; the receiver mints it itself over OAuth. See wiki.
   services.linearAgent = {
     enable = true;
-    # eva's workspace. Both OAuth endpoints are public through the funnel, so
-    # even a caller who gets past the admin token can only install a workspace
-    # named here — and Linear is asked which workspace consented, so this is
-    # checked against Linear's answer, not the caller's.
+    # eva's workspace only — checked against Linear's own answer of who consented. See wiki.
     allowedOrganizations = [ "f9a4dcde-1f1d-43e1-a9c6-dbded1d624b4" ];
     webhookSecretFile = config.sops.secrets."linear/webhook_secret".path;
     clientIdFile = config.sops.secrets."linear/client_id".path;

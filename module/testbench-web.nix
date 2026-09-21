@@ -1,33 +1,13 @@
-# NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
+# This module no longer defines the Nomad job (spec moved to
+# ~/code/home-infra/testbench/testbench-web.nomad.hcl) — only the firewall
+# port and state directory with correct ownership remain here.
+# `enable = false` also drops the firewall/state-dir rules, not just an
+# already-nonexistent job. See wiki: Job-registration split
+# (https://linear.app/gastrodon/document/job-registration-split-firewallstate-dir-only-modules-91e3fa6c89ae).
 #
-# The job spec moved to ~/code/home-infra/testbench/testbench-web.nomad.hcl. What is left here is the
-# host-level half that a container cannot do for itself: the firewall port, the
-# state directory with correct ownership, and the host-volume declaration.
-#
-# The job JSON and the `testbench-web-job-register` oneshot that used to POST it at
-# activation were removed deliberately. That unit ran on every boot and rebuild
-# and re-POSTed the module's own spec under the same job ID, so leaving it in
-# place while the spec also lived in home-infra would have meant two sources of
-# truth with the stale one winning on every reboot.
-#
-# Keep this module ENABLED. `enable = false` would take the firewall rule and
-# the tmpfiles rule with it, and the job would then run with no reachable port
-# and no directory to mount.
-#
-# The testbench 3D viewer, as a Nomad service job.
-#
-# The page itself is built in the OTHER repo (gastrodon/testbench,
-# `nix build .#viewer-site`) and pushed here with `nix run .#deploy`. This
-# module owns only the things a page cannot own: a directory to land in, a
-# web server in front of it, and a hole in the firewall.
-#
-# THE JOB IS CONTENT-FREE, and that is the whole design. It bind-mounts a
-# directory and serves whatever it finds, so publishing a new model is an
-# rsync into that directory -- not a job update, not a nixos-rebuild, and
-# not a service restart. The alternative (baking the page into a store
-# path the job mounts) would make every picture a full rebuild of this
-# host, which is exactly the loop that repo's README says the flake is not
-# meant to replace.
+# The testbench 3D viewer, as a Nomad service job. The page itself is built
+# in the OTHER repo (gastrodon/testbench, `nix build .#viewer-site`) and
+# pushed here with `nix run .#deploy`.
 {
   config,
   lib,
@@ -94,9 +74,8 @@ let
         this port. `null` (the default) means tailnet and LAN only.
 
         Funnel accepts only 443, 8443 and 10000. 443 on this host is
-        already taken by module/tailscale-funnel.nix, which mounts the
-        Linear webhook receiver at `/` — so use **8443** unless you
-        deliberately want to share the host and mount this under a path.
+        already taken by module/tailscale-funnel.nix's Linear webhook, so
+        this defaults to 8443.
 
         The page has no authentication of any kind. Anyone with the URL
         reads the models, the parameters and the stress numbers, and a
@@ -113,29 +92,14 @@ let
       "d ${cfg.stateDir} 0755 eva users - -"
     ];
 
-    # Same idempotent register-over-the-API pattern as module/ollama.nix:
-    # a job that is already registered comes back 200 and this is a no-op.
-        networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
 
-    # Public exposure, declared so it survives a rebuild rather than
-    # living in whatever `tailscale funnel` somebody typed once. Separate
-    # from module/tailscale-funnel.nix on purpose: that module is
-    # single-target and owns 443 for the Linear webhook, and folding a
-    # second target into it would make one option mean two things.
-    #
-    # No firewall rule belongs here. Funnel traffic arrives through
-    # tailscaled and reaches nginx over loopback, so the LAN port and the
-    # public port are genuinely independent switches.
     systemd.services.testbench-web-funnel = lib.mkIf (cfg.funnelPort != null) {
       description = "Expose the testbench viewer publicly over Tailscale Funnel";
       after = [
         "tailscaled.service"
         "tailscaled-autoconnect.service"
         "network-online.target"
-        # Ordered after the other funnel unit, not because it depends on it but
-        # because both read-modify-write the same per-node serve config and
-        # systemd would otherwise start them in parallel. Ordering makes the
-        # common case conflict-free; the retry loop below handles the rest.
         # `After` on a unit that does not exist on this host is simply ignored.
         "tailscale-funnel.service"
       ];
@@ -161,9 +125,8 @@ let
           fi
           sleep 2
         done
-        # Retry on serve-config contention — see the long comment in
-        # module/tailscale-funnel.nix. Two units mutate one etag-guarded config,
-        # and the loser used to fail silently while systemd reported success.
+        # See wiki: Tailscale Funnel serve-config race (also module/tailscale-funnel.nix)
+        # (https://linear.app/gastrodon/document/tailscale-funnel-the-serve-config-race-21d164239621).
         for _ in $(seq 1 10); do
           if out=$(timeout 15 tailscale funnel --bg \
                    --https=${toString cfg.funnelPort} \

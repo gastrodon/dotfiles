@@ -1,37 +1,15 @@
-# NOTE: THIS MODULE NO LONGER DEFINES THE NOMAD JOB.
+# This module no longer defines the Nomad job (spec moved to
+# ~/code/home-infra/infra/home-assistant.nomad.hcl) — only the firewall port
+# and state directory with correct ownership remain here. `enable = false`
+# also drops those, not just an already-nonexistent job. See wiki:
+# Job-registration split
+# (https://linear.app/gastrodon/document/job-registration-split-firewallstate-dir-only-modules-91e3fa6c89ae).
 #
-# The job spec moved to ~/code/home-infra/infra/home-assistant.nomad.hcl. What is left here is the
-# host-level half that a container cannot do for itself: the firewall port and
-# the state directory with correct ownership.
-#
-# The host-volume declaration that used to live here is gone (EVA-302).
-# module/nomad-storage.nix owns Nomad host volumes now, because deciding
-# whether a path is durable enough to hand the scheduler is a question about
-# the disk rather than a question about Home Assistant.
-#
-# The job JSON and the `home-assistant-register` oneshot that used to POST it at
-# activation were removed deliberately. That unit ran on every boot and rebuild
-# and re-POSTed the module's own spec under the same job ID, so leaving it in
-# place while the spec also lived in home-infra would have meant two sources of
-# truth with the stale one winning on every reboot.
-#
-# Keep this module ENABLED. `enable = false` would take the firewall rule and
-# the tmpfiles rule with it, and the job would then run with no reachable port
-# and no directory to mount.
-#
-# Home Assistant as a Nomad service job (podman driver), for the rpi4b kiosk to
-# point at. Three things have to line up:
-#
-#   1. State — HA's /config (SQLite recorder, .storage registries) is node-local,
-#      so the job is pinned to one box via a node constraint.
-#      Pinning is deliberate-for-now; EVA-169 researches making it movable.
-#   2. Name — the kiosk hardcodes http://homeassistant.local:8123/. The Pi gets no
-#      networking.extraHosts (hosts/rpi doesn't import hosts/shared.nix) but does
-#      run avahi+nssmdns4, so the name is published over mDNS from the pinned node.
-#   3. Auth — hosts/rpi/graphical.nix starts Firefox on a fresh `mktemp -d` profile
-#      every boot, so HA's localStorage token is wiped on every reboot and the kiosk
-#      would sit on a login screen forever. The trusted_networks auth provider is
-#      what makes the kiosk work at all, not a nicety.
+# Home Assistant as a Nomad service job (podman driver), for the rpi4b kiosk
+# to point at. The kiosk's Firefox profile is wiped every boot (`mktemp -d`),
+# so `trusted_networks` auth below is load-bearing — remove it and the kiosk
+# sits on a login screen forever. See the wiki doc above for the rest of what
+# has to line up (mDNS naming, node pinning, onboarding auth provider).
 {
   config,
   lib,
@@ -43,9 +21,6 @@ let
 
   yaml = pkgs.formats.yaml { };
 
-  # NOTE: only the `homeassistant` provider can create the owner account during
-  # onboarding, so it stays listed even though the kiosk never uses it. Dropping it
-  # would lock everyone out of password login.
   configYaml = yaml.generate "configuration.yaml" {
     default_config = { };
 
@@ -53,9 +28,6 @@ let
       {
         type = "trusted_networks";
         trusted_networks = cfg.trustedNetworks;
-        # Skips the login form outright, but only while exactly one HA user exists.
-        # Add a second user and this degrades to a user picker unless trusted_users
-        # is filled in with that user's UUID (which only exists after onboarding).
         allow_bypass_login = true;
       }
       { type = "homeassistant"; }
@@ -64,11 +36,6 @@ let
     http.server_port = cfg.port;
   };
 
-    # Every server box runs this module, but only one may claim the mDNS name — two
-  # publishers is a collision. Gate on "is HA actually serving here?" rather than on
-  # hostname: the boxes have no static hostname (derive-hostname/DHCP set it well
-  # after boot), so a name comparison races startup and, worse, silently succeeds as
-  # a no-op. Probing the port is race-free and self-corrects if the pin ever moves.
   publishAlias = pkgs.writeShellScript "publish-homeassistant-alias" ''
     while :; do
       if (echo > /dev/tcp/127.0.0.1/${toString cfg.port}) 2>/dev/null; then
@@ -143,32 +110,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # NO `services.nomad.settings.client.host_volume.hass` HERE ANY MORE.
-    #
-    # It used to declare a `hass` volume at ${cfg.stateDir} on every box. That
-    # is now module/nomad-storage.nix's job, as /data/volumes/home-assistant,
-    # and the two cannot both exist: they would be two declarations of the same
-    # kind of thing pointing at different paths, and which one a job got would
-    # depend on merge order rather than on anything anyone decided.
-    #
-    # The reason the old one had to go rather than simply being repointed is
-    # that it was unconditional. It declared the volume whether or not the path
-    # was on durable storage — which on a netbooted node means declaring a
-    # volume backed by tmpfs. Nothing used it (the job reaches /config through
-    # a raw bind mount today), so retiring it breaks nothing now.
-    #
-    # The tmpfiles rule stays: infra/home-assistant.nomad.hcl still bind-mounts
-    # ${cfg.stateDir} directly, and that directory has to exist and be
-    # root-owned before the container first starts.
+    # host_volume.hass removed (EVA-302) — nomad-storage.nix owns it now.
     systemd.tmpfiles.rules = [ "d ${cfg.stateDir} 0750 root root - -" ];
 
-    # module/avahi.nix leaves disable-user-service-publishing=yes, which makes the
-    # daemon reject client-published records outright ("Failed to create entry
-    # group: Not permitted") — avahi-publish below is exactly such a client, and an
-    # A record alias has no static-file equivalent to fall back on.
     services.avahi.publish.userServices = true;
 
-        systemd.services.homeassistant-mdns-alias = {
+    systemd.services.homeassistant-mdns-alias = {
       description = "Publish ${cfg.aliasName} over mDNS for the kiosk";
       after = [
         "network-online.target"

@@ -67,15 +67,14 @@ let
         supportsDeveloperRole = false;
         supportsReasoningEffort = false;
       };
-      # qwen3:8b, not qwen2.5-coder:7b: the coder model emits tool calls as prose
-      # JSON rather than a tool_calls field, so pi never executes anything.
+      # qwen2.5-coder:7b emits tool calls as prose text pi can't execute — see wiki.
       models = [
         {
           id = "qwen3:8b";
           name = "Qwen3 8B (Stone)";
           reasoning = true;
-          # Must match OLLAMA_CONTEXT_LENGTH on stone: ollama truncates silently
-          # rather than erroring, and pi only compacts if it thinks the window is full.
+          # Must match OLLAMA_CONTEXT_LENGTH on stone — see wiki: pi model &
+          # tool-calling behavior notes (EVA-152).
           contextWindow = 40960;
           maxTokens = 8192;
         }

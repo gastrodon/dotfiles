@@ -1,18 +1,7 @@
 # Shared base for the OptiPlex cluster nodes (EVA-299).
 #
-# THE POINT OF THIS MODULE IS WHAT IT LEAVES OUT. These nodes are meant to
-# netboot and run entirely from RAM (EVA-298), so the closure is not a matter
-# of taste — it is the hard budget. Measured before this module existed, the
-# `server` configuration (hosts/shared.nix + hosts/server/configuration.nix)
-# closed over **18.1 GiB**: steam, i3, X11, the font set, pipewire, Home
-# Assistant, the Minecraft server, the graphical stack. The smallest box in the
-# fleet (192.168.0.5) has **7.7 GiB of RAM total**. An 18 GiB image cannot be
-# made to boot on it by tuning compression; the graphical stack has to not be
-# there at all.
-#
-# So this deliberately does NOT import hosts/shared.nix. Anything a headless
-# scheduler node genuinely needs is listed here explicitly, and every addition
-# is a withdrawal from the RAM budget that workloads also draw on.
+# Deliberately does NOT import hosts/shared.nix — RAM budget. See wiki:
+# Diskless netboot node image: design decisions.
 #
 # What lives here vs. elsewhere, after the Phase 2 split: this module owns
 # host/OS-level facts only — the container runtime, the scheduler daemon, the
@@ -117,23 +106,6 @@ in
         pciutils
         tmux
 
-        # e2fsprogs is not optional on a node that mounts an ext4 data disk,
-        # and its absence is not obvious until it bites. Two separate reasons:
-        #
-        #   1. `fsck.ext4`. NixOS generates a systemd-fsck@ unit for a
-        #      fileSystems entry, and without the binary that unit fails —
-        #      on a filesystem holding the cluster's only copy of its data.
-        #   2. `mkfs.ext4` / `e2label` / `blkid`, for preparing a replacement
-        #      disk *from the netbooted node itself*. That is not a corner
-        #      case: there is one drive bay and one SATA power lead per box,
-        #      so a new disk can only be formatted after it is fitted, which
-        #      is after the old one is gone. The netbooted node is the only
-        #      thing that can do it.
-        #
-        # Found the hard way on 2026-09-10: .17's 6 TB had to be formatted via
-        # `nix build nixpkgs#e2fsprogs` on the running node because the image
-        # had no mkfs. That worked, but it needs a network and a substituter at
-        # exactly the moment the box has no disk — a bad thing to depend on.
         e2fsprogs
       ];
 

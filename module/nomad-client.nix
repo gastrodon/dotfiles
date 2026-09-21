@@ -51,29 +51,9 @@ in
         client = {
           enabled = true;
 
-          # THE ARTIFACT/LANDLOCK FIX (EVA-324).
-          #
-          # Nomad re-execs itself as `nomad artifact-isolation` and confines the
-          # download with landlock. The rule set is built from PATHS, and on
-          # NixOS /etc/ssl/certs/ca-certificates.crt is a SYMLINK into
-          # /nix/store — a File rule does not follow it, so the getter opens the
-          # link, lands outside the sandbox, and every artifact fetch dies with:
-          #
-          #   x509: failed to load system roots and no roots provided;
-          #   open /etc/ssl/certs/ca-certificates.crt: permission denied
-          #
-          # One read grant on one file. Landlock stays on.
-          #
-          # NOT `disable_filesystem_isolation = true`, which also works and turns
-          # the entire sandbox off for a problem that is one missing read grant
-          # wide. home-infra/docs/decisions.md recorded that as "an actual fix"
-          # for a while; it has been corrected.
-          #
-          # Verified against nomad 1.11.3 on this cluster by driving the
-          # artifact-isolation subcommand directly: baseline FAILs with the x509
-          # error above, this config PASSes. The intuitive alternative does NOT
-          # work — setting SSL_CERT_FILE via set_environment_variables fails
-          # identically, because the problem is the sandbox, not the lookup path.
+          # landlock artifact-isolation needs an explicit read-grant for
+          # /etc/ssl/certs/ca-certificates.crt (a symlink into /nix/store the
+          # sandbox doesn't allowlist by default) — EVA-324.
           artifact.filesystem_isolation_extra_paths = [
             "f:r:/etc/ssl/certs/ca-certificates.crt"
           ];

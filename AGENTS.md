@@ -8,6 +8,14 @@ When asked to install a package, change a setting, add a program, configure a se
 
 **Never leave removal comments in source.** When code is removed or migrated, delete it cleanly — no `# deprecated`, `# removed`, `# was here`, `# no longer`, or similar tombstone comments. If the context matters, it belongs in a git commit message, not the source file.
 
+## Documentation lives in the wiki, not in comments
+
+Incident writeups, design rationale, "why not the obvious alternative," and any other narrative that's more than a sentence belongs in a Linear doc, not a comment block in a `.nix` file — see the [Dotfiles internals index](https://linear.app/gastrodon/document/dotfiles-internals-index-a4c17edd64c6) for the existing docs and which Linear project (Home Infrastructure, Agentic Tooling, piscreen, Shop — whichever actually owns the affected subsystem) each kind of change belongs under.
+
+**Default: when a change has non-obvious "why," write or update a wiki doc for it, without being asked.** Only skip this if the user explicitly says not to for that change.
+
+Code comments stay terse — a fact, or a short (1-3 line) warning at a spot where an editor could otherwise reintroduce a known bug by "cleaning up" what looks like an unexplained deviation (cite the wiki doc there instead of restating it). If a comment is heading past a few lines, that's the signal to make it a wiki doc instead of writing more inline.
+
 ## Critical: The eva-ring — secret decryption is eva-only
 
 An agent working in this repo does not have decrypt access to sops secrets. Only `eva` holds the age key (derived from `~/.ssh/id_ed25519`). This decryption boundary is the "eva-ring": secret plaintext stays inside it, and the `claude` user account (or anything it can reach) stays outside it.
