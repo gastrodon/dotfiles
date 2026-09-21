@@ -7,8 +7,7 @@
   ];
 
   sops.secrets."github/mcp-token".owner = config.identity.username;
-  sops.secrets."email/address".owner = config.identity.username;
-  sops.secrets."email/password".owner = config.identity.username;
+
 
   # AWS secret access key — eva-only (secrets.yaml, out of ring).
   sops.secrets."aws/iam_secret".owner = config.identity.username;
