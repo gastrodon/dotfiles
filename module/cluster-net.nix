@@ -33,5 +33,21 @@ in
         IPv6AcceptRA = true;
       };
     };
+
+    # Same static address over wifi — harmless on wired-only hosts (no wlan
+    # interface ever matches); lets a host with networking.wireless enabled
+    # (e.g. piscreen/rpi3b-plus) keep the same fixed address on wlan0.
+    systemd.network.networks."10-cluster-wifi" = {
+      matchConfig.Type = "wlan";
+      networkConfig = {
+        Address = "${cfg.address}/24";
+        Gateway = "192.168.0.1";
+        DNS = [
+          "1.1.1.1"
+          "8.8.8.8"
+        ];
+        IPv6AcceptRA = true;
+      };
+    };
   };
 }

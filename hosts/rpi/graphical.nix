@@ -13,14 +13,9 @@ let
   castReceiver = pkgs.callPackage ../../package/cast-receiver { };
   castDialPort = 4000;
 
-  # The paired BT speaker auto-powers-off after a stretch with no active audio
-  # stream (firmware power-saving, not something BlueZ/PipeWire can disable —
-  # see EVA-191). A permanent, genuinely-silent loop keeps the A2DP link
-  # looking "active" so that timer never fires. This is a separate mpv
-  # instance from cast-receiver's own — that one is truly idle between casts,
-  # which is exactly the state that would otherwise let the speaker sleep.
-  # PipeWire mixes both streams into one output, so silence + real audio is
-  # just real audio; nothing to hear when a cast starts.
+  # Must stay a SEPARATE mpv instance from cast-receiver's — merging them lets
+  # the speaker fall asleep between casts. See wiki: rpi4b Bluetooth speaker
+  # keepalive design (EVA-191).
   silenceLoop = pkgs.runCommand "silence.wav" { nativeBuildInputs = [ pkgs.ffmpeg ]; } ''
     ffmpeg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -t 5 -c:a pcm_s16le "$out"
   '';
@@ -49,6 +44,13 @@ let
   '';
 in
 {
+  options.piscreenKiosk.videoConnector = lib.mkOption {
+    type = lib.types.str;
+    default = "HDMI-A-2";
+    description = "vc4 KMS connector name to force-enable in boot.kernelParams (dual-HDMI boards like the Pi 4 use HDMI-A-2 for the second port; single-HDMI boards like the Pi 3B+ use HDMI-A-1).";
+  };
+
+  config = {
   services.xserver = {
     enable = true;
     windowManager.i3.enable = true;
@@ -62,20 +64,13 @@ in
   };
   services.displayManager.defaultSession = "none+i3";
 
-  # `e` forces the connector on regardless of HDMI HPD — vc4 KMS flaps HPD at boot and X caches it disconnected (black monitor).
-  #
-  # The Pi 4's onboard Bluetooth hangs off the PL011 UART (ttyAMA0), but nixpkgs'
-  # sd-image-aarch64.nix parks a kernel console on it. hci_uart then can't reach the
-  # controller: every command times out (-110), the baudrate switch fails, and BlueZ
-  # ends up reporting no adapter at all. Keep ttyS0 (mini UART on the GPIO header)
-  # and tty0 (HDMI); drop only ttyAMA0.
-  #
-  # mkForce because kernelParams concatenates and there's no way to subtract a single
-  # entry. The non-console values are rebuilt from the options that generate them so
-  # they can't drift — but a param appended by some *future* module would be silently
-  # dropped, so check here first if a kernel param ever goes missing.
+  # video= param + mkForce fix two real hardware bugs (HDMI HPD flap → black
+  # screen; Pi4 BT hangs off ttyAMA0, which sd-image's default console
+  # conflicts with). Do not remove mkForce or let another module append a
+  # kernel param here without checking the wiki first. See wiki: rpi4b kiosk
+  # hardware quirks (EVA-186).
   boot.kernelParams = lib.mkForce [
-    "video=HDMI-A-2:1920x1080@60e"
+    "video=${config.piscreenKiosk.videoConnector}:1920x1080@60e"
     "console=ttyS0,115200n8"
     "console=tty0"
     "nohibernate"
@@ -151,5 +146,6 @@ in
       Restart = "always";
       RestartSec = 5;
     };
+  };
   };
 }

@@ -172,13 +172,8 @@
       };
 
       # The diskless netboot cluster node (EVA-298/299). One image, all three
-      # OptiPlexes — see hosts/cluster-node/configuration.nix for why identity
-      # is derived at boot rather than baked per box.
-      #
-      # No home-manager, no NUR, no disko, no pibot modules: this configuration
-      # deliberately shares nothing with `server` above except the modules it
-      # names, because the closure has to fit in RAM (7.7 GiB on the smallest
-      # box) and `server` currently closes over 18.1 GiB.
+      # OptiPlexes. RAM-budget rationale: see wiki (Diskless netboot node
+      # image) or hosts/cluster-node/configuration.nix.
       nixosConfigurations.cluster-node = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
@@ -256,9 +251,60 @@
         ];
       };
 
+      # piscreen (EVA-402/50/403): the kiosk that was running on the old
+      # rpi4b — that Pi got repurposed to KidiStar DAW, this 3B+ is its
+      # replacement. Single HDMI port, so the vc4 connector is HDMI-A-1,
+      # not the dual-HDMI Pi 4's HDMI-A-2.
       nixosConfigurations.rpi3b-plus = mkRpi "rpi3b-plus" {
         address = "192.168.0.241";
         native = true;
+        modules = [
+          ./hosts/rpi/graphical.nix
+          { piscreenKiosk.videoConnector = "HDMI-A-1"; }
+          # No ethernet run to where piscreen lives — wifi only, PSKs secrets-templated.
+          # See wiki: piscreen WiFi: secrets-templated PSK.
+          (
+            { config, lib, ... }:
+            let
+              wifiNetworks = [
+                { ssid = "SercommAP-2743"; key = "home"; }
+              ];
+              secretName = n: "wifi/${n.key}_psk";
+            in
+            {
+              sops.secrets = lib.listToAttrs (
+                map (n: {
+                  name = secretName n;
+                  value = {
+                    sopsFile = ./secrets.claude.yaml;
+                    format = "yaml";
+                  };
+                }) wifiNetworks
+              );
+              sops.templates."piscreen-wifi.env".content = lib.concatMapStringsSep "\n" (
+                n: "psk_${n.key}=${config.sops.placeholder.${secretName n}}"
+              ) wifiNetworks;
+              networking.wireless = {
+                enable = true;
+                secretsFile = config.sops.templates."piscreen-wifi.env".path;
+                networks = lib.listToAttrs (
+                  map (n: {
+                    name = n.ssid;
+                    value.pskRaw = "ext:psk_${n.key}";
+                  }) wifiNetworks
+                );
+              };
+            }
+          )
+          # Current yt-dlp for the cast receiver (26.05's is too old — 403s).
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                yt-dlp = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.yt-dlp;
+              })
+            ];
+          }
+        ];
       };
 
       nixosConfigurations.rpi4b = mkRpi "rpi4b" {
