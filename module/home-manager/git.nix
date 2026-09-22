@@ -82,6 +82,7 @@ in
       "result/*"
       ".ignore_*"
       ".claude/"
+      "HANDOFF.md"
     ];
   };
 }
