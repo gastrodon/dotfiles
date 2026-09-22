@@ -13,7 +13,7 @@
 # can't do (no FHS root, no nix-ld) — `linear completions zsh` prints them on demand.
 { pkgs, lib, ... }:
 let
-  baoKvGet = import ./bao-kv-get.nix { inherit pkgs; };
+  baoKvGetCached = import ./bao-kv-get-cached.nix { inherit pkgs; };
 
   version = "2.5.0";
 
@@ -61,10 +61,13 @@ in
     team_id = "EVA";
   };
 
-  # Fetched at shell start, not baked into the store. Guarded so a shell that can't
-  # reach Bao (no network, secret_id missing) still starts clean instead of hanging.
+  # Fetched at shell start, not baked into the store. Cached (bao-kv-get-cached.nix)
+  # so most shells hit disk instead of paying a live AppRole login every time -
+  # a raw bao-kv-get call costs ~500-600ms, almost all of it bcrypt-hashing the
+  # secret_id. Guarded so a shell that can't reach Bao (no network, secret_id
+  # missing, and no stale cache either) still starts clean instead of hanging.
   programs.zsh.initContent = lib.mkOrder 550 ''
-    LINEAR_API_KEY="$(${baoKvGet}/bin/bao-kv-get claude/linear api_key 2>/dev/null)" \
+    LINEAR_API_KEY="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/linear api_key 2>/dev/null)" \
       && export LINEAR_API_KEY
   '';
 }
