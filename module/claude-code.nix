@@ -1,23 +1,27 @@
 # "claude-code local development" capability — import on hosts where eva runs `claude` (stone, twink).
 # Wires the home-manager claude.nix + the sops.secrets its MCP wrappers consume. Hosts that skip it never decrypt secrets.yaml.
-{ config, ... }:
+{ config, pkgs, ... }:
 {
+  users.users.claude = {
+    isNormalUser = true;
+    description = "Claude Code agent";
+    shell = pkgs.bash;
+  };
+  users.users.claude.extraGroups = [ "devs" ];
+
   home-manager.users.${config.identity.username}.imports = [
     ./home-manager/claude.nix
   ];
 
-  sops.secrets."github/mcp-token".owner = config.identity.username;
+  sops.secrets."bao/gitea_approle_secret_id".owner = config.identity.username;
+  sops.secrets."bao/claude_mcp_approle_secret_id".owner = config.identity.username;
 
-
-  # AWS secret access key — eva-only (secrets.yaml, out of ring).
-  sops.secrets."aws/iam_secret".owner = config.identity.username;
-
-  # AWS access key id — claude's own identifier, from secrets.claude.yaml (in-ring).
-  sops.secrets."aws/iam_key" = {
-    sopsFile = ../secrets.claude.yaml;
-    key = "aws/iam_key";
-    format = "yaml";
-    owner = config.identity.username;
-    mode = "0600";
+  # The claude uid's own Bao identity, isolated from eva's two above by file
+  # permissions alone -- decrypted with the same host key as everything
+  # else, but unreadable to eva. Unused until something actually runs as
+  # claude; see bao-bootstrap-claude-own-identity.sh.
+  sops.secrets."bao/claude_self_approle_secret_id" = {
+    owner = "claude";
+    mode = "0400";
   };
 }

@@ -17,7 +17,6 @@
 # age key stays genuinely unreachable.
 {
   config,
-  lib,
   ...
 }:
 {
@@ -38,26 +37,16 @@
   #
   # Start with the git setting; reach for the umask only if something outside
   # git turns out to need it.
-  config = lib.mkMerge [
-    {
-      users.groups.devs = { };
-      users.users.${config.identity.username}.extraGroups = [ "devs" ];
+  config = {
+    users.groups.devs = { };
+    users.users.${config.identity.username}.extraGroups = [ "devs" ];
 
-      systemd.tmpfiles.rules = [
-        # 2775: setgid + rwxrwxr-x. The setgid bit is the load-bearing part --
-        # it makes everything created below inherit group `devs` instead of
-        # the creator's primary group, which is what stops a file written by
-        # one user from being unreachable to the other.
-        "d /srv/code 2775 ${config.identity.username} devs -"
-      ];
-    }
-
-    # Guarded the same way module/sops.nix guards its claude secrets: this
-    # module is imported by hosts that may not define the claude user, and
-    # naming users.users.claude unconditionally would create a half-formed
-    # account on those hosts.
-    (lib.mkIf (config.users.users ? claude) {
-      users.users.claude.extraGroups = [ "devs" ];
-    })
-  ];
+    systemd.tmpfiles.rules = [
+      # 2775: setgid + rwxrwxr-x. The setgid bit is the load-bearing part --
+      # it makes everything created below inherit group `devs` instead of
+      # the creator's primary group, which is what stops a file written by
+      # one user from being unreachable to the other.
+      "d /srv/code 2775 ${config.identity.username} devs -"
+    ];
+  };
 }

@@ -10,11 +10,9 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/nomad-client.nix
-    ../../module/claude-user.nix
     ../../module/claude-code.nix
     ../../module/linear.nix
     ../../module/pxe-boot-server.nix
-    ../../module/pi-voice.nix
     ../../module/hw-bench.nix
     ../../module/tailscale.nix
   ];
@@ -45,15 +43,6 @@
     69 # TFTP
     4011 # proxy-DHCP boot server port
   ];
-
-  # Eva-readable copy of claude's SSH privkey so Claude Code (as eva) can auth as claude@server via ssh-mcp.
-  sops.secrets."claude-ssh-privkey-local" = {
-    sopsFile = ../../secrets.claude.yaml;
-    key = "claude/ssh_privkey";
-    format = "yaml";
-    owner = config.identity.username;
-    mode = "0600";
-  };
 
   # pi + pi-black — stone-only, and needs no system-level wiring (auth is interactive,
   # no sops secrets), so it goes straight into home-manager rather than via a module/ wrapper.

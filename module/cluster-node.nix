@@ -22,7 +22,6 @@ in
   imports = [
     ./identity.nix
     ./users.nix
-    ./claude-user.nix
     ./podman.nix
     ./nomad-server.nix
     ./derive-hostname.nix

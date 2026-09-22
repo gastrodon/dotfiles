@@ -13,31 +13,7 @@
 
   sops.age.generateKey = false;
 
-  system.activationScripts.claude-sops-setup = lib.mkIf (config.users.users ? claude) (
-    lib.stringAfter [ "users" ] ''
-      mkdir -p /home/claude/.config/sops/age
-      chown -R claude:users /home/claude/.config
-      chmod 700 /home/claude/.config /home/claude/.config/sops /home/claude/.config/sops/age
-    ''
-  );
-
   sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../secrets.yaml) ../secrets.yaml;
-
-  sops.secrets."claude/ssh_privkey" = lib.mkIf (config.users.users ? claude) {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    owner = "claude";
-    mode = "0600";
-  };
-
-  sops.secrets."claude/age_key" = lib.mkIf (config.users.users ? claude) {
-    sopsFile = ../secrets.claude.yaml;
-    format = "yaml";
-    owner = "claude";
-    mode = "0600";
-    path = "/home/claude/.config/sops/age/keys.txt";
-  };
-
 
   environment.systemPackages = with pkgs; [
     age

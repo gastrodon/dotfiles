@@ -12,7 +12,6 @@ in
   imports = [
     ./hardware-configuration.nix
     ./disks.nix
-    ../../module/claude-user.nix
     ../../module/avahi.nix
     ../../module/nomad-server.nix
     ../../module/minecraft-server.nix

@@ -1,6 +1,6 @@
-# Tailscale client: joins the tailnet with the shared claude auth key and
-# enables Tailscale SSH by default, so any tailnet member reaches this host
-# directly (`ssh <host>`) instead of hopping through a LAN-only box.
+# Tailscale client: joins the tailnet and enables Tailscale SSH by default,
+# so any tailnet member reaches this host directly (`ssh <host>`) instead of
+# hopping through a LAN-only box.
 {
   config,
   lib,
@@ -29,9 +29,6 @@ in
       extraUpFlags = lib.optional cfg.ssh "--ssh";
     };
 
-    sops.secrets."tailscale/auth_key" = {
-      sopsFile = ../secrets.claude.yaml;
-      format = "yaml";
-    };
+    sops.secrets."tailscale/auth_key" = { };
   };
 }

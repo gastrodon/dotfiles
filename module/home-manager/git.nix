@@ -6,12 +6,6 @@
   ...
 }:
 let
-  # Fetches the gitea/claude_token KV secret from Vault via AppRole at the
-  # moment git actually needs it — nothing cached to disk, nothing in the
-  # Nix store but the (non-sensitive) role_id. secret_id comes from
-  # /run/secrets/vault/gitea_approle_secret_id (module/claude-code.nix),
-  # sops-decrypted at activation from secrets.yaml. See
-  # vault-bootstrap-gitea-token.sh for how the AppRole itself was set up.
   giteaVaultCredentialHelper = pkgs.writeShellApplication {
     name = "git-credential-gitea-vault";
     runtimeInputs = [
@@ -26,17 +20,17 @@ let
         exit 0
       fi
 
-      vault_addr="http://192.168.0.58:8200"
+      vault_addr="http://192.168.0.17:28200"
       role_id="c0cf6549-2121-bfa3-e2e9-6c4ed46b9b8b"
-      secret_id="$(< /run/secrets/vault/gitea_approle_secret_id)"
+      secret_id="$(< /run/secrets/bao/gitea_approle_secret_id)"
 
       client_token="$(curl -sf -X POST "$vault_addr/v1/auth/approle/login" \
         -d "{\"role_id\":\"$role_id\",\"secret_id\":\"$secret_id\"}" \
         | jq -r '.auth.client_token')"
 
       token="$(curl -sf -H "X-Vault-Token: $client_token" \
-        "$vault_addr/v1/secret/data/gitea/claude_token" \
-        | jq -r '.data.data.token')"
+        "$vault_addr/v1/secret/data/claude/gitea" \
+        | jq -r '.data.data.api_token')"
 
       echo "username=claude"
       echo "password=$token"

@@ -4,8 +4,8 @@
   ...
 }:
 let
-  hosts = import ../hosts.nix;
   obsidianMcp = import ./obsidian-mcp.nix;
+  baoKvGet = import ./bao-kv-get.nix { inherit pkgs; };
 
   mkClaude =
     {
@@ -52,52 +52,14 @@ let
 
   githubMcpWrapper = pkgs.writeShellApplication {
     name = "github-mcp-server-wrapped";
-    runtimeInputs = [ githubMcpPkg ];
+    runtimeInputs = [
+      githubMcpPkg
+      baoKvGet
+    ];
     text = ''
-      GITHUB_PERSONAL_ACCESS_TOKEN="$(< /run/secrets/github/mcp-token)"
+      GITHUB_PERSONAL_ACCESS_TOKEN="$(bao-kv-get claude/github mcp_token)"
       export GITHUB_PERSONAL_ACCESS_TOKEN
       exec github-mcp-server "$@"
-    '';
-  };
-
-  # role=admin + group=prod = read-only+safe+destructive, no privileged/sudo. Set explicitly so a rename can't shift the tier.
-  sshMcpConfig = (pkgs.formats.toml { }).generate "ssh-mcp.toml" {
-    defaults.defaultProfile = "server1";
-    profiles = [
-      {
-        name = "server1";
-        host = hosts.server1;
-        user = "claude";
-        auth = "key";
-        keyRef = "/run/secrets/claude-ssh-privkey-local";
-        role = "admin";
-        group = "prod";
-      }
-      {
-        name = "server2";
-        host = hosts.server2;
-        user = "claude";
-        auth = "key";
-        keyRef = "/run/secrets/claude-ssh-privkey-local";
-        role = "admin";
-        group = "prod";
-      }
-    ];
-  };
-
-  sshMcpWrapper = pkgs.writeShellApplication {
-    name = "ssh-mcp-wrapped";
-    runtimeInputs = [
-      pkgs.nodejs_24
-      pkgs.coreutils
-    ];
-    text = ''
-      # ssh-mcp refuses a world-readable config (needs 0600/0700); the store copy is world-readable, so stage a private one.
-      cfgdir="''${XDG_RUNTIME_DIR:-/tmp}/ssh-mcp"
-      mkdir -p "$cfgdir"
-      chmod 700 "$cfgdir"
-      install -m600 ${sshMcpConfig} "$cfgdir/config.toml"
-      exec npx -y ssh-mcp@2.2.5 -- --config="$cfgdir/config.toml" "$@"
     '';
   };
 
@@ -106,13 +68,12 @@ let
     runtimeInputs = [
       pkgs.uv
       pkgs.awscli2
+      baoKvGet
     ];
     text = ''
-      # Access key id: claude's own (secrets.claude.yaml, in-ring).
-      AWS_ACCESS_KEY_ID="$(< /run/secrets/aws/iam_key)"
+      AWS_ACCESS_KEY_ID="$(bao-kv-get claude/aws iam_key)"
       export AWS_ACCESS_KEY_ID
-      # Secret access key: eva-only (secrets.yaml, out of ring) — into this subprocess env only, never the model.
-      AWS_SECRET_ACCESS_KEY="$(< /run/secrets/aws/iam_secret)"
+      AWS_SECRET_ACCESS_KEY="$(bao-kv-get claude/aws iam_secret)"
       export AWS_SECRET_ACCESS_KEY
       export AWS_REGION="us-east-1"
       # Load-bearing, not caution — removing this silently drops the aws MCP
@@ -161,9 +122,6 @@ let
         (builtins.concatStringsSep "," githubMcpToolsets)
       ];
     };
-    ssh = {
-      command = "${sshMcpWrapper}/bin/ssh-mcp-wrapped";
-    };
     aws = {
       command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
     };
@@ -208,11 +166,10 @@ let
       # decrypt by other means -- so it defends against habit and accident,
       # which is what actually went wrong, and against nothing deliberate.
       #
-      # The real boundary is a different uid: the `claude` user already exists
-      # (uid 1001, no wheel, no sudo) and module/sops.nix already deploys its
-      # own age key. Running the agent as that user makes this failure a
-      # permission error instead of a judgement call. See EVA-372, which
-      # currently proposes deleting that user and would foreclose it.
+      # The real boundary is a different uid: the `claude` user exists
+      # (module/claude-code.nix, no wheel, no sudo) but has no home-manager
+      # profile or age identity of its own yet -- running the agent as that
+      # user instead of eva isn't wired up, just no longer foreclosed.
       permissions.deny = [
         "Bash(sops:*)"
       ];

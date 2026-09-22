@@ -6,13 +6,15 @@
 # buildFHSEnv supplies exactly that, without relying on the host's nix-ld.
 #
 # Auth resolves as --api-key > LINEAR_API_KEY > .linear.toml > OS keyring. We take the
-# env var and feed it from sops (see module/linear.nix), so `linear auth login` and its
-# libsecret keyring never enter the picture — no interactive runtime state to manage.
+# env var and fetch it from Bao at shell start (bao-kv-get.nix), so `linear auth login`
+# and its libsecret keyring never enter the picture — no interactive runtime state to manage.
 #
 # No shell completions: generating them means running the binary, which the build sandbox
 # can't do (no FHS root, no nix-ld) — `linear completions zsh` prints them on demand.
 { pkgs, lib, ... }:
 let
+  baoKvGet = import ./bao-kv-get.nix { inherit pkgs; };
+
   version = "2.5.0";
 
   toml = pkgs.formats.toml { };
@@ -59,9 +61,10 @@ in
     team_id = "EVA";
   };
 
-  # Read at shell start rather than baked into the store: the value lives only in the
-  # sops runtime secret. Guarded so a shell on a host without that secret still starts clean.
+  # Fetched at shell start, not baked into the store. Guarded so a shell that can't
+  # reach Bao (no network, secret_id missing) still starts clean instead of hanging.
   programs.zsh.initContent = lib.mkOrder 550 ''
-    [ -r /run/secrets/linear/api_key ] && export LINEAR_API_KEY="$(< /run/secrets/linear/api_key)"
+    LINEAR_API_KEY="$(${baoKvGet}/bin/bao-kv-get claude/linear api_key 2>/dev/null)" \
+      && export LINEAR_API_KEY
   '';
 }
