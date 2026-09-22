@@ -33,6 +33,7 @@ lib.mkIf (desktop.terminal.pname == "ghostty") {
 
       copy-on-select = true;
       mouse-hide-while-typing = true;
+      window-inherit-working-directory = false;
 
       window-decoration = false;
       gtk-titlebar = false;
