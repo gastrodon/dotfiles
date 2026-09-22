@@ -12,6 +12,7 @@
     ../../module/nomad-client.nix
     ../../module/claude-code.nix
     ../../module/linear.nix
+    ../../module/tea.nix
     ../../module/pxe-boot-server.nix
     ../../module/hw-bench.nix
     ../../module/tailscale.nix
