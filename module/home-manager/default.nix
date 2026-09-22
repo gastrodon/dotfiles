@@ -11,7 +11,6 @@
   ...
 }:
 let
-  sshModule = import ./ssh.nix { inherit pkgs lib; };
   obsidianMcp = import ./obsidian-mcp.nix;
 in
 
@@ -133,44 +132,45 @@ in
         };
       };
 
-      home.file.".claude/project.md".text =
-        let
-          hostnames = builtins.sort builtins.lessThan (
-            builtins.filter (n: n != "*") (builtins.attrNames sshModule.programs.ssh.settings)
-          );
-          hostnamesList = builtins.concatStringsSep ", " (map (h: "`${h}`") hostnames);
-        in
-        ''
-          # Using teams
+      home.file.".claude/project.md".text = ''
+        # Using teams
 
-          When eva says to create a teammate, create a worker, or uses other verbage to imply a persistent or named subagent, she is referring to teammates. Use the CreateTeam and related tools to spawn these agents.
+        When eva says to create a teammate, create a worker, or uses other verbage to imply a persistent or named subagent, she is referring to teammates. Use the CreateTeam and related tools to spawn these agents.
 
-          ## Teammate Naming
-          The default naming scheme is to use the names of people, often people in science or other well known individuals. For the task, consider notable individuals. Pick a number of names to assign to your sub-agents. For example if we are working on a coding task, we may use well known computer programmers. If we are doing domain specific work or reverse engineering, we might consider more domain specific individuals or reverse engineers. 
+        ## Teammate Naming
+        The default naming scheme is to use the names of people, often people in science or other well known individuals. For the task, consider notable individuals. Pick a number of names to assign to your sub-agents. For example if we are working on a coding task, we may use well known computer programmers. If we are doing domain specific work or reverse engineering, we might consider more domain specific individuals or reverse engineers.
 
-          # Your Keys, Identity & Remote Access
+        # Your Secrets
 
-          ## Reaching machines (hosts: ${hostnamesList})
-          - **`ssh` MCP** — connects to `server` as the `claude` user, using your own SSH key. Prefer this for remote work; it wields the key for you.
-          - **Shell `ssh claude@<host>`** — runs as eva, authenticates with eva's identity.
+        There is no `secrets.claude.yaml` any more, and no `ssh` MCP or claude-owned
+        SSH/age keypair — that whole architecture (a shared claude identity that could
+        decrypt a dedicated sops file) is gone. What replaced it: each credential you
+        use lives in OpenBao, fetched fresh at the moment a tool needs it, never
+        decrypted-and-sitting-on-disk the way sops secrets are.
 
-          ## Your SSH keypair (the `claude` user's own key)
-          - **Public**: `keys/claude.pub` in the dotfiles repo — this is what authorizes `claude@server` / `claude@stone`.
-          - **Private**: canonically `secrets.claude.yaml` → `claude/ssh_privkey` (yours to decrypt — in-ring). Deployed for the claude system user at `/run/secrets/claude/ssh_privkey` (where that user exists). You rarely need the raw key: the `ssh` MCP already uses it.
-          - **When to use**: to operate on a remote box as the `claude` user — normally just call the `ssh` MCP.
+        ## How it actually works
+        - `github`, `aws`, and `linear` MCP/CLI credentials are stored in Bao under
+          `secret/claude/<service>` (one document per service, several fields each —
+          e.g. `secret/claude/aws` has `iam_key` and `iam_secret`).
+        - `git push` to Gitea works the same way, via a separate credential helper
+          reading `secret/claude/gitea`.
+        - Each of these is fetched by logging into an AppRole (`bao-kv-get.nix` for
+          the MCP/CLI ones) using a `secret_id` sops decrypts to
+          `/run/secrets/bao/<name>_approle_secret_id`, owned by eva. You don't
+          normally touch any of this directly — the wrapper scripts do it.
+        - There's also a `claude` unix user now (uid isolation, not for remote
+          access) with its own Bao identity
+          (`/run/secrets/bao/claude_self_approle_secret_id`, file-permission-isolated
+          from eva) — currently unused, nothing runs as that user yet.
 
-          ## Your age key (`age1hwzgc327phsapeqf6q3jtc86pu3pk40pk36zejev0lplhfz5e5xqk7mmec`)
-          - Stored at `secrets.claude.yaml` → `claude/age_key`; deployed to the claude system user at `/home/claude/.config/sops/age/keys.txt`.
-          - **Purpose / when to use**: it lets the *claude system user* decrypt `secrets.claude.yaml` locally on a remote host. When you run as eva, eva's age key decrypts that file instead — so the claude age key is the remote/system-user side, not something you invoke directly here.
-
-          ## AWS (`aws` MCP)
-          - Gives you AWS API access (IAM + resources) via a dedicated IAM user. Your access key **id** is your own (`secrets.claude.yaml` → `aws/iam_key`); the **secret** access key is eva-only and injected into the MCP at runtime — you never see it.
-          - Trust-but-verify: real changes land in the account, so act deliberately.
-
-          ## Secrets boundary (eva-ring)
-          - You **can** decrypt `secrets.claude.yaml` — your own keys/credentials (SSH key, age key, AWS key id, etc.).
-          - You **cannot** decrypt `secrets.yaml` (eva-only). Never use any key above to reach it.
-        '';
+        ## Secrets boundary
+        - You **cannot** decrypt `secrets.yaml` (eva-only) — nothing above requires
+          you to; the AppRole `secret_id` files are the only sops secrets you read,
+          and they only unlock read access to your own narrow slice of Bao, not
+          `secrets.yaml` itself.
+        - There is currently no remote-access mechanism (no `ssh` MCP, no claude SSH
+          key) — if you need to reach a remote host, ask, don't assume one exists.
+      '';
 
       home.stateVersion = "25.11";
 
