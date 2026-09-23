@@ -16,7 +16,6 @@ in
     ../../module/nomad-server.nix
     ../../module/minecraft-server.nix
     ../../module/actual.nix
-    ../../module/pibot.nix
     ../../module/tailscale-funnel.nix
     ../../module/home-assistant.nix
     ../../module/ollama.nix
@@ -50,9 +49,9 @@ in
   # publishing a new model never touches this host's configuration.
   services.testbenchWeb = {
     enable = true;
-    # 8443, not 443: module/tailscale-funnel.nix already owns 443 on this
-    # host for the Linear webhook receiver, and the viewer has no business
-    # sharing that mount. Nothing is public until this host is rebuilt.
+    # 8443, not 443: kept off the default Funnel port so it doesn't collide
+    # with anything else that later claims 443 on this host. Nothing is
+    # public until this host is rebuilt.
     #
     # This page has no authentication. Set to null to keep it tailnet+LAN
     # only, which is what it was before.
@@ -61,20 +60,6 @@ in
 
   # Backs the rpi4b kiosk (hosts/rpi/graphical.nix points Firefox at homeassistant.local:8123).
   services.homeAssistantJob.enable = true;
-
-  services.tailscaleFunnel = {
-    enable = true;
-    target = "3456";
-  };
-
-  # ${publicUrl}/webhook and /oauth/callback are what Linear has to be pointed
-  # at; every server box shares this config so the install flow must be run
-  # against this URL specifically.
-  #
-  # Renamed from the old static server1.tailfa78b0.ts.net after the EVA-192
-  # hostname fix — see wiki: Cluster hostname identity. Changing this string
-  # again requires updating Linear's OAuth app config by hand, or webhooks 404.
-  services.linearAgent.publicUrl = "https://ip-192-168-0-58.tailfa78b0.ts.net";
 
   # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
   # the host-networked job to server1 so the worker has a stable endpoint.
@@ -88,29 +73,6 @@ in
       "qwen3:1.7b"
       "llama3.2:1b"
       "qwen2.5-coder:7b"
-    ];
-  };
-
-  # EVA-196: qwen2.5-coder:7b (below) emits tool calls as prose, not
-  # structured calls — confirmed broken. qwen3:8b/4b work but haven't been
-  # rolled out here. Keep provider=anthropic as default until they are.
-  services.piAgent = {
-    provider = "anthropic";
-    model = "claude-sonnet-5";
-    thinkingLevel = "high";
-    ollama = {
-      enable = true;
-      baseUrl = "http://${hosts.server1}:11434/v1";
-      model = "qwen2.5-coder:7b";
-    };
-  };
-
-  services.linearAgent = {
-    defaultModel = "anthropic/claude-sonnet-5";
-    allowedModels = [
-      "anthropic/claude-sonnet-5"
-      "ollama/granite3.3:2b"
-      "ollama/qwen2.5-coder:7b"
     ];
   };
 

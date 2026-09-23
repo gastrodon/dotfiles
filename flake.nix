@@ -37,21 +37,8 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
-    # Push-to-talk voice daemon for pi (module/home-manager/pi.nix). Upstream ships no Nix
-    # packaging; this fork adds a flake.nix (bun2nix) plus a lazy-loaded whisper import to stop
-    # the Electron main process crashing on startup regardless of configured provider.
-    pi-voice = {
-      url = "github:auto-patcher/pi-voice";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    pibot = {
-      url = "github:gastrodon/pibot";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -75,7 +62,6 @@
       disko,
       obsidian-local-rest-api,
       claude-code-nix,
-      pi-voice,
       ...
     }@inputs:
     let
@@ -161,7 +147,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -183,7 +169,7 @@
 
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -193,8 +179,6 @@
           disko.nixosModules.disko
           inputs.nix-minecraft.nixosModules.minecraft-servers
           { nixpkgs.overlays = [ inputs.nix-minecraft.overlays.default ]; }
-          inputs.pibot.nixosModules.linearAgent
-          inputs.pibot.nixosModules.piAgent
         ];
       };
 
@@ -223,7 +207,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix pi-voice; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix

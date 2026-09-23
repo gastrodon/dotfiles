@@ -4,7 +4,6 @@
   pkgs,
   obsidian-local-rest-api,
   claude-code-nix,
-  pi-voice,
   ...
 }:
 let
@@ -46,7 +45,6 @@ in
         palette
         obsidian-local-rest-api
         claude-code-nix
-        pi-voice
         ;
     })
     ../module/steam

@@ -2,7 +2,6 @@
   palette,
   obsidian-local-rest-api,
   claude-code-nix,
-  pi-voice,
 }:
 {
   config,
@@ -28,7 +27,6 @@ in
         palette
         obsidian-local-rest-api
         claude-code-nix
-        pi-voice
         ;
     };
 
