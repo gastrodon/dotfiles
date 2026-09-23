@@ -260,7 +260,7 @@
                 map (n: {
                   name = secretName n;
                   value = {
-                    sopsFile = ./secrets.claude.yaml;
+                    sopsFile = ./secrets.yaml;
                     format = "yaml";
                   };
                 }) wifiNetworks
