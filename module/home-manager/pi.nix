@@ -59,24 +59,22 @@ let
   };
 
   piModels = (pkgs.formats.json { }).generate "pi-models.json" {
-    providers.ollama = {
-      baseUrl = "http://127.0.0.1:11434/v1";
+    providers.llama-server = {
+      baseUrl = "http://192.168.0.176:8000/v1";
       api = "openai-completions";
-      apiKey = "ollama";
+      apiKey = "foobar2000";
       compat = {
         supportsDeveloperRole = false;
         supportsReasoningEffort = false;
       };
-      # qwen2.5-coder:7b emits tool calls as prose text pi can't execute — see wiki.
       models = [
         {
-          id = "qwen3:8b";
-          name = "Qwen3 8B (Stone)";
-          reasoning = true;
-          # Must match OLLAMA_CONTEXT_LENGTH on stone — see wiki: pi model &
-          # tool-calling behavior notes (EVA-152).
-          contextWindow = 40960;
-          maxTokens = 8192;
+          id = "./Qwen3.5-35B-A3B-UD-IQ2_M.gguf";
+          name = "Qwen3.5 35B A3B (llama-server)";
+          reasoning = false;
+          # n_ctx reported by /v1/models is 12288; leave headroom for output.
+          contextWindow = 12288;
+          maxTokens = 4096;
         }
       ];
     };
