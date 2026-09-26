@@ -8,7 +8,7 @@ pkgs.writeShellApplication {
   text = ''
     path="$1"
     field="$2"
-    bao_addr="http://192.168.0.17:28200"
+    bao_addr="http://192.168.0.17:8200"
     role_id="d69434cc-bbc9-6aae-4220-c00744c6d005"
     secret_id="$(< /run/secrets/bao/claude_mcp_approle_secret_id)"
 

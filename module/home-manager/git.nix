@@ -20,7 +20,7 @@ let
         exit 0
       fi
 
-      vault_addr="http://192.168.0.17:28200"
+      vault_addr="http://192.168.0.17:8200"
       role_id="c0cf6549-2121-bfa3-e2e9-6c4ed46b9b8b"
       secret_id="$(< /run/secrets/bao/gitea_approle_secret_id)"
 
