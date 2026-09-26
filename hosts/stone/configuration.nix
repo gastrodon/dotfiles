@@ -180,5 +180,6 @@
     # extra JDKs in-closure for Prism's Java auto-detect (modpacks needing != bundled 21)
     pkgs.jdk8
     pkgs.jdk25
+    pkgs.openbao
   ];
 }
