@@ -64,8 +64,10 @@
     # backend-port shape as home-assistant/testbench above.
     3000
 
-    # infra/vault.nomad.hcl (EVA-303). 8200 is the API; 8201 is Raft
-    # replication, unused at count = 1 but reserved.
+    # infra/openbao.nomad.hcl. 8200 is the API; 8201 is Raft replication,
+    # unused at count = 1 but reserved. Was infra/vault.nomad.hcl's (EVA-303)
+    # -- Vault is decommissioned (dead job, zero consumers), Bao moved onto
+    # its old port rather than a new entry being opened.
     8200
     8201
   ];

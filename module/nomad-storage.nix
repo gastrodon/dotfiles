@@ -293,14 +293,6 @@ in
           mode = "0750";
           comment = "gitea/gitea image-default uid; confirmed live via podman top + id git";
         };
-
-        # Pinned to .58 — single-node Raft constraint (EVA-303).
-        vault = {
-          uid = 100;
-          gid = 1000;
-          mode = "0700";
-          comment = "vault image-default uid/gid; confirmed via `podman run ... id`";
-        };
       };
     };
   };

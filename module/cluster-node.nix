@@ -69,12 +69,19 @@ in
       # module/nomad-storage.nix.
       services.nomadStorage.enable = true;
 
-      # Workload-identity auth against infra/vault.nomad.hcl (EVA-303). Safe to
-      # land ahead of Vault existing: measured 2026-09-09
-      # (plans/01-vault-on-nomad.md) that a Nomad agent with this block pointed
-      # at an unreachable address still starts and elects a leader normally —
-      # jobs that declare a `vault {}` block just fail their template render
-      # until Vault comes up, they don't take the agent down with them.
+      # Workload-identity auth, now against Bao (infra/openbao.nomad.hcl) --
+      # Vault (EVA-303) is decommissioned: dead job, zero consumers,
+      # confirmed by inventory, purged from Nomad and this repo. Repointed
+      # rather than deleted: no job anywhere has an actual `vault {}` stanza
+      # requesting a secret yet (checked directly), but that's the direction
+      # -- see the Linear ticket tracking the jwt-nomad auth-mount setup on
+      # Bao and migrating jobs off environment-variable secrets onto this.
+      # Safe to leave wired with zero consumers either way: measured
+      # 2026-09-09 (plans/01-vault-on-nomad.md) that a Nomad agent with this
+      # block pointed at an unreachable address still starts and elects a
+      # leader normally -- jobs that declare a `vault {}` block just fail
+      # their template render until the target comes up, they don't take the
+      # agent down with them.
       #
       # `vault.policies` and per-job tokens do not exist any more — removed in
       # Nomad 1.10 along with the whole legacy token flow. This is not a
@@ -82,9 +89,9 @@ in
       services.nomad.settings.vault = {
         enabled = true;
         # IP, not a DNS name: this cluster derives hostnames from DHCP and the
-        # address is the stable identity (EVA-192). Matches the constraint in
-        # infra/vault.nomad.hcl -- update both together if the pin ever moves.
-        address = "http://192.168.0.58:8200";
+        # address is the stable identity (EVA-192). Matches infra/openbao.nomad.hcl
+        # -- update both together if the volume (and so the address) ever moves.
+        address = "http://192.168.0.17:8200";
         jwt_auth_backend_path = "jwt-nomad";
 
         # Set once here so individual jobs don't each need their own
