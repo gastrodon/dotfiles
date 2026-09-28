@@ -134,6 +134,17 @@ let
     inkscape = {
       command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
     };
+    # piscreen (the wall dashboard on rpi4b): query/apply/preview over plain
+    # HTTP on the LAN. The Basic password is the same plaintext stopgap as
+    # piscreen.api.plainPassword in the lab/rpi flake (already in the store
+    # there), so it is inlined like obsidian's. Moves to a real secret with
+    # EVA-560/EVA-563; the phone path is EVA-563.
+    piscreen = {
+      type = "http";
+      url = "http://192.168.0.242:4402/mcp";
+      # base64 of "x:piscreen-temp-2026"
+      headers.Authorization = "Basic eDpwaXNjcmVlbi10ZW1wLTIwMjY=";
+    };
   };
 
   claude = mkClaude {
