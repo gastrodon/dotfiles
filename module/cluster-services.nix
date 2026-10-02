@@ -70,6 +70,16 @@
     # its old port rather than a new entry being opened.
     8200
     8201
+
+    # infra/garage.nomad.hcl — S3-compatible object storage (EVA-586), the
+    # backing store EVA-582's self-hosted Plane evaluation needs. 3900 is
+    # the S3 API, 3903 the admin API (bucket/key management, health).
+    # 3901 (inter-node RPC) is deliberately NOT opened here: this is a
+    # single-node, replication_factor = 1 instance by design (see the
+    # jobspec header), so nothing outside this one node ever needs to dial
+    # its RPC port.
+    3900
+    3903
   ];
 
   # Nomad's dynamic port range (client.min_dynamic_port/max_dynamic_port,
