@@ -4,7 +4,7 @@
 
 When asked to install a package, change a setting, add a program, configure a service, or otherwise modify the system — **always make the change declaratively in the Nix config files**. Never run `apt`, `pip`, `npm -g`, shell one-liners, or any ad-hoc system mutation. The right answer is always a `.nix` file edit.
 
-**Never `sudo` anything. Never run `nixos-rebuild switch` or any privileged command. Never attempt to reload i3.** `ssh root@<server>` for ops/reads (state, restarting a unit, `bin/deploy`) is fine per the global `CLAUDE.md` — it's switching a NixOS config, not reaching a box as root, that's never a Claude action.
+**Never `sudo` anything (in-session escalation should never be needed). Never `root@stone` specifically. Never attempt to reload i3.** `ssh root@<server>` (`.58`/`.17`/`.5`) is fine for reads, writes, and `nixos-rebuild switch --target root@<server>` — that's the normal server deploy mechanism, per the global `CLAUDE.md`. The `./build switch` wrapper in this repo is for `stone`/`twink` only and isn't used on servers either way.
 
 **Never leave removal comments in source.** When code is removed or migrated, delete it cleanly — no `# deprecated`, `# removed`, `# was here`, `# no longer`, or similar tombstone comments. If the context matters, it belongs in a git commit message, not the source file.
 
