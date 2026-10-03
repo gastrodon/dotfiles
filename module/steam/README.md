@@ -69,6 +69,11 @@ that Lutris, the launcher or the game owns, so it stays manual:
    - L.S Traffic's `.oiv` is 104 XPath value edits under `CGameConfig/ConfigPopulation`. Apply them to
      the game's own `common\data\gameconfig.xml` (all match on Enhanced) rather than shipping a
      Legacy-era file. Result: `~/Games/gta-v-mods/ls-traffic-enhanced-gameconfig.xml`.
+   - Real California Architecture (Nexus 341, a RAR5 v7 archive, so use `unrar`, not 7z): put
+     `rca/dlc.rpf` at `mods/update/x64/dlcpacks/rca/dlc.rpf` (OpenRPF redirects it), and add
+     `<Item>dlcpacks:/rca/</Item>` to `common\data\dlclist.xml` in the modded `update.rpf`.
+     The author says it needs MP maps in story mode: `~/Games/gta-v-mods/MpMapsLoader.3.cs` in
+     `scripts/` calls `ON_ENTER_MP` once. SHVDN compiles raw `.cs` scripts as C# 5.
    - Run OpenIV under Proton's wine (`steam-run`) in a Wine virtual desktop. System
      wine-staging's new WoW64 mode makes the 32-bit installer exit silently.
 
