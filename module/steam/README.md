@@ -42,6 +42,16 @@ that Lutris, the launcher or the game owns, so it stays manual:
    `xinput1_4: n,b` and `dinput8: n,b`.
 5. **Check it worked**: launch from Lutris. `asiloader.log` and `ScriptHookV.log` in the game
    dir should show `INIT: Success`, and F4 in Story Mode opens the Native Trainer.
+6. **.NET scripts (SHVDN)**: the official SHVDN nightly doesn't target Enhanced; use
+   [Script Hook V .NET Enhanced](https://www.gta5-mods.com/tools/script-hook-v-net-enhanced)
+   (copy `ScriptHookVDotNet*` and `MinHook.x64.dll` into the game dir, scripts go in `scripts/`).
+   It crashes on Proton's Wine-Mono (`ObjectDisposedException` in `ScriptDomain`), so it needs real
+   .NET 4.8. With Lutris closed, run `WINEPREFIX=<prefix> winetricks -q dotnet48` using system
+   wine (not Proton), then `winetricks -q win10`, because dotnet48 leaves the prefix on Windows 7
+   and the launcher refuses to start on 7. Add overrides `MinHook.x64`, `ScriptHookV`,
+   `ScriptHookVDotNet2`, `ScriptHookVDotNet3` = `n,b`, and `mscoree: n`. On the first launch
+   afterwards, `wineboot` can hang behind `mscorsvw.exe`; killing those processes clears it.
+   `ScriptHookVDotNet.log` should list each script as `Started`.
 
 Saves: `<prefix>/drive_c/users/steamuser/Documents/Rockstar Games/GTAV Enhanced/Profiles/<id>/SGTA500NN`.
 
