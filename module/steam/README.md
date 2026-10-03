@@ -51,7 +51,27 @@ that Lutris, the launcher or the game owns, so it stays manual:
    and the launcher refuses to start on 7. Add overrides `MinHook.x64`, `ScriptHookV`,
    `ScriptHookVDotNet2`, `ScriptHookVDotNet3` = `n,b`, and `mscoree: n`. On the first launch
    afterwards, `wineboot` can hang behind `mscorsvw.exe`; killing those processes clears it.
-   `ScriptHookVDotNet.log` should list each script as `Started`.
+   `ScriptHookVDotNet.log` should list each script as `Started`. SHVDN's console defaults to F4,
+   the same key as the Native Trainer; `ConsoleKeyBinding=F8` in `ScriptHookVDotNet.ini` avoids that.
+7. **Archive mods (`.oiv`, `update.rpf` edits)**: [OpenRPF](https://www.gta5-mods.com/tools/openrpf-openiv-asi-for-gta-v-enhanced)
+   (`OpenRPF.asi` in the game dir) loads whole replacement archives from `mods/`. OpenIV 4.1 can
+   read Enhanced's NG-encrypted archives but fails writing them, so patch with a small
+   CodeWalker.Core tool instead (source: `~/Games/gta-v-mods/rpfpatch`, built against
+   dexyfex/CodeWalker `485d56b`). It runs natively with `dotnet-sdk_8`:
+   copy `update/update.rpf` to `mods/update/update.rpf`, then
+   `rpfpatch <keysdir> mods/update/update.rpf 'update\update.rpf' patch '<dir in rpf>' <file>...`.
+   That switches the archive's TOC to OPEN and writes the files. `<keysdir>` needs a symlink
+   literally named `<keysdir>\gta5_enhanced.exe` pointing at `GTA5_Enhanced.exe`. Re-run after
+   every game patch, since the copy in `mods/` goes stale.
+   - Realistic Driving V's `handling.meta` lacks four Enhanced vehicles (MARBELLA, RHAPSODY,
+     SERRANO2, URANUS); merge them in from the game's own file. The merged files are in
+     `~/Games/gta-v-mods/rdv-enhanced-merged/content`.
+   - Run OpenIV under Proton's wine (`steam-run`) in a Wine virtual desktop. System
+     wine-staging's new WoW64 mode makes the 32-bit installer exit silently.
+
+Wine clamps the pointer on the portrait monitor (DP-4), so launch the Rockstar launcher with
+DP-3 focused. A launcher that opened on DP-4 works again once it's moved to DP-3 and given a
+few seconds.
 
 Saves: `<prefix>/drive_c/users/steamuser/Documents/Rockstar Games/GTAV Enhanced/Profiles/<id>/SGTA500NN`.
 
