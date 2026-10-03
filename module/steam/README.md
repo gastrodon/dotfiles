@@ -66,6 +66,9 @@ that Lutris, the launcher or the game owns, so it stays manual:
    - Realistic Driving V's `handling.meta` lacks four Enhanced vehicles (MARBELLA, RHAPSODY,
      SERRANO2, URANUS); merge them in from the game's own file. The merged files are in
      `~/Games/gta-v-mods/rdv-enhanced-merged/content`.
+   - L.S Traffic's `.oiv` is 104 XPath value edits under `CGameConfig/ConfigPopulation`. Apply them to
+     the game's own `common\data\gameconfig.xml` (all match on Enhanced) rather than shipping a
+     Legacy-era file. Result: `~/Games/gta-v-mods/ls-traffic-enhanced-gameconfig.xml`.
    - Run OpenIV under Proton's wine (`steam-run`) in a Wine virtual desktop. System
      wine-staging's new WoW64 mode makes the 32-bit installer exit silently.
 
