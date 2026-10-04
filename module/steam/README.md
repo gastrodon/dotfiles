@@ -74,6 +74,10 @@ that Lutris, the launcher or the game owns, so it stays manual:
      `<Item>dlcpacks:/rca/</Item>` to `common\data\dlclist.xml` in the modded `update.rpf`.
      The author says it needs MP maps in story mode: `~/Games/gta-v-mods/MpMapsLoader.3.cs` in
      `scripts/` calls `ON_ENTER_MP` once. SHVDN compiles raw `.cs` scripts as C# 5.
+   - Forced first person: [Dynamic Vehicle First Person](https://www.gta5-mods.com/scripts/dynamic-vehicle-first-person)
+     (`.asi` plus its folder in the game dir) keeps look-behind in first person, and
+     `~/Games/gta-v-mods/AlwaysFirstPerson.3.cs` in `scripts/` snaps the camera back to first
+     person (F7 toggles it).
    - Run OpenIV under Proton's wine (`steam-run`) in a Wine virtual desktop. System
      wine-staging's new WoW64 mode makes the 32-bit installer exit silently.
 
