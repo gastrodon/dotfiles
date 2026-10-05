@@ -47,6 +47,16 @@
     # the npm package directly and updates fast; pin it to nixpkgs and we're back
     # to the same staleness problem.
     claude-code-nix.url = "github:sadjow/claude-code-nix";
+
+    # Official Claude Desktop Linux beta (EVA-592: Cowork locally on stone).
+    # Unlike claude-code-nix above, this already pins its own upstream .deb
+    # hash in package.nix — nixpkgs here is just its build-time tooling
+    # (dpkg/autoPatchelfHook/etc.), so following ours is safe and avoids a
+    # second nixpkgs closure.
+    claude-desktop-nix = {
+      url = "github:nmcbride/claude-desktop-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -62,6 +72,7 @@
       disko,
       obsidian-local-rest-api,
       claude-code-nix,
+      claude-desktop-nix,
       ...
     }@inputs:
     let
@@ -147,7 +158,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix claude-desktop-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix

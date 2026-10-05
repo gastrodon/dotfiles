@@ -11,6 +11,7 @@
     ../../module/avahi.nix
     ../../module/nomad-client.nix
     ../../module/claude-code.nix
+    ../../module/claude-desktop.nix
     ../../module/linear.nix
     ../../module/tea.nix
     ../../module/pxe-boot-server.nix
