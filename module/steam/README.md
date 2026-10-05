@@ -74,6 +74,9 @@ that Lutris, the launcher or the game owns, so it stays manual:
      `<Item>dlcpacks:/rca/</Item>` to `common\data\dlclist.xml` in the modded `update.rpf`.
      The author says it needs MP maps in story mode: `~/Games/gta-v-mods/MpMapsLoader.3.cs` in
      `scripts/` calls `ON_ENTER_MP` once. SHVDN compiles raw `.cs` scripts as C# 5.
+   - Forced first person: `~/Games/gta-v-mods/AlwaysFirstPerson.3.cs` in `scripts/` snaps the
+     camera back to first person on foot and in vehicles and blocks vehicle look-behind
+     (F7 toggles it).
    - Fuel Script's `CONSUMPTION_MULTIPLIER` is parsed in the prefix's en-US culture, so the
      shipped `1,0` reads as 10. Use a period; we run `0.2`.
    - Run OpenIV under Proton's wine (`steam-run`) in a Wine virtual desktop. System
