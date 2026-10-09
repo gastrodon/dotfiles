@@ -48,11 +48,8 @@
     # to the same staleness problem.
     claude-code-nix.url = "github:sadjow/claude-code-nix";
 
-    # Official Claude Desktop Linux beta (EVA-592: Cowork locally on stone).
-    # Unlike claude-code-nix above, this already pins its own upstream .deb
-    # hash in package.nix — nixpkgs here is just its build-time tooling
-    # (dpkg/autoPatchelfHook/etc.), so following ours is safe and avoids a
-    # second nixpkgs closure.
+    # Official Claude Desktop Linux beta (EVA-592). Follows our nixpkgs, unlike
+    # claude-code-nix above — this one already pins its own upstream .deb hash.
     claude-desktop-nix = {
       url = "github:nmcbride/claude-desktop-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -218,7 +215,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit obsidian-local-rest-api claude-code-nix claude-desktop-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix

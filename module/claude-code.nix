@@ -1,7 +1,21 @@
 # "claude-code local development" capability — import on hosts where eva runs `claude` (stone, twink).
 # Wires the home-manager claude.nix + the sops.secrets its MCP wrappers consume. Hosts that skip it never decrypt secrets.yaml.
-{ config, pkgs, ... }:
+# Also installs Claude Desktop + Cowork's VM sandbox (EVA-592).
 {
+  config,
+  pkgs,
+  claude-desktop-nix,
+  ...
+}:
+{
+  imports = [ claude-desktop-nix.nixosModules.default ];
+
+  # nmcbride/claude-desktop-nix wires Cowork's FHS probes via tmpfiles symlinks.
+  programs.claude-desktop = {
+    enable = true;
+    cowork.kvmUsers = [ config.identity.username ];
+  };
+
   users.users.claude = {
     isNormalUser = true;
     description = "Claude Code agent";
