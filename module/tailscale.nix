@@ -27,6 +27,8 @@ in
       openFirewall = true;
       authKeyFile = config.sops.secrets."tailscale/auth_key".path;
       extraUpFlags = lib.optional cfg.ssh "--ssh";
+      # LAN DNS is blocky via DHCP (EVA-551); MagicDNS would forward to a stale upstream instead.
+      extraSetFlags = [ "--accept-dns=false" ];
     };
 
     sops.secrets."tailscale/auth_key" = { };
