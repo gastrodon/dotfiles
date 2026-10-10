@@ -29,6 +29,7 @@
     # infra/traefik.nomad.hcl — ingress (EVA-332). 80, moved from 8090 on
     # 2026-09-10 so *.gastrodon.io (EVA-281) resolves to the default HTTP port.
     80
+    443 # LAN https for *.lab, split horizon with the edge (EVA-618).
     8090 # kept temporarily for anything with the old address cached.
 
     # Traefik dashboard/API — LAN-only, never funnelled (runs with
