@@ -54,6 +54,12 @@
       url = "github:nmcbride/claude-desktop-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Source only: cluster-node takes lab/nix-modules' edge-tunnel module until the EVA-441 cutover.
+    lab-nix-modules = {
+      url = "git+http://192.168.0.17:3000/lab/nix-modules.git";
+      flake = false;
+    };
   };
 
   outputs =
@@ -172,6 +178,8 @@
         system = "x86_64-linux";
         modules = [
           ./hosts/cluster-node/configuration.nix
+          "${inputs.lab-nix-modules}/module/edge-tunnel.nix"
+          { services.edgeTunnel.enable = true; }
         ];
       };
 
