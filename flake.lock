@@ -358,11 +358,11 @@
     "lab-nix-modules": {
       "flake": false,
       "locked": {
-        "lastModified": 1791603293,
-        "narHash": "sha256-MDCL+TV+HLuP7XTfGzoaikKvS46hswiPcljvD4S+IrI=",
+        "lastModified": 1791618984,
+        "narHash": "sha256-K+438MueCVXQLak4DgZBdYUetBPR8U03YyvB+NX9Nuk=",
         "ref": "refs/heads/main",
-        "rev": "cb74105fbf50df2eb67c6937d130096bde5c3404",
-        "revCount": 19,
+        "rev": "00ef80f6fc19ff9dca06bb5e52c6863a4f095546",
+        "revCount": 20,
         "type": "git",
         "url": "http://192.168.0.17:3000/lab/nix-modules.git"
       },
