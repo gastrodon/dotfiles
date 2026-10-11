@@ -21,6 +21,8 @@
       DNSOverHTTPS = {
         Enabled = true;
         ProviderURL = "https://mozilla.cloudflare-dns.com/dns-query";
+        # Split horizon: blocky answers *.gastrodon.io with home Traefik; Cloudflare would send it to the edge.
+        ExcludedDomains = [ "gastrodon.io" ];
       };
 
       EnableTrackingProtection = {
