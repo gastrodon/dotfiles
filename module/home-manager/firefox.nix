@@ -70,6 +70,7 @@
 
       extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
         adnauseam
+        bitwarden
         darkreader
         sponsorblock
       ];
