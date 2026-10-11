@@ -186,6 +186,8 @@ let
       ];
       autoMemoryEnabled = true;
       autoDreamEnabled = true;
+      # Background jobs edit the real checkout and commit to main, not a worktree.
+      worktree.bgIsolation = "none";
     };
   };
 
