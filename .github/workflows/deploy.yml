@@ -1,0 +1,89 @@
+name: Deploy
+
+# Rolls the `server` config out to every live server box, the automated
+# equivalent of running nixos-rebuild switch --target-host against each one.
+#
+# Inert until repo secrets TS_OAUTH_CLIENT_ID, TS_OAUTH_CLIENT_SECRET,
+# CI_DEPLOY_SSH_KEY exist, the tailnet ACL grants tag:ci-deploy -> tag:server
+# on tcp:22, and keys/ci-deploy.pub (module/ci-deploy.nix) is rolled out to
+# root's authorized_keys. The `if:` below just skips the job until then.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      secrets.TS_OAUTH_CLIENT_ID != '' &&
+      secrets.CI_DEPLOY_SSH_KEY != ''
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: join tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci-deploy
+
+      - name: load deploy key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.CI_DEPLOY_SSH_KEY }}
+
+      # Discovered via the tailnet tag rather than Nomad's API, since it's
+      # the same ACL grant already needed for SSH.
+      - name: discover server nodes
+        id: discover
+        run: |
+          set -euo pipefail
+          addrs=$(tailscale status --json \
+            | jq -r '.Peer[] | select(.Tags != null and (.Tags | index("tag:server"))) | .TailscaleIPs[0]')
+          if [ -z "$addrs" ]; then
+            echo "no tag:server peers visible on the tailnet — nothing to deploy" >&2
+            exit 1
+          fi
+          echo "deploy targets:"
+          echo "$addrs"
+          {
+            echo 'addrs<<EOF'
+            echo "$addrs"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # Serial, fail-open across hosts: one bad box doesn't block the rest,
+      # but the job exits non-zero overall if any box failed.
+      - name: deploy
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+          # Host keys are unpinned since each run is a fresh runner; the
+          # tailnet ACL, not the host key, gates which boxes this reaches.
+          NIX_SSHOPTS: "-o StrictHostKeyChecking=accept-new"
+        run: |
+          set -euo pipefail
+          status=0
+          while read -r addr; do
+            [ -z "$addr" ] && continue
+            echo "::group::deploy $addr"
+            nix shell nixpkgs#nixos-rebuild -c \
+              nixos-rebuild switch \
+                --flake ".#server" \
+                --target-host "root@$addr" \
+                --impure \
+              || { echo "deploy to $addr failed" >&2; status=1; }
+            echo "::endgroup::"
+          done <<< "${{ steps.discover.outputs.addrs }}"
+          exit "$status"
