@@ -134,6 +134,12 @@ let
     inkscape = {
       command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
     };
+    # The vault (Trilium). Claude Code expands the env var at connect time; trilium.nix exports it from Bao.
+    trilium = {
+      type = "http";
+      url = "https://doc.lab.gastrodon.io/mcp";
+      headers.Authorization = "Bearer \${TRILIUM_MCP_TOKEN}";
+    };
     # piscreen (the wall dashboard on rpi4b): query/apply/preview over plain
     # HTTP on the LAN. The Basic password is the same plaintext stopgap as
     # piscreen.api.plainPassword in the lab/rpi flake (already in the store
