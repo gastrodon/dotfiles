@@ -190,6 +190,14 @@ let
       permissions.deny = [
         "Bash(sops:*)"
       ];
+      # Narrow carve-outs in the credential-read guard for the two
+      # documented, non-plaintext-printing Bao AppRole flows: bao-kv-get.nix
+      # reading the claude_mcp secret_id file directly, and lab/nomad-jobs'
+      # bin/lib.sh load_token (derives a Nomad token, never echoes the secret).
+      permissions.allow = [
+        "Bash(cat /run/secrets/bao/claude_mcp_approle_secret_id)"
+        "Bash(cd /srv/code/lab/nomad-jobs && source bin/lib.sh && load_token:*)"
+      ];
       autoMemoryEnabled = true;
       autoDreamEnabled = true;
       # Background jobs edit the real checkout and commit to main, not a worktree.
