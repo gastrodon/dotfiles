@@ -27,7 +27,6 @@ Commands:
   switch             Switch to new configuration + restart i3
 
 Options:
-  --sdimage          Build SD card image (rpi* only)
   --serve-pxe        Build + serve netboot (server only; foreground)
   --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
 
@@ -35,7 +34,6 @@ Examples:
   $0 build stone
   $0 build stone --target root@192.168.1.10
   $0 build stone --target root@host1 --target root@host2
-  $0 build rpi4b --sdimage
   $0 build server --serve-pxe
   $0 switch twink
   $0 switch twink --target root@192.168.1.10
@@ -59,8 +57,8 @@ while [[ $# -gt 0 ]]; do
       TARGET_HOSTS+=("$2")
       shift 2
       ;;
-    --sdimage|--serve-pxe)
-      [[ -n "$FLAG" ]] && { echo "Error: only one flag allowed (--sdimage or --serve-pxe)" >&2; exit 1; }
+    --serve-pxe)
+      [[ -n "$FLAG" ]] && { echo "Error: only one flag allowed" >&2; exit 1; }
       FLAG="$1"
       shift
       ;;
@@ -117,16 +115,6 @@ switch_config() {
   fi
 }
 
-build_sdimage() {
-  if [[ "$HOSTNAME" != "rpi2b" && "$HOSTNAME" != "rpi3b-plus" && "$HOSTNAME" != "rpi4b" ]]; then
-    echo "Error: --sdimage only supported for rpi2b|rpi3b-plus|rpi4b" >&2
-    exit 1
-  fi
-  echo "Building SD image for $HOSTNAME..."
-  nix build "$SCRIPT_DIR#nixosConfigurations.${HOSTNAME}.config.system.build.sdImage" --impure
-  echo "SD image at: $(readlink result)/sd-image/"
-}
-
 serve_pxe() {
   if [[ "$HOSTNAME" != "server" ]]; then
     echo "Error: --serve-pxe only supported for server" >&2
@@ -177,10 +165,6 @@ case "$COMMAND" in
           build_config
         fi
         ;;
-      --sdimage)
-        [[ ${#TARGET_HOSTS[@]} -gt 0 ]] && { echo "Error: --sdimage does not support --target" >&2; exit 1; }
-        build_sdimage
-        ;;
       --serve-pxe)
         [[ ${#TARGET_HOSTS[@]} -gt 0 ]] && { echo "Error: --serve-pxe does not support --target" >&2; exit 1; }
         serve_pxe
@@ -189,7 +173,7 @@ case "$COMMAND" in
     ;;
   switch)
     if [[ -n "$FLAG" ]]; then
-      echo "Error: switch does not support --sdimage or --serve-pxe" >&2
+      echo "Error: switch does not support --serve-pxe" >&2
       exit 1
     fi
     switch_config

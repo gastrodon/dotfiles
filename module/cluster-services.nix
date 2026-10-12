@@ -52,9 +52,8 @@
     # module/ollama.nix — model server.
     11434
 
-    # Home Assistant + testbench viewer. BACKEND ports reached by traefik from
-    # whichever node it lands on, not dialed by a human directly.
-    8123
+    # testbench viewer. BACKEND port reached by traefik from whichever node
+    # it lands on, not dialed by a human directly.
     8087
 
     # infra/blocky.nomad.hcl — internal DNS for *.gastrodon.io (EVA-281). TCP
@@ -62,7 +61,7 @@
     53
 
     # infra/gitea.nomad.hcl — decomp artifact/results host (EVA-369). Same
-    # backend-port shape as home-assistant/testbench above.
+    # backend-port shape as testbench above.
     3000
 
     # infra/openbao.nomad.hcl. 8200 is the API; 8201 is Raft replication,

@@ -4,11 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
-    # yt-dlp tracks YouTube's frequently-changing player internals; the 26.05
-    # release pin lags far enough that resolved stream URLs 403. Pull *just*
-    # yt-dlp from unstable (scoped overlay on the rpi4b cast box).
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-
     flake-utils.url = "github:numtide/flake-utils";
 
     home-manager = {
@@ -66,7 +61,6 @@
     {
       self,
       nixpkgs,
-      nixpkgs-unstable,
       home-manager,
       sops-nix,
       nur,
@@ -127,36 +121,6 @@
           ];
         };
 
-      # One rpi host (./hosts/rpi); boards differ only in the args below.
-      # native builds hit cache.nixos.org; cross builds (rpi2b only, 32-bit armv7l) miss cache but keep SD builds fast.
-      mkRpi =
-        hostName:
-        {
-          system ? "aarch64-linux",
-          sdModule ? "sd-image-aarch64.nix",
-          native ? false,
-          address ? null,
-          modules ? [ ],
-        }:
-        nixpkgs.lib.nixosSystem {
-          modules = [
-            "${nixpkgs}/nixos/modules/installer/sd-card/${sdModule}"
-            ./hosts/rpi
-            home-manager.nixosModules.home-manager
-            sops-nix.nixosModules.sops
-            {
-              networking.hostName = hostName;
-              clusterNet.address = address;
-              nixpkgs.config.allowUnfree = true;
-              # hostPlatform, not the legacy `system` arg: the nixpkgs module
-              # ignores buildPlatform on its legacy path, which silently turned
-              # the rpi2b "cross" build into native-armv7l-under-QEMU.
-              nixpkgs.hostPlatform = system;
-            }
-          ]
-          ++ modules
-          ++ nixpkgs.lib.optional (!native) { nixpkgs.buildPlatform = "x86_64-linux"; };
-        };
     in
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
@@ -233,96 +197,6 @@
         ];
       };
 
-      # RPi SD card images
-      nixosConfigurations.rpi2b = mkRpi "rpi2b" {
-        system = "armv7l-linux";
-        sdModule = "sd-image-armv7l-multiplatform.nix";
-        modules = [
-          # base.nix (installer tools, pulled in by the sd-image module) includes
-          # efivar, which is broken on 32-bit (nixpkgs#388309). No EFI on a Pi 2
-          # anyway, and dropping it also skips cross-building zfs/testdisk/w3m.
-          {
-            disabledModules = [ "profiles/base.nix" ];
-            boot.supportedFilesystems = [
-              "vfat"
-              "ext4"
-            ];
-          }
-        ];
-      };
-
-      # piscreen (EVA-402/50/403): the kiosk that was running on the old
-      # rpi4b — that Pi got repurposed to KidiStar DAW, this 3B+ is its
-      # replacement. Single HDMI port, so the vc4 connector is HDMI-A-1,
-      # not the dual-HDMI Pi 4's HDMI-A-2.
-      nixosConfigurations.rpi3b-plus = mkRpi "rpi3b-plus" {
-        address = "192.168.0.241";
-        native = true;
-        modules = [
-          ./hosts/rpi/graphical.nix
-          { piscreenKiosk.videoConnector = "HDMI-A-1"; }
-          # No ethernet run to where piscreen lives — wifi only, PSKs secrets-templated.
-          # See wiki: piscreen WiFi: secrets-templated PSK.
-          (
-            { config, lib, ... }:
-            let
-              wifiNetworks = [
-                { ssid = "SercommAP-2743"; key = "home"; }
-              ];
-              secretName = n: "wifi/${n.key}_psk";
-            in
-            {
-              sops.secrets = lib.listToAttrs (
-                map (n: {
-                  name = secretName n;
-                  value = {
-                    sopsFile = ./secrets.yaml;
-                    format = "yaml";
-                  };
-                }) wifiNetworks
-              );
-              sops.templates."piscreen-wifi.env".content = lib.concatMapStringsSep "\n" (
-                n: "psk_${n.key}=${config.sops.placeholder.${secretName n}}"
-              ) wifiNetworks;
-              networking.wireless = {
-                enable = true;
-                secretsFile = config.sops.templates."piscreen-wifi.env".path;
-                networks = lib.listToAttrs (
-                  map (n: {
-                    name = n.ssid;
-                    value.pskRaw = "ext:psk_${n.key}";
-                  }) wifiNetworks
-                );
-              };
-            }
-          )
-          # Current yt-dlp for the cast receiver (26.05's is too old — 403s).
-          {
-            nixpkgs.overlays = [
-              (final: prev: {
-                yt-dlp = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.yt-dlp;
-              })
-            ];
-          }
-        ];
-      };
-
-      nixosConfigurations.rpi4b = mkRpi "rpi4b" {
-        address = "192.168.0.242";
-        native = true;
-        modules = [
-          ./hosts/rpi/graphical.nix
-          # Current yt-dlp for the cast receiver (26.05's is too old — 403s).
-          {
-            nixpkgs.overlays = [
-              (final: prev: {
-                yt-dlp = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}.yt-dlp;
-              })
-            ];
-          }
-        ];
-      };
-
       devShells.x86_64-linux.default = devenv.lib.mkShell {
         inherit inputs;
         pkgs = devenv-nixpkgs.legacyPackages.x86_64-linux;
@@ -352,9 +226,6 @@
         stone = { };
         twink = { };
         server = { servePxe = true; };
-        rpi2b = { sdimage = true; };
-        rpi3b-plus = { sdimage = true; };
-        rpi4b = { sdimage = true; };
       };
     };
 }

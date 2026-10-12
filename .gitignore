@@ -11,3 +11,6 @@ target
 
 # personal agent definitions (contain inbox/sender details)
 module/home-manager/agents/
+
+# ephemeral agent handoff notes, not repo material
+HANDOFF.md

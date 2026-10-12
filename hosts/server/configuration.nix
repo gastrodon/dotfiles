@@ -17,7 +17,6 @@ in
     ../../module/minecraft-server.nix
     ../../module/actual.nix
     ../../module/tailscale-funnel.nix
-    ../../module/home-assistant.nix
     ../../module/ollama.nix
     ../../module/testbench-web.nix
     # Firewall + data directories for the Nomad jobs that now live in
@@ -57,9 +56,6 @@ in
     # only, which is what it was before.
     funnelPort = 8443;
   };
-
-  # Backs the rpi4b kiosk (hosts/rpi/graphical.nix points Firefox at homeassistant.local:8123).
-  services.homeAssistantJob.enable = true;
 
   # Nomad owns the CPU-only Ollama service and its persistent model volume. Pin
   # the host-networked job to server1 so the worker has a stable endpoint.

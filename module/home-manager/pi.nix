@@ -112,8 +112,8 @@ let
       To search the vault by meaning rather than open a file you already know, use
       `notesmd-cli search-content <query>` instead of grepping `~/notes` by hand.
     - GitHub: `gh` is on PATH and already authenticated.
-    - server1/server2: `ssh -i /run/secrets/claude-ssh-privkey-local claude@${hosts.server1}`
-      / `claude@${hosts.server2}` -- never eva's own login.
+    - server1/server2: `ssh root@${hosts.server1}` / `ssh root@${hosts.server2}` directly --
+      never eva's own login.
     - Web access: `web search <query>` (title/url/snippet per result) and `web fetch <url>`
       (a page's rendered text). Don't try to curl or browse DuckDuckGo/Google directly --
       both block automated access; use `web` instead.

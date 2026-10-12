@@ -509,22 +509,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-unstable": {
-      "locked": {
-        "lastModified": 1787498568,
-        "narHash": "sha256-9i/VTdusq/+NM/tz+J1Re+ojkMB8MBf0QshnYfzHz30=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "56c02bc00adcf003215cc4bd996d6efaf4cff188",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_2": {
       "inputs": {
         "nixpkgs-src": "nixpkgs-src"
@@ -631,7 +615,6 @@
         "lab-nix-modules": "lab-nix-modules",
         "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs_3",
-        "nixpkgs-unstable": "nixpkgs-unstable",
         "nur": "nur",
         "obsidian-local-rest-api": "obsidian-local-rest-api",
         "sops-nix": "sops-nix"

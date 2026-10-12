@@ -38,7 +38,7 @@ in
         # Preemption lets higher-priority jobs reclaim resources from lower-priority
         # ones. Needed so batch compute (e.g. the decomp workload in the `decomp`
         # namespace, priority 10) can use the whole cluster without risking that a
-        # real service — home-assistant, mysql, traefik — fails to place after a
+        # real service — mysql, traefik — fails to place after a
         # node reboot or a `nixos-rebuild --target-host` deploy.
         #
         # NOTE: default_scheduler_config only applies at INITIAL raft bootstrap.

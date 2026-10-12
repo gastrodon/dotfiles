@@ -247,13 +247,6 @@ in
           comment = "beam.smp re-execs as uid 999; confirmed with podman top";
         };
 
-        home-assistant = {
-          uid = 0;
-          gid = 0;
-          mode = "0750";
-          comment = "HA image runs as root; matches today's /var/lib/hass";
-        };
-
         ollama = {
           uid = 0;
           gid = 0;

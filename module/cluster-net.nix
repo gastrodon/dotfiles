@@ -36,7 +36,7 @@ in
 
     # Same static address over wifi — harmless on wired-only hosts (no wlan
     # interface ever matches); lets a host with networking.wireless enabled
-    # (e.g. piscreen/rpi3b-plus) keep the same fixed address on wlan0.
+    # keep the same fixed address on wlan0.
     systemd.network.networks."10-cluster-wifi" = {
       matchConfig.Type = "wlan";
       networkConfig = {

@@ -70,7 +70,7 @@ in
       # consumed directly where it's actually load-bearing: claude.nix's
       # MCP SSH profiles, hosts/server/configuration.nix's Ollama wiring,
       # and pi.nix's AGENTS.md text, all independently). Reach them with
-      # `ssh -i /run/secrets/claude-ssh-privkey-local claude@<ip>` directly.
+      # `ssh root@<ip>` directly (root pubkey login is granted by module/users.nix).
     };
   };
 
