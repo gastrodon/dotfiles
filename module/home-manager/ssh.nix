@@ -4,7 +4,7 @@
   ...
 }:
 let
-  hosts = import ../hosts.nix;
+  hosts = import ../lab/hosts.nix;
 in
 {
   services.ssh-agent.enable = true;

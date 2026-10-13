@@ -6,33 +6,33 @@
   ...
 }:
 let
-  hosts = import ../../module/hosts.nix;
+  hosts = import ../../module/lab/hosts.nix;
 in
 {
   imports = [
     ./hardware-configuration.nix
     ./disks.nix
     ../../module/avahi.nix
-    ../../module/nomad-server.nix
-    ../../module/minecraft-server.nix
-    ../../module/actual.nix
-    ../../module/tailscale-funnel.nix
-    ../../module/ollama.nix
-    ../../module/testbench-web.nix
+    ../../module/lab/cluster/nomad-server.nix
+    ../../module/lab/services/minecraft-server.nix
+    ../../module/lab/services/actual.nix
+    ../../module/lab/cluster/tailscale-funnel.nix
+    ../../module/lab/services/ollama.nix
+    ../../module/lab/services/testbench-web.nix
     # Firewall + data directories for the Nomad jobs that now live in
     # ~/code/home-infra. See that module's header for where the line between
     # the two repos is drawn and why.
-    ../../module/cluster-services.nix
+    ../../module/lab/cluster/cluster-services.nix
     # EC2-style ip-a-b-c-d hostname, and the NetworkManager setting that stops
     # it being overruled (EVA-192). Shared with the netboot node so the two
     # cannot drift.
-    ../../module/derive-hostname.nix
+    ../../module/lab/cluster/derive-hostname.nix
     # The /data disk and the Nomad host volumes on it (EVA-302). Shared with
-    # module/cluster-node.nix for the same reason as derive-hostname above:
+    # module/lab/cluster/cluster-node.nix for the same reason as derive-hostname above:
     # this configuration is also built as `server-netboot`, so the disk-booted
     # and RAM-booted forms of the same host must agree about what counts as
     # durable storage.
-    ../../module/nomad-storage.nix
+    ../../module/lab/cluster/nomad-storage.nix
   ];
 
   # 192.168.0.5 keeps its 120 GB SSD and stays the disk-bootable fallback, so

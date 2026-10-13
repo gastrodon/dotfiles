@@ -20,9 +20,9 @@ let
 in
 {
   imports = [
-    ./identity.nix
-    ./users.nix
-    ./podman.nix
+    ../../identity.nix
+    ../../users.nix
+    ../../podman.nix
     ./nomad-server.nix
     ./derive-hostname.nix
     # The data disk, and the gate that stops Nomad starting with host volumes

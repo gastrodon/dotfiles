@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hosts = import ./hosts.nix;
+  hosts = import ../hosts.nix;
   serverIps = lib.attrValues (lib.filterAttrs (n: _: lib.hasPrefix "server" n) hosts);
   # Server-to-server join is serf gossip on 4648 — NOT the RPC port 4647 (that's
   # what clients use to reach servers). Joining on 4647 never forms gossip, so

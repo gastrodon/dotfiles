@@ -7,7 +7,7 @@
 }:
 let
   local = import ../package { inherit pkgs lib; };
-  clusterHosts = import ../module/hosts.nix;
+  clusterHosts = import ../module/lab/hosts.nix;
 
   # Solarized Dark
   palette = {
@@ -51,6 +51,7 @@ in
     ../module/podman.nix
     ../module/sops.nix
     ../module/shared-workspace.nix
+    ../module/lab
   ];
 
   nixpkgs.config.allowUnfree = true;

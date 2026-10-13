@@ -9,12 +9,12 @@
   imports = [
     ./hardware-configuration.nix
     ../../module/avahi.nix
-    ../../module/nomad-client.nix
+    ../../module/lab/cluster/nomad-client.nix
     ../../module/claude-code.nix
     ../../module/linear.nix
-    ../../module/tea.nix
-    ../../module/pxe-boot-server.nix
-    ../../module/hw-bench.nix
+    ../../module/lab/tea.nix
+    ../../module/lab/cluster/pxe-boot-server.nix
+    ../../module/lab/bench.nix
     ../../module/tailscale.nix
   ];
 

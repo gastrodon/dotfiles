@@ -9,7 +9,7 @@
 # something sops/nix should own — same model as the Linear agent's own tokens.
 { pkgs, ... }:
 let
-  hosts = import ../hosts.nix;
+  hosts = import ../lab/hosts.nix;
   piVersion = "0.84.1";
   piBlackTag = "v0.84.1-cc2.1.224.4";
 

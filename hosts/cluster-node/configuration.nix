@@ -1,7 +1,7 @@
 # The diskless OptiPlex cluster node (EVA-298 / EVA-299).
 #
 # ONE image serves all three boxes; identity comes from the DHCP-derived
-# hostname (module/cluster-node.nix). See wiki: Diskless netboot node image:
+# hostname (module/lab/cluster/cluster-node.nix). See wiki: Diskless netboot node image:
 # design decisions.
 #
 # Imports netboot.nix, not netboot-minimal.nix (EVA-299's original spec) — see
@@ -17,7 +17,7 @@
   imports = [
     (modulesPath + "/installer/netboot/netboot.nix")
     (modulesPath + "/profiles/minimal.nix")
-    ../../module/cluster-node.nix
+    ../../module/lab/cluster/cluster-node.nix
   ];
 
   services.clusterNode.diskless = true;

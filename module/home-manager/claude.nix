@@ -4,7 +4,7 @@
   ...
 }:
 let
-  baoKvGet = import ./bao-kv-get.nix { inherit pkgs; };
+  baoKvGet = import ../lab/home/bao-kv-get.nix { inherit pkgs; };
 
   mkClaude =
     {

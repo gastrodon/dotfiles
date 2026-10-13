@@ -13,7 +13,7 @@
 # can't do (no FHS root, no nix-ld) — `linear completions zsh` prints them on demand.
 { pkgs, lib, ... }:
 let
-  baoKvGetCached = import ./bao-kv-get-cached.nix { inherit pkgs; };
+  baoKvGetCached = import ../lab/home/bao-kv-get-cached.nix { inherit pkgs; };
 
   version = "2.5.0";
 

@@ -4,6 +4,6 @@
 { config, ... }:
 {
   home-manager.users.${config.identity.username}.imports = [
-    ./home-manager/tea.nix
+    ./home/tea.nix
   ];
 }

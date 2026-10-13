@@ -60,6 +60,7 @@ module/
     config/                  # i3 config generation (keybinds, layout, floating, exec rules)
     blocks.nix               # i3blocks status bar config
     scripts.nix              # Helper scripts (brightness, lock, etc.)
+  lab/                       # Home-lab ties: hosts.nix (IP map), cluster/ (nomad, netboot, pxe), services/, bench.nix, tea.nix, home/ (bao-kv-get, memory-gardener, lab-docs-pull)
   steam/                     # Steam + per-game config modules
     games/                   # Individual game configs (factorio, etc.)
   home-manager/              # Home Manager user-level config (runs as eva)
@@ -126,7 +127,7 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 | Add a shell alias | `module/home-manager/zsh/default.nix` → `shellAliases` |
 | Add a shell function/init | `module/home-manager/zsh/default.nix` → `initContent` |
 | Configure a new program | New `module/home-manager/<program>.nix`, import in `default.nix` |
-| Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` |
+| Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` (lab/cluster services: `module/lab/`) |
 | Add a custom script | `package/cmd/default.nix` |
 | Add an i3 keybind | `module/i3/config/keybinds.nix` |
 | Add an i3 autostart | `module/i3/config/exec.nix` |

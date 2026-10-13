@@ -12,7 +12,7 @@ let
   cfg = config.services.tailscaleFunnel;
 in
 {
-  imports = [ ./tailscale.nix ];
+  imports = [ ../../tailscale.nix ];
 
   options.services.tailscaleFunnel = {
     enable = lib.mkEnableOption "Tailscale Funnel fronting a local port";

@@ -38,7 +38,6 @@
         ./i3blocks.nix
         ./xresources.nix
         ./passage.nix
-        ./memory-gardener.nix
         ./trilium.nix
         (
           { config, ... }:
