@@ -13,21 +13,6 @@ let
   piVersion = "0.84.1";
   piBlackTag = "v0.84.1-cc2.1.224.4";
 
-  # Yakitrak's Obsidian CLI, renamed notesmd-cli (upstream ceded the "obsidian-cli" name
-  # to Obsidian's own official tool). Go binary, no running Obsidian app required — has
-  # real content search (`notesmd-cli search-content`), unlike the app-URI-only original.
-  notesmdCli = pkgs.buildGoModule {
-    pname = "notesmd-cli";
-    version = "0.3.6";
-    src = pkgs.fetchFromGitHub {
-      owner = "Yakitrak";
-      repo = "notesmd-cli";
-      rev = "v0.3.6";
-      hash = "sha256-TubUNSpLvv3Q8dixeCf7otG6CSlb8haIGqkMFXAsqYI=";
-    };
-    vendorHash = null; # vendor/ directory ships in the repo
-  };
-
   piPkg = pkgs.stdenv.mkDerivation {
     pname = "pi-coding-agent";
     version = piVersion;
@@ -108,9 +93,6 @@ let
 
     ## This machine
 
-    - Obsidian vault is at `~/notes` — plain markdown files, read and edit them directly.
-      To search the vault by meaning rather than open a file you already know, use
-      `notesmd-cli search-content <query>` instead of grepping `~/notes` by hand.
     - GitHub: `gh` is on PATH and already authenticated.
     - server1/server2: `ssh root@${hosts.server1}` / `ssh root@${hosts.server2}` directly --
       never eva's own login.
@@ -147,7 +129,6 @@ in
 {
   home.packages = [
     pi
-    notesmdCli
   ];
 
   # This module is imported only by stone, so Pi's local Ollama provider never

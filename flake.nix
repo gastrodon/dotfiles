@@ -26,12 +26,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    obsidian-local-rest-api = {
-      url = "github:auto-patcher/obsidian-local-rest-api";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
-
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -67,7 +61,6 @@
       devenv,
       devenv-nixpkgs,
       disko,
-      obsidian-local-rest-api,
       claude-code-nix,
       claude-desktop-nix,
       ...
@@ -125,7 +118,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix claude-desktop-nix; };
+        specialArgs = { inherit claude-code-nix claude-desktop-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
@@ -149,7 +142,7 @@
 
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix; };
+        specialArgs = { inherit claude-code-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
@@ -187,7 +180,7 @@
 
       nixosConfigurations.twink = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit obsidian-local-rest-api claude-code-nix claude-desktop-nix; };
+        specialArgs = { inherit claude-code-nix claude-desktop-nix; };
         modules = [
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix

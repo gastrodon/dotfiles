@@ -4,7 +4,6 @@
   ...
 }:
 let
-  obsidianMcp = import ./obsidian-mcp.nix;
   baoKvGet = import ./bao-kv-get.nix { inherit pkgs; };
 
   mkClaude =
@@ -125,12 +124,6 @@ let
     aws = {
       command = "${awsMcpWrapper}/bin/aws-mcp-wrapped";
     };
-    # Obsidian Local REST API MCP over loopback; apiKey is a local-only value (see obsidian-mcp.nix), not a secret, so inlined.
-    obsidian = {
-      type = "http";
-      url = obsidianMcp.url;
-      headers.Authorization = "Bearer ${obsidianMcp.apiKey}";
-    };
     inkscape = {
       command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
     };
@@ -143,7 +136,7 @@ let
     # piscreen (the wall dashboard on rpi4b): query/apply/preview over plain
     # HTTP on the LAN. The Basic password is the same plaintext stopgap as
     # piscreen.api.plainPassword in the lab/rpi flake (already in the store
-    # there), so it is inlined like obsidian's. Moves to a real secret with
+    # there), so it is inlined. Moves to a real secret with
     # EVA-560/EVA-563; the phone path is EVA-563.
     piscreen = {
       type = "http";

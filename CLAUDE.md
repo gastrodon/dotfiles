@@ -78,7 +78,6 @@ package/
   cmd/                       # Shell script packages: fe, scrt, ANSI color helpers
   sys/                       # Rust binary: system info utility
   rend/                      # Rust binary: rendering utility
-  obsidian-theme/solarized/  # Custom Obsidian Solarized theme package
 ```
 
 ## Config File Generation

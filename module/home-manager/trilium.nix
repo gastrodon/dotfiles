@@ -15,7 +15,7 @@ in
       && export TRILIUM_MCP_TOKEN
   '';
 
-  # Keeps /srv/code/lab/docs (global.md, atlas.md behind the CLAUDE.md symlinks) current now that obsidian-git doesn't.
+  # Keeps /srv/code/lab/docs (global.md, atlas.md behind the CLAUDE.md symlinks) current.
   systemd.user.services.lab-docs-pull = lib.mkIf (hostname == "stone") {
     Unit.Description = "Fast-forward /srv/code/lab/docs from Gitea";
     Service = {

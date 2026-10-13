@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  obsidian-local-rest-api,
   claude-code-nix,
   ...
 }:
@@ -43,7 +42,6 @@ in
     (import ../module/home-manager {
       inherit
         palette
-        obsidian-local-rest-api
         claude-code-nix
         ;
     })
