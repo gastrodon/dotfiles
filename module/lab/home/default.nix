@@ -11,6 +11,7 @@
   ];
 
   home.sessionVariables.BAO_ADDR = "http://192.168.0.17:8200";
+  home.sessionVariables.GOPRIVATE = "git.lab.gastrodon.io";
 
   # bao-kv-get-cached now caches on tmpfs ($XDG_RUNTIME_DIR); drop the old on-disk copies.
   home.activation.dropBaoKvGetDiskCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
