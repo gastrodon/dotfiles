@@ -313,11 +313,11 @@
     "lab-nix-modules": {
       "flake": false,
       "locked": {
-        "lastModified": 1791666608,
-        "narHash": "sha256-Sre0VALu+xw3tvV9+qWUiRb5SCIN2fwrucYAfWaaaaw=",
+        "lastModified": 1791930612,
+        "narHash": "sha256-7qNUUpD0KrXgk2lQ0V3eyBMaz2+yG7g61hHVOIfhTiE=",
         "ref": "refs/heads/main",
-        "rev": "e8ae8945c6e3486c84ed1d51360ec41aa79d3635",
-        "revCount": 21,
+        "rev": "b0888472d27d01a25ff02046d24adab83055ccb2",
+        "revCount": 25,
         "type": "git",
         "url": "http://192.168.0.17:3000/lab/nix-modules.git"
       },
