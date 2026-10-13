@@ -20,9 +20,10 @@ fi
 
 usage() {
   cat >&2 <<EOF
-Usage: $0 <build|switch> [hostname] [options]
+Usage: $0 <build|switch|update> [hostname] [options]
 
 Commands:
+  update             nix flake update + bump pinned VSCodium extensions
   build              Build configuration
   switch             Switch to new configuration + restart i3
 
@@ -70,7 +71,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$COMMAND" in
-  build|switch) ;;
+  build|switch|update) ;;
   *) usage ;;
 esac
 
@@ -156,6 +157,10 @@ serve_pxe() {
 }
 
 case "$COMMAND" in
+  update)
+    (cd "$SCRIPT_DIR" && nix flake update)
+    "$SCRIPT_DIR/module/home-manager/vscodium/update.sh"
+    ;;
   build)
     case "$FLAG" in
       "")

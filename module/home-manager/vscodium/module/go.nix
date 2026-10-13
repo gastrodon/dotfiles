@@ -6,6 +6,7 @@
 }:
 
 let
+  ext = import ../extension.nix pkgs;
   cfg = config.programs.vscodium.module.go;
 in
 {
@@ -20,9 +21,7 @@ in
   config = lib.mkIf cfg.enable {
     programs.vscodium.bundles.go = {
       enable = true;
-      extensions = with pkgs.vscode-extensions; [
-        golang.go
-      ];
+      extensions = [ (ext "golang.go") ];
       packages = with pkgs; [
         go
         gopls
@@ -35,7 +34,6 @@ in
 
     programs.vscodium.profiles.default.userSettings = {
       "go.formatTool" = "gofumpt";
-      "go.useLanguageServer" = true;
       "go.lintTool" = "staticcheck";
       "go.lintOnSave" = "package";
       "gopls" = {

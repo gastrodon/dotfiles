@@ -32,44 +32,24 @@ let
     };
   };
 
-  openRemoteSshVersion = "0.1.1";
-  openRemoteSshSha256 = "1r9h7pi5rhax370r10f5d3h9mafaz2vagbj09rmmr8zn8qs8fdh7";
+  ext = import ./extension.nix pkgs;
 
   defaultBundles =
     with pkgs;
-    with vscode-extensions;
     {
       remote-ssh = {
         enable = true;
-        extensions = [
-          (vscode-utils.buildVscodeMarketplaceExtension {
-            mktplcRef = {
-              publisher = "jeanp413";
-              name = "open-remote-ssh";
-              version = openRemoteSshVersion;
-            };
-            vsix = fetchurl {
-              name = "jeanp413-open-remote-ssh.vsix";
-              url = "https://open-vsx.org/api/jeanp413/open-remote-ssh/${openRemoteSshVersion}/file/jeanp413.open-remote-ssh-${openRemoteSshVersion}.vsix";
-              sha256 = openRemoteSshSha256;
-            };
-          })
-        ];
+        extensions = [ (ext "jeanp413.open-remote-ssh") ];
         packages = [ ];
       };
       rich-text = {
         enable = true;
-        extensions = [ bierner.markdown-mermaid ];
+        extensions = [ (ext "bierner.markdown-mermaid") ];
         packages = [ ];
-      };
-      nix-ide = {
-        enable = true;
-        extensions = [ jnoortheen.nix-ide ];
-        packages = [ nixfmt ];
       };
       direnv = {
         enable = true;
-        extensions = [ mkhl.direnv ];
+        extensions = [ (ext "mkhl.direnv") ];
         packages = [
           direnv
           nix
@@ -83,9 +63,13 @@ let
 in
 {
   imports = [
+    ./module/bun.nix
+    ./module/elm.nix
     ./module/go.nix
+    ./module/nix.nix
+    ./module/python.nix
     ./module/rust.nix
-    ./module/terraform.nix
+    ./module/tofu.nix
   ];
 
   options.programs.vscodium = {

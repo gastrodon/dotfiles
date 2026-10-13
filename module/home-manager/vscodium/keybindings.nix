@@ -50,9 +50,6 @@ let
       key = "ctrl+0";
       replaces = "workbench.action.focusSideBar";
     };
-    "-workbench.action.zoomReset" = {
-      key = "ctrl+numpad0";
-    };
     "workbench.action.toggleLightDarkThemes" = {
       key = "ctrl+shift+l";
     };
@@ -72,11 +69,6 @@ let
     "-editor.action.selectHighlights" = {
       key = "ctrl+shift+l";
       when = "editorFocus";
-    };
-
-    "-github.copilot.generate" = {
-      key = "ctrl+enter";
-      when = "editorTextFocus && github.copilot.activated && !commentEditorFocused && !inInteractiveInput && !interactiveEditorFocused";
     };
 
     "merge-conflict.next" = {

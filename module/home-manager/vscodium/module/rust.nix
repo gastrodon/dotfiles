@@ -6,6 +6,7 @@
 }:
 
 let
+  ext = import ../extension.nix pkgs;
   cfg = config.programs.vscodium.module.rust;
 in
 {
@@ -24,9 +25,9 @@ in
 
     programs.vscodium.bundles.rust = {
       enable = true;
-      extensions = with pkgs.vscode-extensions; [
-        rust-lang.rust-analyzer
-        vadimcn.vscode-lldb
+      extensions = map ext [
+        "rust-lang.rust-analyzer"
+        "vadimcn.vscode-lldb"
       ];
       packages = with pkgs; [
         cargo
@@ -40,8 +41,8 @@ in
     };
 
     programs.vscodium.profiles.default.userSettings = {
+      "rust-analyzer.server.path" = "${pkgs.rust-analyzer}/bin/rust-analyzer";
       "rust-analyzer.check.command" = "clippy";
-      "rust-analyzer.checkOnSave" = true;
       "rust-analyzer.rustc.source" = "${pkgs.rustPlatform.rustLibSrc}";
       "rust-analyzer.debug.engineSettings" = {
         terminal = null;
@@ -49,8 +50,6 @@ in
       "rust-analyzer.inlayHints.typeHints.enable" = false;
       "rust-analyzer.rustfmt.rangeFormatting.enable" = true;
       "rust-analyzer.typing.autoClosingAngleBrackets.enable" = true;
-      "rust-client.rustupPath" = "${config.home.homeDirectory}/.cargo/bin/rustup";
-      "rust.clippy_preference" = "on";
       "lldb.suppressUpdateNotifications" = true;
       "files.readonlyInclude" = {
         "**/.cargo/registry/src/**/*.rs" = true;

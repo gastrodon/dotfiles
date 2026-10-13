@@ -7,7 +7,6 @@
   "editor.fontLigatures" = true;
   "editor.fontSize" = 13;
   "editor.formatOnSave" = true;
-  "editor.inlineSuggest.enabled" = false;
   "editor.rulers" = [
     96
     120
