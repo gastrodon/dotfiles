@@ -17,7 +17,7 @@ let
     name = "tea-gitea-login-sync";
     runtimeInputs = [ pkgs.tea ];
     text = ''
-      token="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/gitea api_token 86400 2>/dev/null)"
+      token="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/gitea api_token 86400 2>/dev/null)" || exit 0
       [[ -z "$token" ]] && exit 0
 
       marker="''${XDG_CACHE_HOME:-$HOME/.cache}/bao-kv-get/tea-gitea-synced-token"

@@ -35,6 +35,9 @@ pkgs.writeShellApplication {
       printf '%s\n' "$value"
     elif [[ -f "$cache_file" ]]; then
       cat "$cache_file"
+    else
+      echo "bao-kv-get-cached: $path $field unavailable and not cached" >&2
+      exit 1
     fi
   '';
 }
