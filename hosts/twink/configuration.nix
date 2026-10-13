@@ -13,6 +13,8 @@
 
   networking.hostName = "twink";
 
+  home-manager.users.${config.identity.username}.imports = [ ../../module/home-manager/lab-mtls.nix ];
+
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;
   desktop.hasBattery = true;
