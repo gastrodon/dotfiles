@@ -35,4 +35,5 @@
   title_bar.show_menus = false;
 
   load_direnv = "shell_hook";
+  use_system_path_prompts = false;
 }
