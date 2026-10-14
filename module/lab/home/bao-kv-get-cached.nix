@@ -30,8 +30,9 @@ pkgs.writeShellApplication {
     fi
 
     if value="$(${baoKvGet}/bin/bao-kv-get "$path" "$field" 2>/dev/null)" && [[ -n "$value" ]]; then
-      printf '%s' "$value" > "$cache_file"
-      chmod 600 "$cache_file"
+      tmp="$(mktemp "$cache_file.XXXXXX")"
+      printf '%s' "$value" > "$tmp"
+      mv -f "$tmp" "$cache_file"
       printf '%s\n' "$value"
     elif [[ -f "$cache_file" ]]; then
       cat "$cache_file"

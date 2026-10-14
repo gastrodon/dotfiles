@@ -22,15 +22,20 @@ let
 
       vault_addr="http://192.168.0.17:8200"
       role_id="c0cf6549-2121-bfa3-e2e9-6c4ed46b9b8b"
-      secret_id="$(< /run/secrets/bao/gitea_approle_secret_id)"
+      secret_file=/run/secrets/bao/gitea_approle_secret_id
+      curl_opts=(-sf --connect-timeout 3 --max-time 10)
+      fail() { echo "git-credential-gitea-vault: $*" >&2; exit 1; }
 
-      client_token="$(curl -sf -X POST "$vault_addr/v1/auth/approle/login" \
-        -d "{\"role_id\":\"$role_id\",\"secret_id\":\"$secret_id\"}" \
-        | jq -r '.auth.client_token')"
+      secret_id="$(< "$secret_file")" || fail "cannot read $secret_file"
 
-      token="$(curl -sf -H "X-Vault-Token: $client_token" \
-        "$vault_addr/v1/secret/data/claude/gitea" \
-        | jq -r '.data.data.api_token')"
+      # secret_id and token go over stdin / fd 3, never argv
+      client_token="$(jq -n --arg r "$role_id" --arg s "$secret_id" '{role_id: $r, secret_id: $s}' \
+        | curl "''${curl_opts[@]}" -X POST "$vault_addr/v1/auth/approle/login" --data @- \
+        | jq -er '.auth.client_token')" || fail "AppRole login failed at $vault_addr"
+
+      token="$(curl "''${curl_opts[@]}" --config /dev/fd/3 "$vault_addr/v1/secret/data/claude/gitea" \
+        3< <(printf 'header = "X-Vault-Token: %s"\n' "$client_token") \
+        | jq -er '.data.data.api_token')" || fail "no api_token at secret/claude/gitea"
 
       echo "username=claude"
       echo "password=$token"

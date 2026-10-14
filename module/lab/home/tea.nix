@@ -15,22 +15,25 @@ let
 
   teaGiteaSync = pkgs.writeShellApplication {
     name = "tea-gitea-login-sync";
-    runtimeInputs = [ pkgs.tea ];
+    runtimeInputs = [
+      pkgs.tea
+      pkgs.coreutils
+    ];
     text = ''
       token="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/gitea api_token 86400 2>/dev/null)" || exit 0
       [[ -z "$token" ]] && exit 0
 
-      marker="''${XDG_CACHE_HOME:-$HOME/.cache}/bao-kv-get/tea-gitea-synced-token"
+      marker="''${XDG_CACHE_HOME:-$HOME/.cache}/bao-kv-get/tea-gitea-synced-sha256"
       mkdir -p "$(dirname "$marker")"
+      digest="$(printf '%s' "$token" | sha256sum | cut -d' ' -f1)"
 
-      if [[ -f "$marker" ]] && [[ "$(cat "$marker")" == "$token" ]]; then
+      if [[ -f "$marker" ]] && [[ "$(< "$marker")" == "$digest" ]]; then
         exit 0
       fi
 
       tea login delete ${giteaLoginName} >/dev/null 2>&1 || true
       if tea login add --name ${giteaLoginName} --url ${giteaAddr} --token "$token" --no-version-check >/dev/null 2>&1; then
-        printf '%s' "$token" > "$marker"
-        chmod 600 "$marker"
+        printf '%s' "$digest" > "$marker"
       fi
     '';
   };
