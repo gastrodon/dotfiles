@@ -12,7 +12,6 @@
     enableCompletion = true;
 
     shellAliases = {
-      code = "zeditor";
       zed = "zeditor";
     };
 
