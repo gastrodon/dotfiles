@@ -13,6 +13,7 @@
 
     shellAliases = {
       code = "zeditor";
+      zed = "zeditor";
     };
 
     autosuggestion = {
