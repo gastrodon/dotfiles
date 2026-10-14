@@ -4,9 +4,6 @@ ext/
 result
 target
 
-# pre-commit
-.pre-commit-config.yaml
-
 .claude/*.local*
 
 # personal agent definitions (contain inbox/sender details)

@@ -18,9 +18,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    devenv.url = "github:cachix/devenv";
-    devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -63,8 +60,6 @@
       home-manager,
       sops-nix,
       nur,
-      devenv,
-      devenv-nixpkgs,
       disko,
       claude-code-nix,
       claude-desktop-nix,
@@ -197,15 +192,6 @@
           labPkgs
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
-        ];
-      };
-
-      devShells.x86_64-linux.default = devenv.lib.mkShell {
-        inherit inputs;
-        pkgs = devenv-nixpkgs.legacyPackages.x86_64-linux;
-        modules = [
-          ./devenv.nix
-          { devenv.root = builtins.toString ./.; }
         ];
       };
 
