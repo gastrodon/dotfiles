@@ -326,6 +326,26 @@
         "url": "http://192.168.0.17:3000/lab/nix-modules.git"
       }
     },
+    "lab-pkgs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791963892,
+        "narHash": "sha256-ZSYV3l/0TozEaBmPOS08VH1ukeceBKzsfZkQPZf8aJI=",
+        "ref": "refs/heads/main",
+        "rev": "5892f28e6b4e3301c6a9c6d189ca973afa29814e",
+        "revCount": 3,
+        "type": "git",
+        "url": "http://192.168.0.17:3000/lab/pkgs.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "http://192.168.0.17:3000/lab/pkgs.git"
+      }
+    },
     "nix": {
       "inputs": {
         "flake-compat": [
@@ -544,6 +564,7 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "lab-nix-modules": "lab-nix-modules",
+        "lab-pkgs": "lab-pkgs",
         "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",

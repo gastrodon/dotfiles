@@ -44,6 +44,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    lab-pkgs = {
+      url = "git+http://192.168.0.17:3000/lab/pkgs.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Source only: cluster-node takes lab/nix-modules' edge-tunnel module until the EVA-441 cutover.
     lab-nix-modules = {
       url = "git+http://192.168.0.17:3000/lab/nix-modules.git";
@@ -66,6 +71,8 @@
       ...
     }@inputs:
     let
+      labPkgs = { nixpkgs.overlays = [ inputs.lab-pkgs.overlays.default ]; };
+
       mkInstaller =
         { targetSystem, diskConfig }:
         nixpkgs.lib.nixosSystem {
@@ -123,6 +130,7 @@
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
           home-manager.nixosModules.home-manager
+          labPkgs
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
         ];
@@ -147,6 +155,7 @@
           ./hosts/shared.nix
           ./hosts/server/configuration.nix
           home-manager.nixosModules.home-manager
+          labPkgs
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
           disko.nixosModules.disko
@@ -185,6 +194,7 @@
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix
           home-manager.nixosModules.home-manager
+          labPkgs
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
         ];
@@ -198,21 +208,6 @@
           { devenv.root = builtins.toString ./.; }
         ];
       };
-
-      packages.x86_64-linux =
-        let
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          local = import ./package {
-            inherit pkgs;
-            lib = nixpkgs.lib;
-          };
-        in
-        local.cmd // { inherit (local) sys rend; };
-
-      apps.x86_64-linux = nixpkgs.lib.mapAttrs (name: pkg: {
-        type = "app";
-        program = "${pkg}/bin/${name}";
-      }) self.packages.x86_64-linux;
 
       # Build capabilities per host (source of truth for ./build script validation)
       buildCapabilities = {

@@ -1,7 +1,7 @@
-{ palette, local }:
+{ palette }:
 { config, pkgs, ... }:
 let
-  scripts = import ./scripts.nix { inherit pkgs local; };
+  scripts = import ./scripts.nix { inherit pkgs; };
 
   hostname = config.networking.hostName;
 

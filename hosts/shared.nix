@@ -6,7 +6,6 @@
   ...
 }:
 let
-  local = import ../package { inherit pkgs lib; };
   clusterHosts = import ../module/lab/hosts.nix;
 
   # Solarized Dark
@@ -38,7 +37,7 @@ in
   imports = [
     ../module/terminal.nix
     ../module/identity.nix
-    (import ../module/i3 { inherit palette local; })
+    (import ../module/i3 { inherit palette; })
     (import ../module/home-manager {
       inherit
         palette
@@ -67,15 +66,17 @@ in
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  environment.systemPackages =
-    with pkgs;
-    [
-      vim
-      curl
-      git
-      xdotool
-    ]
-    ++ local.packages;
+  environment.systemPackages = with pkgs; [
+    vim
+    curl
+    git
+    xdotool
+    fe
+    scrt
+    sys
+    rend
+    web
+  ];
 
   fonts.packages = with pkgs; [
     fira-code

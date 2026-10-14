@@ -55,7 +55,7 @@ module/
   identity.nix               # username, name, email, SSH key (eva / Eva Harris)
   users.nix                  # User account definition
   x11.nix                    # X11/startx setup (takes palette)
-  i3/                        # i3 window manager (takes palette + local packages)
+  i3/                        # i3 window manager (takes palette)
     default.nix              # Enables i3, installs desktop packages, writes config via activation script
     config/                  # i3 config generation (keybinds, layout, floating, exec rules)
     blocks.nix               # i3blocks status bar config
@@ -72,10 +72,6 @@ module/
     vscodium/                # VSCodium editor + extensions + keybindings + language modules
     zsh/                     # Zsh + oh-my-zsh (liner theme), aliases, initContent
     claude.nix               # claude-code-bun package + `c` alias
-package/
-  default.nix                # Exports: cmd (shell scripts), sys (Rust), rend (Rust)
-  cmd/                       # Shell script packages: fe, scrt, ANSI color helpers
-  sys/                       # Rust binary: system info utility
   rend/                      # Rust binary: rendering utility
 ```
 
@@ -111,7 +107,7 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 
 **NixOS modules** — new system-level config goes in `module/<name>.nix` (or a subdir with `default.nix`), then imported in `hosts/shared.nix`, or in the relevant `hosts/<host>/configuration.nix` if it's host-specific.
 
-**Custom packages** — local packages are in `package/` and exposed as `local.packages` (list) or `local.cmd`, `local.sys`, `local.rend`. Pass `local` to modules that need custom scripts/binaries.
+**Custom packages** live in [lab/pkgs](http://192.168.0.17:3000/lab/pkgs) (input `lab-pkgs`) and arrive through its overlay as `pkgs.sys`, `pkgs.rend`, `pkgs.web`, `pkgs.fe`, `pkgs.scrt`. Add new ones there, then `nix flake update lab-pkgs`.
 
 **NUR** — Firefox extensions use NUR. The overlay is set up in `flake.nix`.
 
@@ -126,6 +122,6 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 | Add a shell function/init | `module/home-manager/zsh/default.nix` → `initContent` |
 | Configure a new program | New `module/home-manager/<program>.nix`, import in `default.nix` |
 | Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` (lab/cluster services: `module/lab/`) |
-| Add a custom script | `package/cmd/default.nix` |
+| Add a custom script | lab/pkgs `pkgs/`, then `nix flake update lab-pkgs` |
 | Add an i3 keybind | `module/i3/config/keybinds.nix` |
 | Add an i3 autostart | `module/i3/config/exec.nix` |

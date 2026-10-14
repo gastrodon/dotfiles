@@ -1,4 +1,4 @@
-{ pkgs, local, ... }:
+{ pkgs, ... }:
 let
   blur-lock = pkgs.writeScriptBin "blur-lock" ''
     #!/bin/sh
@@ -176,7 +176,7 @@ let
 
   battery-block = pkgs.writeScriptBin "battery-block" ''
     #!/usr/bin/env bash
-    battery_json=$(${local.sys}/bin/sys --format json battery)
+    battery_json=$(${pkgs.sys}/bin/sys --format json battery)
     percent=$(echo "$battery_json" | ${pkgs.jq}/bin/jq .percent)
     state=$(echo "$battery_json" | ${pkgs.jq}/bin/jq -r .state)
 
@@ -186,24 +186,24 @@ let
         icon=""
     fi
 
-    echo "$icon $(echo "$percent" | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+    echo "$icon $(echo "$percent" | ${pkgs.rend}/bin/rend bars --min 0 --max 100 --count 10)"
   '';
 
   brightness-block = pkgs.writeScriptBin "brightness-block" ''
     #!/usr/bin/env bash
     case $BLOCK_BUTTON in
         4)
-            ${local.sys}/bin/sys backlight --write +5
+            ${pkgs.sys}/bin/sys backlight --write +5
             ;;
         5)
-            current=$(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
+            current=$(${pkgs.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage)
             if (( $(echo "$current > 10" | ${pkgs.bc}/bin/bc -l) )); then
-                ${local.sys}/bin/sys backlight --write -5
+                ${pkgs.sys}/bin/sys backlight --write -5
             fi
             ;;
     esac
 
-    echo " $(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
+    echo " $(${pkgs.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${pkgs.rend}/bin/rend bars --min 0 --max 100 --count 10)"
   '';
 
   screenshot = pkgs.writeScriptBin "screenshot" ''
