@@ -18,6 +18,20 @@
       DisableFirefoxStudies = true;
       DisablePocket = true;
 
+      FirefoxSuggest = {
+        SponsoredSuggestions = false;
+        ImproveSuggest = false;
+        Locked = true;
+      };
+
+      UserMessaging = {
+        ExtensionRecommendations = false;
+        FeatureRecommendations = false;
+        MoreFromMozilla = false;
+        SkipOnboarding = true;
+        Locked = true;
+      };
+
       DNSOverHTTPS = {
         Enabled = true;
         ProviderURL = "https://mozilla.cloudflare-dns.com/dns-query";
@@ -33,6 +47,10 @@
       };
 
       Preferences = {
+        "privacy.trackingprotection.socialtracking.enabled" = {
+          Value = true;
+          Status = "locked";
+        };
         "browser.newtabpage.activity-stream.enabled" = {
           Value = false;
           Status = "locked";
@@ -74,17 +92,6 @@
         darkreader
         sponsorblock
       ];
-
-      settings = {
-        "privacy.trackingprotection.enabled" = true;
-        "privacy.trackingprotection.socialtracking.enabled" = true;
-        "browser.newtabpage.activity-stream.enabled" = false;
-        "browser.newtabpage.enabled" = false;
-        "browser.newtabpage.activity-stream.showSponsored" = false;
-        "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
-        "dom.security.https_only_mode" = true;
-        "media.autoplay.default" = 1;
-      };
     };
   };
 }
