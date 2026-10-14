@@ -1,16 +1,12 @@
 # Hardware bench — the host a device-under-test is physically wired to (stone today; a Pi later).
 # Opt-in per host with `hwBench.enable = true;`. Three jobs:
 #
-#   1. toolchain  — build/flash/talk to MCUs. Go-first (tinygo for AVR/ARM MCUs), with
-#      arduino-cli + avrdude underneath and esptool for the ESP32-S2 side (HD-WF1).
+#   1. host tools — serial terminal and USB/V4L2 enumeration. Firmware toolchains live in
+#      each firmware repo's devshell (avr-gcc + avrdude: puppy-star).
 #   2. stable names — /dev/hw-bench/* symlinks, so scripts and agents stop chasing
 #      ttyACM0 -> ttyACM1 renumbering across replugs.
 #   3. eyes — a bench camera plus `bench-snap`, so an agent can observe the hardware
 #      directly (LED state, stepper motion, a multimeter's LCD) instead of inferring it.
-#
-# Note: tinygo targets bare-metal MCUs (AVR, RP2040, ESP32...). A Raspberry Pi running
-# Linux is NOT a tinygo target — there you use ordinary Go against /dev/gpiochip via
-# periph.io or go-gpiocdev, which needs no system package beyond `go` itself.
 {
   config,
   lib,
@@ -142,7 +138,7 @@ let
 in
 {
   options.hwBench = {
-    enable = lib.mkEnableOption "hardware bench: MCU toolchain, stable device symlinks, bench camera";
+    enable = lib.mkEnableOption "hardware bench: stable device symlinks, serial and camera tools";
 
     users = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -188,12 +184,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [
-      # Go-first MCU path: tinygo (wraps its own go) builds and flashes, avrdude does the AVR talking.
-      pkgs.tinygo
-      pkgs.avrdude
-      pkgs.arduino-cli
-      # ESP32-S2 (HD-WF1) lives on its own flashing protocol.
-      pkgs.esptool
       # Serial terminals + enumeration.
       pkgs.picocom
       pkgs.usbutils
@@ -202,8 +192,6 @@ in
       pkgs.ffmpeg
       # Live viewer + V4L2 control sliders (FOSS, GPL) — also the aiming tool.
       pkgs.guvcview
-      # Logic analyser / DMM capture, for when a protocol needs decoding rather than guessing.
-      pkgs.sigrok-cli
       benchSnap
       benchDevices
       benchView
@@ -217,8 +205,6 @@ in
       SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="hw-bench/ch340", GROUP="dialout", MODE="0660"
       SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="hw-bench/cp2102", GROUP="dialout", MODE="0660"
       SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="hw-bench/ftdi", GROUP="dialout", MODE="0660"
-      # ESP32-S2 in ROM bootloader — how the HD-WF1 appears once GPIO0 is held low at power-on.
-      SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", SYMLINK+="hw-bench/esp32", GROUP="dialout", MODE="0660"
       # USB-TMC test instruments (e.g. the DSO2C10 pocket scope) bind to usbmisc, not tty.
       SUBSYSTEM=="usbmisc", ATTRS{idVendor}=="049f", ATTRS{idProduct}=="505e", SYMLINK+="hw-bench/scope0", GROUP="dialout", MODE="0660"
     ''
