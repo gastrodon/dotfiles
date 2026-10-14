@@ -31,7 +31,7 @@
         ./ssh.nix
         ./firefox.nix
         ./rofi.nix
-        ./vscodium
+        ./zed
         ./zsh
         ./ghostty.nix
         ./i3.nix

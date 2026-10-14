@@ -12,7 +12,7 @@
     enableCompletion = true;
 
     shellAliases = {
-      code = "codium";
+      code = "zeditor";
     };
 
     autosuggestion = {

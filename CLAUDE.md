@@ -67,7 +67,7 @@ module/
     firefox.nix              # Firefox with NUR extensions
     rofi.nix                 # App launcher
     ghostty.nix              # Terminal emulator
-    vscodium/                # VSCodium editor + extensions + keybindings + language modules
+    zed/                     # Zed editor + extensions + keymap + language modules
     zsh/                     # Zsh + oh-my-zsh (liner theme), aliases, initContent
     claude.nix               # claude-code-bun package + `c` alias
   rend/                      # Rust binary: rendering utility

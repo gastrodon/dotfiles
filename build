@@ -23,7 +23,7 @@ usage() {
 Usage: $0 <build|switch|update> [hostname] [options]
 
 Commands:
-  update             nix flake update + bump pinned VSCodium extensions
+  update             nix flake update
   build              Build configuration
   switch             Switch to new configuration + restart i3
 
@@ -115,7 +115,6 @@ switch_config() {
 case "$COMMAND" in
   update)
     (cd "$SCRIPT_DIR" && nix flake update)
-    "$SCRIPT_DIR/module/home-manager/vscodium/update.sh"
     ;;
   build)
     build_config

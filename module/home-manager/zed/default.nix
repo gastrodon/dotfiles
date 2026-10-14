@@ -1,0 +1,107 @@
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+
+let
+  cfg = config.programs.zed-editor;
+
+  userSettings = import ./settings.nix;
+  userKeymaps = import ./keymap.nix;
+  snippets = (import ./snippets.nix).greek;
+
+  bundleType = lib.types.submodule {
+    options = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Whether to enable this bundle";
+      };
+      extensions = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = "Zed extension ids";
+      };
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = [ ];
+        description = "System packages";
+      };
+    };
+  };
+
+  defaultBundles =
+    with pkgs;
+    {
+      rich-text = {
+        enable = true;
+        extensions = [ "mermaid" ];
+        packages = [ ];
+      };
+      direnv = {
+        enable = true;
+        extensions = [ ];
+        packages = [
+          direnv
+          nix
+        ];
+      };
+      theme = {
+        enable = true;
+        extensions = [ "solarized" ];
+        packages = [ ];
+      };
+    };
+
+  bundles = lib.filterAttrs (n: v: v.enable) (defaultBundles // cfg.bundles);
+  extensions = lib.flatten (lib.mapAttrsToList (n: v: v.extensions) bundles);
+  packages = lib.flatten (lib.mapAttrsToList (n: v: v.packages) bundles);
+in
+{
+  imports = [
+    ./module/bun.nix
+    ./module/elm.nix
+    ./module/go.nix
+    ./module/nix.nix
+    ./module/python.nix
+    ./module/rust.nix
+    ./module/tofu.nix
+  ];
+
+  options.programs.zed-editor.bundles = lib.mkOption {
+    type = lib.types.attrsOf bundleType;
+    default = { };
+    description = ''
+      Bundles to install for Zed.
+      Each bundle can specify extensions and system packages to install.
+      These bundles will override default bundles with the same name.
+    '';
+    example = lib.literalExpression ''
+      {
+        python = {
+          enable = true;
+          extensions = [ "ruff" ];
+          packages = [ python3 ];
+        };
+      }
+    '';
+  };
+
+  config = {
+    home = {
+      inherit packages;
+    };
+
+    xdg.configFile."zed/snippets/snippets.json".text = builtins.toJSON snippets;
+
+    programs.zed-editor = {
+      enable = true;
+      package = pkgs.zed-editor;
+      mutableUserSettings = false;
+      mutableUserKeymaps = false;
+      inherit extensions userSettings userKeymaps;
+    };
+  };
+}

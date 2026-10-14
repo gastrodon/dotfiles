@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.programs.vscodium.module.bun;
+  cfg = config.programs.zed-editor.module.bun;
 in
 {
-  options.programs.vscodium.module.bun = {
+  options.programs.zed-editor.module.bun = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -18,15 +18,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    programs.vscodium.bundles.bun = {
+    programs.zed-editor.bundles.bun = {
       enable = true;
       extensions = [ ];
       packages = [ pkgs.bun ];
-    };
-
-    programs.vscodium.profiles.default.userSettings = {
-      "[typescript]".editor.formatOnSave = true;
-      "[typescriptreact]".editor.formatOnSave = true;
     };
   };
 }
