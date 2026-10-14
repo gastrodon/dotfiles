@@ -43,6 +43,9 @@
   desktop.hasBattery = true;
   desktop.hasBacklight = true;
   desktop.hasSpeaker = true;
+  desktop.idleLock = true;
+  desktop.session = "wayland";
+  desktop.xwayland = false;
 
   # EFI boot with separate /boot partition
   boot.loader.efi.canTouchEfiVariables = true;

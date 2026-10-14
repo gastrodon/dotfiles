@@ -1,5 +1,10 @@
 { palette }:
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   scripts = import ./scripts.nix { inherit pkgs; };
 
@@ -41,20 +46,22 @@ let
       [ ];
 in
 {
-  services.xserver.windowManager.i3 = {
-    enable = true;
-    package = pkgs.i3;
-    extraPackages = with pkgs; [
-      i3status
-      i3lock
-      i3blocks
-    ];
-  };
+  config = lib.mkIf (config.desktop.session == "x11") {
+    services.xserver.windowManager.i3 = {
+      enable = true;
+      package = pkgs.i3;
+      extraPackages = with pkgs; [
+        i3status
+        i3lock
+        i3blocks
+      ];
+    };
 
-  environment.systemPackages =
-    basePackages ++ backlightPackages ++ batteryPackages ++ speakerPackages ++ scripts.scripts;
+    environment.systemPackages =
+      basePackages ++ backlightPackages ++ batteryPackages ++ speakerPackages ++ scripts.scripts;
 
-  environment.variables = {
-    TERMINAL = "${terminalPkg}/bin/${terminalPkg.pname}";
+    environment.variables = {
+      TERMINAL = "${terminalPkg}/bin/${terminalPkg.pname}";
+    };
   };
 }

@@ -1,40 +1,46 @@
 { palette }:
 {
   config,
+  lib,
   pkgs,
   ...
 }:
 {
-  services.xserver = {
-    enable = true;
+  config = lib.mkMerge [
+    { services.libinput.enable = true; }
 
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
+    (lib.mkIf (config.desktop.session == "x11") {
+      services.xserver = {
+        enable = true;
 
-    displayManager = {
-      lightdm = {
-        enable = true; # LightDM detects i3 from services.xserver.windowManager.i3
+        xkb = {
+          layout = "us";
+          variant = "";
+        };
+
+        displayManager = {
+          lightdm = {
+            enable = true; # LightDM detects i3 from services.xserver.windowManager.i3
+          };
+        };
       };
-    };
-  };
 
-  services.libinput.enable = true;
+      environment.systemPackages = with pkgs; [
+        xrdb
+        xmodmap
+        xinit
+        xrandr
+        arandr
+        xclip
+        xfce4-exo # exo-open: URL launcher for URxvt
+        rxvt-unicode-unwrapped
+      ];
 
-  environment.systemPackages = with pkgs; [
-    xrdb
-    xmodmap
-    xinit
-    xrandr
-    xclip
-    xfce4-exo # exo-open: URL launcher for URxvt
-    rxvt-unicode-unwrapped
+      nixpkgs.config.rxvt-unicode = {
+        perlSupport = true;
+      };
+
+      environment.etc."X11/cursors".source = "${pkgs.vanilla-dmz}/share/icons/Vanilla-DMZ";
+    })
   ];
-
-  nixpkgs.config.rxvt-unicode = {
-    perlSupport = true;
-  };
-
-  environment.etc."X11/cursors".source = "${pkgs.vanilla-dmz}/share/icons/Vanilla-DMZ";
 }

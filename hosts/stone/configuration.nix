@@ -52,8 +52,9 @@
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;
   desktop.hasSpeaker = true;
+  desktop.session = "wayland";
 
-  desktop.extra.i3config = {
+  desktop.extra.swayconfig = {
     workspaceOutputAssign = [
       {
         workspace = "10";
@@ -65,8 +66,8 @@
         command = toString (
           let
             monitors = {
-              "DP-4" = "--mode 2560x1440 --rotate right --pos 0x1080";
-              "DP-3" = "--primary --mode 2560x1440 --rotate normal --pos 1440x1562";
+              "DP-4" = "mode 2560x1440 transform 90 pos 0 1080";
+              "DP-3" = "mode 2560x1440 transform normal pos 1440 1562";
             };
             # Unspecified connected outputs default to 1080p and stack directly
             # above DP-4 (bottom edge at y = 1080), left-to-right from x = 0.
@@ -76,16 +77,16 @@
               width = 1920;
               height = 1080;
             };
-            xrandr = "${pkgs.xrandr}/bin/xrandr";
+            swaymsg = "${pkgs.sway}/bin/swaymsg";
           in
           pkgs.writeShellScript "stone-monitor-layout" ''
-            connected=$(${xrandr} --query | ${pkgs.gawk}/bin/awk '/ connected/ {print $1}')
+            connected=$(${swaymsg} -t get_outputs -r | ${pkgs.jq}/bin/jq -r '.[].name')
 
             args=()
             ${lib.concatStringsSep "\n" (
               lib.mapAttrsToList (name: opts: ''
                 if printf '%s\n' "$connected" | grep -qx ${lib.escapeShellArg name}; then
-                  args+=(--output ${name} ${opts})
+                  args+=("output ${name} ${opts}")
                 fi
               '') monitors
             )}
@@ -96,18 +97,33 @@
               case "$out" in
                 ${lib.concatStringsSep "|" (lib.attrNames monitors)}) continue ;;
               esac
-              args+=(--output "$out" --mode ${toString stack.width}x${toString stack.height} --rotate normal --pos "''${x}x$y")
+              args+=("output $out mode ${toString stack.width}x${toString stack.height} transform normal pos $x $y")
               x=$((x + ${toString stack.width}))
             done
 
             if [ ''${#args[@]} -gt 0 ]; then
-              ${xrandr} "''${args[@]}"
+              ${swaymsg} "$(IFS=';'; echo "''${args[*]}")"
+            fi
+
+            # sway has no primary output; XWayland does
+            if printf '%s\n' "$connected" | grep -qx DP-3; then
+              ${pkgs.xrandr}/bin/xrandr --output DP-3 --primary
             fi
           ''
         );
-        notification = false;
       }
     ];
+  };
+
+  # RTX 2080 Super needs the unsupported-GPU flag; no hardware cursor on proprietary NVIDIA.
+  programs.sway = {
+    extraOptions = [ "--unsupported-gpu" ];
+    extraSessionCommands = ''
+      export WLR_NO_HARDWARE_CURSORS=1
+      export GBM_BACKEND=nvidia-drm
+      export __GLX_VENDOR_LIBRARY_NAME=nvidia
+      export WLR_RENDERER=vulkan
+    '';
   };
 
   # Direct GRUB boot (no EFI, no separate /boot)
@@ -125,6 +141,7 @@
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
+    powerManagement.enable = true;
     open = false; # Use proprietary drivers, not open kernel module
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;

@@ -25,7 +25,7 @@ Usage: $0 <build|switch|update> [hostname] [options]
 Commands:
   update             nix flake update
   build              Build configuration
-  switch             Switch to new configuration + restart i3
+  switch             Switch to new configuration + restart i3 / reload sway
 
 Options:
   --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
@@ -108,7 +108,7 @@ switch_config() {
   else
     echo "Switching to configuration for $HOSTNAME..."
     nixos-rebuild switch --flake "$SCRIPT_DIR#$HOSTNAME" --impure
-    i3-msg restart 2>/dev/null || true
+    { i3-msg restart || swaymsg reload; } 2>/dev/null || true
   fi
 }
 

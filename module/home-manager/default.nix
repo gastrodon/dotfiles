@@ -35,6 +35,7 @@
         ./zsh
         ./ghostty.nix
         ./i3.nix
+        ./sway.nix
         ./i3blocks.nix
         ./xresources.nix
         ./passage.nix
@@ -52,7 +53,6 @@
       home.stateVersion = "25.11";
 
       home.packages = with pkgs; [
-        arandr
         bottom
         tldr
         ripgrep

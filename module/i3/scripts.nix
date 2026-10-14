@@ -1,12 +1,48 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  session ? "x11",
+  ...
+}:
 let
-  blur-lock = pkgs.writeScriptBin "blur-lock" ''
-    #!/bin/sh
-    ${pkgs.scrot}/bin/scrot /tmp/screenshot.png
-    ${pkgs.imagemagick}/bin/convert /tmp/screenshot.png -blur 0x5 /tmp/screenshotblur.png
-    ${pkgs.i3lock}/bin/i3lock -i /tmp/screenshotblur.png
-    rm /tmp/screenshot.png /tmp/screenshotblur.png
-  '';
+  wayland = session == "wayland";
+  wmMsg = if wayland then "${pkgs.sway}/bin/swaymsg" else "${pkgs.i3}/bin/i3-msg";
+  wmConfig =
+    if wayland then "\"\${XDG_CONFIG_HOME:-$HOME/.config}/sway/config\"" else "/etc/i3/config";
+
+  blur-lock =
+    if wayland then
+      pkgs.writeScriptBin "blur-lock" ''
+        #!/bin/sh
+        d=$(${pkgs.coreutils}/bin/mktemp -d "''${XDG_RUNTIME_DIR:-/tmp}/lock.XXXXXX")
+        ${pkgs.grim}/bin/grim "$d/screenshot.png"
+        ${pkgs.imagemagick}/bin/convert "$d/screenshot.png" -blur 0x5 "$d/blur.png"
+        ${pkgs.swaylock}/bin/swaylock -f -i "$d/blur.png"
+        rm -rf "$d"
+      ''
+    else
+      pkgs.writeScriptBin "blur-lock" ''
+        #!/bin/sh
+        ${pkgs.scrot}/bin/scrot /tmp/screenshot.png
+        ${pkgs.imagemagick}/bin/convert /tmp/screenshot.png -blur 0x5 /tmp/screenshotblur.png
+        ${pkgs.i3lock}/bin/i3lock -i /tmp/screenshotblur.png
+        rm /tmp/screenshot.png /tmp/screenshotblur.png
+      '';
+
+  getBrightness =
+    if wayland then
+      "${pkgs.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq '.percentage | floor'"
+    else
+      "${pkgs.xbacklight}/bin/xbacklight | grep -Po '[0-9]{1,3}' | head -n 1";
+  brightnessUp =
+    if wayland then
+      "${pkgs.sys}/bin/sys backlight --write +5"
+    else
+      "${pkgs.xbacklight}/bin/xbacklight -inc $brightness_step -time 0";
+  brightnessDown =
+    if wayland then
+      "${pkgs.sys}/bin/sys backlight --write -5"
+    else
+      "${pkgs.xbacklight}/bin/xbacklight -dec $brightness_step -time 0";
 
   volume-brightness = pkgs.writeScriptBin "volume_brightness.sh" ''
     #!/bin/bash
@@ -24,7 +60,7 @@ let
     }
 
     function get_brightness {
-        ${pkgs.xbacklight}/bin/xbacklight | grep -Po '[0-9]{1,3}' | head -n 1
+        ${getBrightness}
     }
 
     function get_volume_icon {
@@ -78,12 +114,12 @@ let
         ;;
 
         brightness_up)
-        ${pkgs.xbacklight}/bin/xbacklight -inc $brightness_step -time 0
+        ${brightnessUp}
         show_brightness_notif
         ;;
 
         brightness_down)
-        ${pkgs.xbacklight}/bin/xbacklight -dec $brightness_step -time 0
+        ${brightnessDown}
         show_brightness_notif
         ;;
     esac
@@ -122,7 +158,7 @@ let
             ${blur-lock}/bin/blur-lock
             ;;
         $logout)
-            ${pkgs.i3}/bin/i3-msg exit
+            ${wmMsg} exit
             ;;
     esac
   '';
@@ -132,15 +168,15 @@ let
     MAX_DESKTOPS=20
     WORKSPACES=$(${pkgs.coreutils}/bin/seq -s '\n' 1 1 $MAX_DESKTOPS)
 
-    EMPTY_WORKSPACE=$( (${pkgs.i3}/bin/i3-msg -t get_workspaces | ${pkgs.coreutils}/bin/tr ',' '\n' | ${pkgs.gnugrep}/bin/grep num | ${pkgs.gawk}/bin/awk -F:  '{print int($2)}' ; \
+    EMPTY_WORKSPACE=$( (${wmMsg} -t get_workspaces | ${pkgs.coreutils}/bin/tr ',' '\n' | ${pkgs.gnugrep}/bin/grep num | ${pkgs.gawk}/bin/awk -F:  '{print int($2)}' ; \
                 echo -e $WORKSPACES ) | ${pkgs.coreutils}/bin/sort -n | ${pkgs.coreutils}/bin/uniq -u | ${pkgs.coreutils}/bin/head -n 1)
 
-    ${pkgs.i3}/bin/i3-msg workspace $EMPTY_WORKSPACE
+    ${wmMsg} workspace $EMPTY_WORKSPACE
   '';
 
   keyhint = pkgs.writeScriptBin "keyhint-2" ''
     #!/usr/bin/env bash
-    I3_CONFIG=/etc/i3/config
+    I3_CONFIG=${wmConfig}
     mod_key=$(${pkgs.gnused}/bin/sed -nre 's/^set \$mod (.*)/\1/p' $I3_CONFIG)
     ${pkgs.gnugrep}/bin/grep "^bindsym\|^bindcode" $I3_CONFIG \
         | ${pkgs.gnused}/bin/sed "s/-\(-\w\+\)\+//g;s/\$mod/$mod_key/g;s/Mod1/Alt/g;s/exec //;s/bindsym //;s/bindcode //;s/^\s\+//;s/^\([^ ]\+\) \(.\+\)$/\2: \1/;s/^\s\+//" \
@@ -206,12 +242,18 @@ let
     echo " $(${pkgs.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${pkgs.rend}/bin/rend bars --min 0 --max 100 --count 10)"
   '';
 
+  captureRegion =
+    if wayland then
+      ''${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" "$tmp"''
+    else
+      ''${pkgs.scrot}/bin/scrot -s -f -o "$tmp"'';
+
   screenshot = pkgs.writeScriptBin "screenshot" ''
     #!/bin/sh
     dir="$HOME/Pictures/scrot"
     mkdir -p "$dir"
     tmp=$(mktemp --suffix=.png)
-    ${pkgs.scrot}/bin/scrot -s -f -o "$tmp" || { rm -f "$tmp"; exit 1; }
+    ${captureRegion} || { rm -f "$tmp"; exit 1; }
     if [ "$1" = "named" ]; then
         name=$(${pkgs.rofi}/bin/rofi -dmenu -p "screenshot name" </dev/null)
         name=$(printf '%s' "$name" | tr '/' '_' | sed 's/\.png$//')

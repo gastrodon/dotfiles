@@ -1,9 +1,11 @@
 {
   palette,
+  desktop,
+  lib,
   ...
 }:
 {
-  xresources.properties = {
+  xresources.properties = lib.mkIf (desktop.session == "x11") {
     "*background" = palette.background;
     "*foreground" = palette.brightBlue;
     "*fadeColor" = palette.background;

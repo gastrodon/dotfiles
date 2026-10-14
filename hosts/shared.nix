@@ -38,6 +38,7 @@ in
     ../module/terminal.nix
     ../module/identity.nix
     (import ../module/i3 { inherit palette; })
+    ../module/sway
     (import ../module/home-manager {
       inherit
         palette
