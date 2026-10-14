@@ -1,28 +1,37 @@
-# Memory gardener (lab/docs decisions/2026-09-27-memory-gardener.md): drains
-# Claude Code auto-memory into the vault nightly. The units were first written
-# by hand on stone; force = true lets this replace them. A switch enables the
-# timer, but a run happens only once ~/.local/state/memory-gardener/enabled
-# exists, so a switch never turns the gardener on by itself.
-{ hostname, lib, ... }:
+# Memory gardener (Trilium decision note 2026-09-27-memory-gardener): the
+# lab/pkgs driver runs the `gardener` agent nightly over Claude Code
+# auto-memory. A run happens only once ~/.local/state/memory-gardener/enabled
+# exists, so a switch never turns it on; by hand the agent only reports.
+{
+  hostname,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  state = "%h/.local/state/memory-gardener";
   env = [ "PATH=/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin" ];
-  refresh = ''/run/current-system/sw/bin/sh -c 'd=${state}/src; if [ -d "$$d/.git" ]; then git -C "$$d" fetch -q origin main && git -C "$$d" reset -q --hard origin/main; else git clone -q http://192.168.0.17:3000/lab/docs.git "$$d"; fi' '';
+  garden = lib.getExe pkgs.memory-gardener;
 in
 lib.mkIf (hostname == "stone") {
+  home.packages = [ pkgs.memory-gardener ];
+
+  home.file.".claude/agents/gardener.md" = {
+    source = "${pkgs.memory-gardener}/share/memory-gardener/gardener.md";
+    force = true;
+  };
+
   systemd.user.services.memory-gardener = {
     Unit = {
-      Description = "Drain Claude Code auto-memory into lab/docs, repo CLAUDE.md and Gitea issues";
-      Documentation = "http://192.168.0.17:3000/lab/docs/src/branch/main/decisions/2026-09-27-memory-gardener.md";
-      ConditionPathExists = "${state}/enabled";
+      Description = "Drain Claude Code auto-memory into Trilium, repo CLAUDE.md, Gitea and Plane";
+      Documentation = "https://doc.lab.gastrodon.io/#root/N6tQyPn58vEg";
+      ConditionPathExists = "%h/.local/state/memory-gardener/enabled";
       OnFailure = "memory-gardener-alert.service";
     };
     Service = {
       Type = "oneshot";
       Environment = env ++ [ "CLAUDE_CODE_DISABLE_AUTO_MEMORY=1" ];
       WorkingDirectory = "%h";
-      ExecStartPre = lib.removeSuffix " " refresh;
-      ExecStart = "/run/current-system/sw/bin/python3 ${state}/src/bin/garden.py run";
+      ExecStart = "${garden} run";
       TimeoutStartSec = "6h";
       Nice = 10;
     };
@@ -34,8 +43,7 @@ lib.mkIf (hostname == "stone") {
       Type = "oneshot";
       Environment = env;
       WorkingDirectory = "%h";
-      ExecStartPre = "-" + lib.removeSuffix " " refresh;
-      ExecStart = "/run/current-system/sw/bin/python3 ${state}/src/bin/garden.py alert --unit memory-gardener.service";
+      ExecStart = "${garden} alert --unit memory-gardener.service";
     };
   };
 
