@@ -29,13 +29,4 @@
 
   sops.secrets."bao/gitea_approle_secret_id".owner = config.identity.username;
   sops.secrets."bao/claude_mcp_approle_secret_id".owner = config.identity.username;
-
-  # The claude uid's own Bao identity, isolated from eva's two above by file
-  # permissions alone -- decrypted with the same host key as everything
-  # else, but unreadable to eva. Unused until something actually runs as
-  # claude; see bao-bootstrap-claude-own-identity.sh.
-  sops.secrets."bao/claude_self_approle_secret_id" = {
-    owner = "claude";
-    mode = "0400";
-  };
 }
