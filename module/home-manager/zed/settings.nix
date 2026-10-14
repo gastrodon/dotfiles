@@ -6,6 +6,7 @@
     metrics = false;
   };
   auto_update = false;
+  edit_predictions.provider = "none";
 
   ui_font_size = 16;
   buffer_font_family = "Fira Code";
