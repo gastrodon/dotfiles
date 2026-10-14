@@ -30,7 +30,7 @@ in
     programs.zed-editor.userSettings = {
       lsp.nixd = {
         binary.path = "${pkgs.nixd}/bin/nixd";
-        settings.nixd.formatting.command = [ "nixfmt" ];
+        settings.nixd.formatting.command = [ (lib.getExe pkgs.nixfmt) ];
       };
       languages.Nix = {
         language_servers = [

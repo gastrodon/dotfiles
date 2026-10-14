@@ -43,28 +43,18 @@ let
     };
   };
 
-  defaultBundles =
-    with pkgs;
-    {
-      rich-text = {
-        enable = true;
-        extensions = [ "mermaid" ];
-        packages = [ ];
-      };
-      direnv = {
-        enable = true;
-        extensions = [ ];
-        packages = [
-          direnv
-          nix
-        ];
-      };
-      theme = {
-        enable = true;
-        extensions = [ "solarized" ];
-        packages = [ ];
-      };
+  defaultBundles = {
+    rich-text = {
+      enable = true;
+      extensions = [ "mermaid" ];
+      packages = [ ];
     };
+    theme = {
+      enable = true;
+      extensions = [ "solarized" ];
+      packages = [ ];
+    };
+  };
 
   bundles = lib.filterAttrs (n: v: v.enable) (defaultBundles // cfg.bundles);
   extensions = lib.flatten (lib.mapAttrsToList (n: v: v.extensions) bundles);
@@ -101,8 +91,9 @@ in
   };
 
   config = {
-    home = {
-      inherit packages;
+    programs.direnv = {
+      enable = true;
+      nix-direnv.enable = true;
     };
 
     xdg.configFile."zed/snippets/snippets.json".source =
@@ -113,6 +104,7 @@ in
       package = pkgs.zed-editor;
       mutableUserSettings = false;
       mutableUserKeymaps = false;
+      extraPackages = packages;
       inherit extensions userSettings userKeymaps;
     };
   };

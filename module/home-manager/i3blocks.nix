@@ -110,7 +110,7 @@ let
   '';
 
   i3blocks-battery = pkgs.writeScriptBin "i3blocks-battery" ''
-    #!/usr/bin/env python3
+    #!${pkgs.python3}/bin/python3
     from subprocess import check_output
     import os
     import re
