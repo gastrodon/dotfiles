@@ -91,11 +91,6 @@ in
   };
 
   config = {
-    programs.direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-
     xdg.configFile."zed/snippets/snippets.json".source =
       (pkgs.formats.json { }).generate "snippets.json" snippets;
 
