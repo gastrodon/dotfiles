@@ -23,20 +23,10 @@
   # Hardware bench: Uno + camera are physically attached to stone.
   hwBench.enable = true;
 
-  # Netboot server for the server boxes; off between installs (else it loops them back into PXE).
-  # This is NOT what boots the diskless cluster nodes — see wiki: PXE install
-  # path vs cluster netboot, don't confuse the two.
-  services.pxeBootServer = {
-    enable = false;
-    interface = "enp7s0";
-    hostAddress = "192.168.0.77";
-  };
-
   # PXE/RAM boot server for the diskless cluster nodes (EVA-298 / EVA-300).
   # THE DAEMON IS NOT HERE — pixiecore runs as a Nomad job; see
   # lab/nomad-jobs infra/pixiecore.nomad.hcl. These ports are just the
-  # firewall hole it can't open for itself. See wiki: PXE install path vs
-  # cluster netboot, don't confuse the two.
+  # firewall hole it can't open for itself.
   networking.firewall.allowedUDPPorts = [
     67 # proxy-DHCP (pixiecore runs with --dhcp-no-bind, coexists with dg4244)
     69 # TFTP
