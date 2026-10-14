@@ -2,13 +2,22 @@
   config,
   pkgs,
   lib,
+  claude-code-nix,
   ...
 }:
 
 let
   cfg = config.programs.zed-editor;
 
-  userSettings = import ./settings.nix;
+  claude-code = claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  userSettings = import ./settings.nix // {
+    agent_servers."Claude Code" = {
+      type = "custom";
+      command = lib.getExe pkgs.claude-agent-acp;
+      env.CLAUDE_CODE_EXECUTABLE = lib.getExe claude-code;
+    };
+  };
   userKeymaps = import ./keymap.nix;
   snippets = (import ./snippets.nix).greek;
 
