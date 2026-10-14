@@ -256,10 +256,10 @@ in
             "${mod}+Ctrl+p" = "exec --no-startup-id power-profiles";
 
             "${mod}+space" =
-              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi";
+              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun";
 
             "${mod}+t" =
-              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window -config ~/.config/rofi/rofidmenu.rasi";
+              "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window";
 
             "${mod}+Shift+greater" = "move workspace to output right";
             "${mod}+Shift+less" = "move workspace to output left";

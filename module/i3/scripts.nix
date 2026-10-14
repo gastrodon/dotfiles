@@ -92,7 +92,6 @@ let
   powermenu = pkgs.writeScriptBin "powermenu" ''
     #!/usr/bin/env bash
 
-    ROFI_OPTIONS="-theme ~/.config/rofi/powermenu.rasi"
 
     shutdown=" Shutdown"
     reboot=" Reboot"
@@ -104,7 +103,7 @@ let
 
     options="$shutdown\n$reboot\n$suspend\n$hibernate\n$lock\n$logout\n$cancel"
 
-    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Menu" $ROFI_OPTIONS)
+    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Menu")
 
     case $selected in
         $shutdown)
@@ -146,13 +145,12 @@ let
     ${pkgs.gnugrep}/bin/grep "^bindsym\|^bindcode" $I3_CONFIG \
         | ${pkgs.gnused}/bin/sed "s/-\(-\w\+\)\+//g;s/\$mod/$mod_key/g;s/Mod1/Alt/g;s/exec //;s/bindsym //;s/bindcode //;s/^\s\+//;s/^\([^ ]\+\) \(.\+\)$/\2: \1/;s/^\s\+//" \
         | ${pkgs.coreutils}/bin/tr -s ' ' \
-        | ${pkgs.rofi}/bin/rofi -dmenu -theme ~/.config/rofi/rofikeyhint.rasi
+        | ${pkgs.rofi}/bin/rofi -dmenu
   '';
 
   power-profiles = pkgs.writeScriptBin "power-profiles" ''
     #!/usr/bin/env bash
 
-    ROFI_OPTIONS="-theme ~/.config/rofi/power-profiles.rasi"
 
     performance=" Performance"
     balanced=" Balanced"
@@ -161,7 +159,7 @@ let
 
     options="$performance\n$balanced\n$powersaver\n$cancel"
 
-    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Profile" $ROFI_OPTIONS)
+    selected=$(echo -e "$options" | ${pkgs.rofi}/bin/rofi -dmenu -i -p "Power Profile")
 
     case $selected in
         $performance)
@@ -215,7 +213,7 @@ let
     tmp=$(mktemp --suffix=.png)
     ${pkgs.scrot}/bin/scrot -s -f -o "$tmp" || { rm -f "$tmp"; exit 1; }
     if [ "$1" = "named" ]; then
-        name=$(${pkgs.rofi}/bin/rofi -dmenu -p "screenshot name" -config ~/.config/rofi/rofidmenu.rasi </dev/null)
+        name=$(${pkgs.rofi}/bin/rofi -dmenu -p "screenshot name" </dev/null)
         name=$(printf '%s' "$name" | tr '/' '_' | sed 's/\.png$//')
         [ -n "$name" ] || { rm -f "$tmp"; exit 0; }
     else
