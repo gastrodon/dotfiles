@@ -2,8 +2,6 @@
 # Delete-then-add: `tea login edit` cannot change a token non-interactively.
 { pkgs, lib, ... }:
 let
-  baoKvGetCached = import ./bao-kv-get-cached.nix { inherit pkgs; };
-
   giteaAddr = "http://192.168.0.17:3000";
   giteaLoginName = "gastrodon-gitea";
 
@@ -14,7 +12,7 @@ let
       pkgs.coreutils
     ];
     text = ''
-      token="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/gitea api_token 86400 2>/dev/null)" || exit 0
+      token="$(${lib.getExe pkgs.bao-kv-get-cached} claude/gitea api_token 86400 2>/dev/null)" || exit 0
       [[ -z "$token" ]] && exit 0
 
       marker="''${XDG_CACHE_HOME:-$HOME/.cache}/bao-kv-get/tea-gitea-synced-sha256"

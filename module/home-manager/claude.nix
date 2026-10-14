@@ -5,13 +5,11 @@
   ...
 }:
 let
-  baoKvGet = import ../lab/home/bao-kv-get.nix { inherit pkgs; };
-  baoKvGetCached = import ../lab/home/bao-kv-get-cached.nix { inherit pkgs; };
 
   triliumMcpHeaders = pkgs.writeShellApplication {
     name = "trilium-mcp-headers";
     runtimeInputs = [
-      baoKvGetCached
+      pkgs.bao-kv-get-cached
       pkgs.jq
     ];
     text = ''
@@ -67,7 +65,7 @@ let
     name = "github-mcp-server-wrapped";
     runtimeInputs = [
       githubMcpPkg
-      baoKvGet
+      pkgs.bao-kv-get
     ];
     text = ''
       GITHUB_PERSONAL_ACCESS_TOKEN="$(bao-kv-get claude/github mcp_token)"
@@ -81,7 +79,7 @@ let
     runtimeInputs = [
       pkgs.uv
       pkgs.awscli2
-      baoKvGet
+      pkgs.bao-kv-get
     ];
     text = ''
       AWS_ACCESS_KEY_ID="$(bao-kv-get claude/aws iam_key)"
@@ -198,7 +196,7 @@ let
         "Bash(sops:*)"
       ];
       # Narrow carve-outs in the credential-read guard for the two
-      # documented, non-plaintext-printing Bao AppRole flows: bao-kv-get.nix
+      # documented, non-plaintext-printing Bao AppRole flows: bao-kv-get
       # reading the claude_mcp secret_id file directly, and lab/nomad-jobs'
       # bin/lib.sh load_token (derives a Nomad token, never echoes the secret).
       permissions.allow = [

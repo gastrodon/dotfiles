@@ -10,7 +10,6 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/claude-code.nix
-    ../../module/linear.nix
     ../../module/lab/tea.nix
     ../../module/lab/bench.nix
     ../../module/tailscale.nix

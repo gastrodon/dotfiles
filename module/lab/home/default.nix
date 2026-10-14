@@ -6,8 +6,8 @@
   ];
 
   home.packages = [
-    (import ./bao-kv-get.nix { inherit pkgs; })
-    (import ./bao-kv-get-cached.nix { inherit pkgs; })
+    pkgs.bao-kv-get
+    pkgs.bao-kv-get-cached
   ];
 
   home.sessionVariables.BAO_ADDR = "http://192.168.0.17:8200";
