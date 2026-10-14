@@ -251,7 +251,9 @@ in
             "Print" =
               "exec --no-startup-id ${pkgs.scrot}/bin/scrot ~/Pictures/scrot/%Y-%m-%d-%T.png && ${pkgs.libnotify}/bin/notify-send \"Screenshot saved\" \"~/Pictures/scrot/$(${pkgs.coreutils}/bin/date +\"%Y-%m-%d-%T\").png\"";
 
-            "${mod}+Shift+p" = "exec --no-startup-id power-profiles";
+            "${mod}+p" = "exec --no-startup-id screenshot";
+            "${mod}+Shift+p" = "exec --no-startup-id screenshot named";
+            "${mod}+Ctrl+p" = "exec --no-startup-id power-profiles";
 
             "${mod}+space" =
               "exec --no-startup-id ${pkgs.rofi}/bin/rofi -modi drun -show drun -config ~/.config/rofi/rofidmenu.rasi";

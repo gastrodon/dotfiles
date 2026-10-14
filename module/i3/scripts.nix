@@ -208,10 +208,31 @@ let
     echo " $(${local.sys}/bin/sys --format json backlight | ${pkgs.jq}/bin/jq .percentage | ${local.rend}/bin/rend bars --min 0 --max 100 --count 10)"
   '';
 
+  screenshot = pkgs.writeScriptBin "screenshot" ''
+    #!/bin/sh
+    dir="$HOME/Pictures/scrot"
+    mkdir -p "$dir"
+    tmp=$(mktemp --suffix=.png)
+    ${pkgs.scrot}/bin/scrot -s -f -o "$tmp" || { rm -f "$tmp"; exit 1; }
+    if [ "$1" = "named" ]; then
+        name=$(${pkgs.rofi}/bin/rofi -dmenu -p "screenshot name" -config ~/.config/rofi/rofidmenu.rasi </dev/null)
+        name=$(printf '%s' "$name" | tr '/' '_' | sed 's/\.png$//')
+        [ -n "$name" ] || { rm -f "$tmp"; exit 0; }
+    else
+        name=$(date +%Y-%m-%d_%H-%M-%S)
+    fi
+    out="$dir/$name.png"
+    n=1
+    while [ -e "$out" ]; do out="$dir/$name-$n.png"; n=$((n + 1)); done
+    mv "$tmp" "$out"
+    ${pkgs.libnotify}/bin/notify-send "Screenshot saved" "$out"
+  '';
+
 in
 {
   inherit
     blur-lock
+    screenshot
     volume-brightness
     powermenu
     empty-workspace
@@ -223,6 +244,7 @@ in
 
   scripts = [
     blur-lock
+    screenshot
     volume-brightness
     powermenu
     empty-workspace
