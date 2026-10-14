@@ -23,6 +23,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Not follows'd on purpose: nixpkgs' claude-code lags upstream npm releases by
     # weeks-to-months (missing models/features in the CLI menus). This flake tracks
     # the npm package directly and updates fast; pin it to nixpkgs and we're back
@@ -88,6 +93,7 @@
           "${inputs.lab-nix-modules}/module/stone-join.nix"
           home-manager.nixosModules.home-manager
           labPkgs
+          { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
         ];
@@ -111,6 +117,7 @@
           ./hosts/twink/configuration.nix
           home-manager.nixosModules.home-manager
           labPkgs
+          { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
         ];
