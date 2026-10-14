@@ -1,9 +1,22 @@
-{ palette, ... }:
+{
+  config,
+  lib,
+  palette,
+  ...
+}:
+let
+  literal = lib.mapAttrs (
+    _:
+    lib.mapAttrs (
+      k: v: if builtins.isString v && k != "str" then config.lib.formats.rasi.mkLiteral v else v
+    )
+  );
+in
 {
   programs.rofi = {
     enable = true;
 
-    theme = {
+    theme = literal {
       "*" = {
         background = palette.background;
         background-alt = palette.black;
@@ -13,6 +26,8 @@
         urgent = palette.red;
         border = palette.blue;
         text = palette.brightWhite;
+        background-color = "var(background)";
+        text-color = "var(foreground)";
       };
 
       window = {
