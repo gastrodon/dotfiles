@@ -1,7 +1,6 @@
 # Memory gardener (Trilium decision note 2026-09-27-memory-gardener): the
 # lab/pkgs driver runs the `gardener` agent nightly over Claude Code
-# auto-memory. A run happens only once ~/.local/state/memory-gardener/enabled
-# exists, so a switch never turns it on; by hand the agent only reports.
+# auto-memory; by hand the agent only reports.
 {
   hostname,
   lib,
@@ -24,7 +23,6 @@ lib.mkIf (hostname == "stone") {
     Unit = {
       Description = "Drain Claude Code auto-memory into Trilium, repo CLAUDE.md, Gitea and Plane";
       Documentation = "https://doc.lab.gastrodon.io/#root/N6tQyPn58vEg";
-      ConditionPathExists = "%h/.local/state/memory-gardener/enabled";
       OnFailure = "memory-gardener-alert.service";
     };
     Service = {
