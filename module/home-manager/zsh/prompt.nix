@@ -27,14 +27,12 @@ let
     {
       name = "git";
       body = ''
-        local -a st remotes
+        local -a st cfg
         st=("''${(@f)$(git status --porcelain=v2 --branch 2>/dev/null)}") || return 0
-        local line head= upstream= ahead=0 dirty=
+        local line head= dirty= base ahead=
         for line in $st; do
           case $line in
             ('# branch.head '*) head=''${line#\# branch.head } ;;
-            ('# branch.upstream '*) upstream=1 ;;
-            ('# branch.ab '*) ahead=''${''${line#\# branch.ab +}%% *} ;;
             ('#'*) ;;
             (*) dirty=1 ;;
           esac
@@ -42,18 +40,19 @@ let
         [[ $head == '(detached)' ]] && head=HEAD
 
         local name=''${PWD:t}
-        remotes=(''${(f)"$(git config --get-regexp '^remote\..*\.url$' 2>/dev/null)"})
-        if (( $#remotes )); then
-          line=''${(M)remotes:#remote.origin.url *}
-          [[ -n $line ]] && name=''${''${line##* }:t}; name=''${name%.git}
-          if [[ -z $upstream ]]; then
-            line=''${''${remotes[1]#remote.}%.url *}
-            ahead=$(git rev-list --count "$line.." 2>/dev/null) || ahead=0
-          fi
-        fi
+        cfg=(''${(f)"$(git config --get-regexp '^(remote\.origin\.url|init\.defaultbranch)$' 2>/dev/null)"})
+        line=''${(M)cfg:#remote.origin.url *}
+        [[ -n $line ]] && name=''${''${''${line##* }:t}%.git}
+
+        # commits since branching off the default branch
+        line=''${(M)cfg:#init.defaultbranch *}
+        for base in refs/remotes/origin/HEAD refs/heads/main refs/heads/master ''${line:+refs/heads/''${line##* }}; do
+          ahead=$(git rev-list --count "$base..HEAD" 2>/dev/null) && break
+          ahead=
+        done
 
         p+="''${name//\%/%%}%F{''${dirty:+yellow}''${dirty:-green}}/''${head//\%/%%}"
-        (( ahead > 0 && $#remotes )) && p+="+$ahead"
+        (( ahead > 0 )) && p+="+$ahead"
         p+="%F{white}"
       '';
     }
