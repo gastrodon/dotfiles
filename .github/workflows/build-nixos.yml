@@ -56,16 +56,10 @@ jobs:
           case "${{ matrix.target }}" in
             stone)              attr=nixosConfigurations.stone.config.system.build.toplevel ;;
             twink)               attr=nixosConfigurations.twink.config.system.build.toplevel ;;
-            stone-installer)     attr=nixosConfigurations.stone-installer.config.system.build.isoImage
-                                  artifact=iso; path='result/iso/*.iso' ;;
-            twink-installer)     attr=nixosConfigurations.twink-installer.config.system.build.isoImage
-                                  artifact=iso; path='result/iso/*.iso' ;;
+            stone-installer)     attr=nixosConfigurations.stone-installer.config.system.build.isoImage ;;
+            twink-installer)     attr=nixosConfigurations.twink-installer.config.system.build.isoImage ;;
           esac
-          {
-            echo "attr=$attr"
-            echo "artifact=$artifact"
-            echo "path=$path"
-          } >> "$GITHUB_OUTPUT"
+          echo "attr=$attr" >> "$GITHUB_OUTPUT"
 
       - name: flake update
         if: matrix.channel == 'latest'
@@ -73,10 +67,3 @@ jobs:
 
       - name: build
         run: nix build ".#${{ steps.vars.outputs.attr }}" --impure
-
-      - name: upload artifact
-        if: matrix.channel == 'current' && steps.vars.outputs.artifact != ''
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ steps.vars.outputs.artifact }}-${{ matrix.target }}
-          path: ${{ steps.vars.outputs.path }}
