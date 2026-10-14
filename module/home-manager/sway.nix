@@ -28,6 +28,7 @@ lib.mkIf (desktop.session == "wayland") {
       package = pkgs.gnome-themes-extra;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk4.theme = null;
   };
 
   services.dunst = {
