@@ -1,8 +1,8 @@
 # Hardware bench — the host a device-under-test is physically wired to (stone today; a Pi later).
 # Opt-in per host with `hwBench.enable = true;`. Three jobs:
 #
-#   1. toolchain  — build/flash/talk to MCUs. Go-first (tinygo for AVR/ARM MCUs), with
-#      arduino-cli + avrdude underneath and esptool for the ESP32-S2 side (HD-WF1).
+#   1. host tools — serial terminal, USB/V4L2 enumeration, camera capture. The MCU toolchain
+#      (tinygo, avrdude, arduino-cli, esptool, sigrok-cli) is the kitchen/testbench devshell.
 #   2. stable names — /dev/hw-bench/* symlinks, so scripts and agents stop chasing
 #      ttyACM0 -> ttyACM1 renumbering across replugs.
 #   3. eyes — a bench camera plus `bench-snap`, so an agent can observe the hardware
@@ -142,7 +142,7 @@ let
 in
 {
   options.hwBench = {
-    enable = lib.mkEnableOption "hardware bench: MCU toolchain, stable device symlinks, bench camera";
+    enable = lib.mkEnableOption "hardware bench: stable device symlinks, serial and camera tools";
 
     users = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -188,12 +188,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [
-      # Go-first MCU path: tinygo (wraps its own go) builds and flashes, avrdude does the AVR talking.
-      pkgs.tinygo
-      pkgs.avrdude
-      pkgs.arduino-cli
-      # ESP32-S2 (HD-WF1) lives on its own flashing protocol.
-      pkgs.esptool
       # Serial terminals + enumeration.
       pkgs.picocom
       pkgs.usbutils
@@ -202,8 +196,6 @@ in
       pkgs.ffmpeg
       # Live viewer + V4L2 control sliders (FOSS, GPL) — also the aiming tool.
       pkgs.guvcview
-      # Logic analyser / DMM capture, for when a protocol needs decoding rather than guessing.
-      pkgs.sigrok-cli
       benchSnap
       benchDevices
       benchView
