@@ -45,7 +45,6 @@ in
         claude-code-nix
         ;
     })
-    ../module/steam
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })
     ../module/podman.nix

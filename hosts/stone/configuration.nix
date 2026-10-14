@@ -168,9 +168,6 @@
   ];
 
   networking.firewall.allowedTCPPorts = [
-    # Minecraft "Open to LAN" on a pinned port — direct-connect via stone.local:25565.
-    25565
-
     # pixiecore's HTTP, serving bzImage and the ~1.5 GB initrd to booting nodes
     # (EVA-300; see the netboot block above). Not 80 or 8080 — see wiki: PXE
     # install path vs cluster netboot, don't confuse the two.
@@ -178,10 +175,6 @@
   ];
 
   environment.systemPackages = [
-    pkgs.prismlauncher
-    # extra JDKs in-closure for Prism's Java auto-detect (modpacks needing != bundled 21)
-    pkgs.jdk8
-    pkgs.jdk25
     pkgs.openbao
   ];
 }

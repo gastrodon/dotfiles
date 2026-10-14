@@ -61,8 +61,6 @@ module/
     blocks.nix               # i3blocks status bar config
     scripts.nix              # Helper scripts (brightness, lock, etc.)
   lab/                       # Home-lab ties: hosts.nix (IP map), cluster/ (nomad, netboot, pxe), services/, bench.nix, tea.nix, home/ (bao-kv-get, memory-gardener, lab-docs-pull)
-  steam/                     # Steam + per-game config modules
-    games/                   # Individual game configs (factorio, etc.)
   home-manager/              # Home Manager user-level config (runs as eva)
     default.nix              # HM entrypoint: sets extraSpecialArgs, imports all HM modules
     git.nix                  # Git config
