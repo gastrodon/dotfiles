@@ -13,7 +13,11 @@
 
   networking.hostName = "twink";
 
-  services.openssh.settings.PermitRootLogin = "no";
+  services.openssh.settings = {
+    PermitRootLogin = "no";
+    PasswordAuthentication = false;
+    KbdInteractiveAuthentication = false;
+  };
 
   home-manager.users.${config.identity.username}.imports = [ ../../module/home-manager/lab-mtls.nix ];
 
