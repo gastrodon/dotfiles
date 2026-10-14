@@ -131,7 +131,6 @@ in
     pi
   ];
 
-  # This module is imported only by stone, so Pi's local Ollama provider never
-  # appears on the Nomad/Linear worker hosts.
+  # Imported only by stone, so the llama-server provider stays off the worker hosts.
   home.file.".pi/agent/models.json".source = piModels;
 }

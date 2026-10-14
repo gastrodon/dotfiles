@@ -145,23 +145,6 @@
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
 
-  # Native CUDA-backed Ollama, available to LAN clients as stone:11434.
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama-cuda;
-    host = "0.0.0.0";
-    openFirewall = true;
-    loadModels = [ "qwen3:8b" ];
-    # contextWindow in pi.nix must exactly match OLLAMA_CONTEXT_LENGTH here, or
-    # Ollama silently truncates history. See wiki: pi model & tool-calling
-    # behavior notes (EVA-152).
-    environmentVariables = {
-      OLLAMA_CONTEXT_LENGTH = "40960";
-      OLLAMA_FLASH_ATTENTION = "1"; # required for quantised KV
-      OLLAMA_KV_CACHE_TYPE = "q4_0";
-    };
-  };
-
   powerManagement.cpuFreqGovernor = "performance";
 
   swapDevices = [
