@@ -110,6 +110,10 @@ in
 
   programs.nix-ld.enable = true;
 
+  # home-manager owns compinit and the prompt for eva
+  programs.zsh.enableGlobalCompInit = false;
+  programs.zsh.promptInit = "";
+
   boot.binfmt.emulatedSystems = [
     "aarch64-linux"
     "armv7l-linux"

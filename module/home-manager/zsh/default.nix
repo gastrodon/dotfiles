@@ -1,12 +1,11 @@
 {
-  config,
   pkgs,
   lib,
   ...
 }:
 
 {
-  home.file.".config/oh-my-zsh/themes/liner.zsh-theme".source = ./liner.zsh-theme;
+  imports = [ ./prompt.nix ];
 
   programs.zsh = {
     enable = true;
@@ -26,7 +25,6 @@
 
     historySubstringSearch = {
       enable = true;
-      # omz enables keypad mode (smkx), so arrows also arrive as SS3
       searchUpKey = [
         "^[[A"
         "^[OA"
@@ -53,14 +51,38 @@
       ];
     };
 
-    oh-my-zsh = {
-      enable = true;
-      custom = "${config.home.homeDirectory}/.config/oh-my-zsh";
-      theme = "liner";
-    };
+    autocd = true;
+    defaultKeymap = "emacs";
+    setOptions = [
+      "RM_STAR_SILENT"
+      "AUTO_PUSHD"
+      "PUSHD_IGNORE_DUPS"
+      "PUSHD_MINUS"
+      "INTERACTIVE_COMMENTS"
+      "LONG_LIST_JOBS"
+      "COMPLETE_IN_WORD"
+      "ALWAYS_TO_END"
+      "NO_FLOW_CONTROL"
+    ];
 
-    initContent = lib.mkOrder 500 ''
-      setopt rm_star_silent
+    initContent = lib.mkOrder 600 ''
+      zmodload -i zsh/complist
+      WORDCHARS=
+      zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
+      zstyle ':completion:*' menu select
+      zstyle ':completion:*' special-dirs true
+      zstyle ':completion:*' list-colors ''${(s.:.)LS_COLORS}
+      zstyle ':completion:*' use-cache yes
+      zstyle ':completion:*' cache-path "''${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+      bindkey '^[[Z' reverse-menu-complete
+      bindkey '^[[H' beginning-of-line
+      bindkey '^[OH' beginning-of-line
+      bindkey '^[[F' end-of-line
+      bindkey '^[OF' end-of-line
+      bindkey '^[[3~' delete-char
+      bindkey '^[[1;5C' forward-word
+      bindkey '^[[1;5D' backward-word
+      alias -- -='cd -'
     '';
 
     sessionVariables = {
