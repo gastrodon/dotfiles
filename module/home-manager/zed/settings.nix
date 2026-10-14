@@ -14,7 +14,7 @@
   buffer_font_features.calt = true;
 
   theme = {
-    mode = "system";
+    mode = "dark";
     light = "Solarized Light";
     dark = "Solarized Dark";
   };
