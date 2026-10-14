@@ -40,15 +40,7 @@
       save = 100000;
       extended = true;
       ignoreAllDups = true;
-      ignorePatterns = [
-        "bao login*"
-        "bao kv put*"
-        "bao write*"
-        "*TOKEN=*"
-        "*_KEY=*"
-        "*SECRET*=*"
-        "*PASSWORD=*"
-      ];
+      ignoreSpace = true;
     };
 
     autocd = true;
