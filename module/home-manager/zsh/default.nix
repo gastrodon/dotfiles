@@ -26,6 +26,31 @@
 
     historySubstringSearch = {
       enable = true;
+      # omz enables keypad mode (smkx), so arrows also arrive as SS3
+      searchUpKey = [
+        "^[[A"
+        "^[OA"
+      ];
+      searchDownKey = [
+        "^[[B"
+        "^[OB"
+      ];
+    };
+
+    history = {
+      size = 100000;
+      save = 100000;
+      extended = true;
+      ignoreAllDups = true;
+      ignorePatterns = [
+        "bao login*"
+        "bao kv put*"
+        "bao write*"
+        "*TOKEN=*"
+        "*_KEY=*"
+        "*SECRET*=*"
+        "*PASSWORD=*"
+      ];
     };
 
     oh-my-zsh = {
@@ -41,5 +66,10 @@
     sessionVariables = {
       EDITOR = "vim";
     };
+  };
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
   };
 }
