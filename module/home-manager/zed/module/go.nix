@@ -32,10 +32,16 @@ in
     };
 
     programs.zed-editor.userSettings = {
-      lsp.gopls.initialization_options = {
-        gofumpt = true;
-        staticcheck = true;
-        "ui.semanticTokens" = true;
+      lsp.gopls = {
+        binary = {
+          path = "${pkgs.gopls}/bin/gopls";
+          arguments = [ "-mode=stdio" ];
+        };
+        initialization_options = {
+          gofumpt = true;
+          staticcheck = true;
+          "ui.semanticTokens" = true;
+        };
       };
       languages.Go = {
         formatter = "language_server";

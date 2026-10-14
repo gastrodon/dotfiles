@@ -24,7 +24,7 @@ Documentation for porting existing dotfiles to Nix modules:
 - **i3.nix.md** - i3 window manager configuration plan
 - **polybar.nix.md** - Polybar status bar configuration plan
 - **git.nix.md** - Git configuration plan
-- **vscodium.nix.md** - VSCodium editor configuration plan
+- **zed.nix.md** - Zed editor configuration plan
 - **gh.nix.md** - GitHub CLI configuration plan
 - **packages.nix.md** - System packages configuration plan
 - **local-bin.nix.md** - Local binaries configuration plan
@@ -41,7 +41,7 @@ Traditional dotfiles that can be used alongside or migrated to Nix:
 - **.config/** - Application configurations
   - **i3/** - i3 window manager config
   - **polybar/** - Polybar status bar config
-  - **VSCodium/** - Editor settings
+  - **zed/** - Editor settings
   - **gh/** - GitHub CLI config
   - **oh-my-zsh/** - Shell theme customization
 
@@ -88,7 +88,6 @@ The NixOS modules in this repository provide:
 The following are documented but not yet implemented:
 - ZSH shell configuration
 - Polybar status bar
-- VSCodium editor
 - Git configuration
 - Full application suite
 - Home Manager integration

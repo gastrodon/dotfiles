@@ -28,7 +28,10 @@ in
     };
 
     programs.zed-editor.userSettings = {
-      lsp.nixd.settings.nixd.formatting.command = [ "nixfmt" ];
+      lsp.nixd = {
+        binary.path = "${pkgs.nixd}/bin/nixd";
+        settings.nixd.formatting.command = [ "nixfmt" ];
+      };
       languages.Nix = {
         language_servers = [
           "nixd"

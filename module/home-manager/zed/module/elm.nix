@@ -29,7 +29,13 @@ in
     };
 
     programs.zed-editor.userSettings = {
-      lsp.elm-language-server.initialization_options.elmFormatPath = "${pkgs.elmPackages.elm-format}/bin/elm-format";
+      lsp.elm-language-server = {
+        binary = {
+          path = "${pkgs.elmPackages.elm-language-server}/bin/elm-language-server";
+          arguments = [ "--stdio" ];
+        };
+        initialization_options.elmFormatPath = "${pkgs.elmPackages.elm-format}/bin/elm-format";
+      };
       languages.Elm.formatter = "language_server";
     };
   };

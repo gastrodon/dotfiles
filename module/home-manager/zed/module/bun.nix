@@ -23,5 +23,13 @@ in
       extensions = [ ];
       packages = [ pkgs.bun ];
     };
+
+    programs.zed-editor.userSettings = {
+      node.path = "${pkgs.nodejs}/bin/node";
+      lsp.vtsls.binary = {
+        path = "${pkgs.vtsls}/bin/vtsls";
+        arguments = [ "--stdio" ];
+      };
+    };
   };
 }

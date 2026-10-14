@@ -6,14 +6,19 @@
       "ctrl-o" = "file_finder::Toggle";
       "ctrl-t" = "workspace::NewFile";
       "ctrl-shift-alt-o" = "projects::OpenRemote";
+      "ctrl-alt-o" = [
+        "projects::OpenRemote"
+        {
+          from_existing_connection = false;
+          create_new_window = false;
+        }
+      ];
+      "ctrl-j" = "terminal_panel::ToggleFocus";
     };
   }
   {
-    context = "Workspace || Editor || Terminal";
-    bindings = {
-      "ctrl-j" = "terminal_panel::Toggle";
-      "ctrl-shift-l" = "theme_selector::Toggle";
-    };
+    context = "Terminal";
+    bindings."ctrl-j" = "workspace::ToggleBottomDock";
   }
   {
     context = "Editor && mode == full";

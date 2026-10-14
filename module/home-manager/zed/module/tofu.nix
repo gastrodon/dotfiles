@@ -29,7 +29,13 @@ in
     };
 
     programs.zed-editor.userSettings = {
-      lsp.terraform-ls.initialization_options.experimentalFeatures.validateOnSave = true;
+      lsp.terraform-ls = {
+        binary = {
+          path = "${pkgs.terraform-ls}/bin/terraform-ls";
+          arguments = [ "serve" ];
+        };
+        initialization_options.experimentalFeatures.validateOnSave = true;
+      };
       languages.Terraform.formatter = "language_server";
       languages."Terraform Vars".formatter = "language_server";
     };

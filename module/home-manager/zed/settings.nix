@@ -1,9 +1,15 @@
 {
   base_keymap = "VSCode";
 
-  ui_font_family = "Fira Code";
+  telemetry = {
+    diagnostics = false;
+    metrics = false;
+  };
+  auto_update = false;
+
+  ui_font_size = 16;
   buffer_font_family = "Fira Code";
-  buffer_font_size = 13;
+  buffer_font_size = 15;
   buffer_font_features.calt = true;
 
   theme = {

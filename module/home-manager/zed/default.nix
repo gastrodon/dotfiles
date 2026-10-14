@@ -94,7 +94,8 @@ in
       inherit packages;
     };
 
-    xdg.configFile."zed/snippets/snippets.json".text = builtins.toJSON snippets;
+    xdg.configFile."zed/snippets/snippets.json".source =
+      (pkgs.formats.json { }).generate "snippets.json" snippets;
 
     programs.zed-editor = {
       enable = true;

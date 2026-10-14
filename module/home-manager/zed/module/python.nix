@@ -28,14 +28,24 @@ in
       ];
     };
 
-    programs.zed-editor.userSettings.languages.Python = {
-      language_servers = [
-        "basedpyright"
-        "ruff"
-        "!pyright"
-        "..."
-      ];
-      formatter.language_server.name = "ruff";
+    programs.zed-editor.userSettings = {
+      lsp.basedpyright.binary = {
+        path = "${pkgs.basedpyright}/bin/basedpyright-langserver";
+        arguments = [ "--stdio" ];
+      };
+      lsp.ruff.binary = {
+        path = "${pkgs.ruff}/bin/ruff";
+        arguments = [ "server" ];
+      };
+      languages.Python = {
+        language_servers = [
+          "basedpyright"
+          "ruff"
+          "!pyright"
+          "..."
+        ];
+        formatter.language_server.name = "ruff";
+      };
     };
   };
 }
