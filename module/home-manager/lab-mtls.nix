@@ -24,7 +24,7 @@ let
     ];
     text = ''
       umask 077
-      mkdir -p -m 700 "${dir}"
+      mkdir -p "${dir}"
       if [[ ! -e "${key}" ]]; then
         tmp="$(mktemp "${dir}/.key.XXXXXX")"
         trap 'rm -f "$tmp"' EXIT
