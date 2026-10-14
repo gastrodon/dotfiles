@@ -9,11 +9,9 @@
   imports = [
     ./hardware-configuration.nix
     ../../module/avahi.nix
-    ../../module/lab/cluster/nomad-client.nix
     ../../module/claude-code.nix
     ../../module/linear.nix
     ../../module/lab/tea.nix
-    ../../module/lab/cluster/pxe-boot-server.nix
     ../../module/lab/bench.nix
     ../../module/tailscale.nix
   ];
@@ -36,7 +34,7 @@
 
   # PXE/RAM boot server for the diskless cluster nodes (EVA-298 / EVA-300).
   # THE DAEMON IS NOT HERE — pixiecore runs as a Nomad job; see
-  # ~/code/home-infra/infra/pixiecore.nomad.hcl. These ports are just the
+  # lab/nomad-jobs infra/pixiecore.nomad.hcl. These ports are just the
   # firewall hole it can't open for itself. See wiki: PXE install path vs
   # cluster netboot, don't confuse the two.
   networking.firewall.allowedUDPPorts = [

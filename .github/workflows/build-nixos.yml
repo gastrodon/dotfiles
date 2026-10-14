@@ -25,9 +25,6 @@ jobs:
           nix shell nixpkgs#nixfmt -c sh -c \
             'find . -name "*.nix" ! -path "./.git/*" | xargs nixfmt --check'
 
-  # pi targets run on ubuntu-24.04-arm (free on public repos) since they build aarch64-linux
-  # natively; everything else builds x86_64-linux on ubuntu-latest. rpi2b's sdImage is excluded
-  # (broken on nixpkgs 26.05, armv7l is32bit, independent of CI).
   build:
     name: build (${{ matrix.target }}, ${{ matrix.channel }})
     needs: nixfmt
@@ -42,16 +39,8 @@ jobs:
         target:
           - stone
           - twink
-          - server
-          - server-netboot
-          - rpi4b
           - stone-installer
           - twink-installer
-          - server-live-media
-          - rpi3b-plus-sdimage
-        include:
-          - { target: rpi4b, runs-on: ubuntu-24.04-arm }
-          - { target: rpi3b-plus-sdimage, runs-on: ubuntu-24.04-arm }
     steps:
       - uses: actions/checkout@v5
 
@@ -67,17 +56,10 @@ jobs:
           case "${{ matrix.target }}" in
             stone)              attr=nixosConfigurations.stone.config.system.build.toplevel ;;
             twink)               attr=nixosConfigurations.twink.config.system.build.toplevel ;;
-            server)              attr=nixosConfigurations.server.config.system.build.toplevel ;;
-            server-netboot)      attr=nixosConfigurations.server-netboot.config.system.build.toplevel ;;
-            rpi4b)               attr=nixosConfigurations.rpi4b.config.system.build.toplevel ;;
             stone-installer)     attr=nixosConfigurations.stone-installer.config.system.build.isoImage
                                   artifact=iso; path='result/iso/*.iso' ;;
             twink-installer)     attr=nixosConfigurations.twink-installer.config.system.build.isoImage
                                   artifact=iso; path='result/iso/*.iso' ;;
-            server-live-media)   attr=nixosConfigurations.server-live-media.config.system.build.isoImage
-                                  artifact=iso; path='result/iso/*.iso' ;;
-            rpi3b-plus-sdimage)  attr=nixosConfigurations.rpi3b-plus.config.system.build.sdImage
-                                  artifact=sdimage; path='result/sd-image/*.img.zst' ;;
           esac
           {
             echo "attr=$attr"
@@ -107,10 +89,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: download iso
+      - name: download isos
         uses: actions/download-artifact@v7
         with:
-          name: iso-server-live-media
+          pattern: iso-*
+          merge-multiple: true
 
       - name: create release
         run: |

@@ -28,14 +28,12 @@ Commands:
   switch             Switch to new configuration + restart i3
 
 Options:
-  --serve-pxe        Build + serve netboot (server only; foreground)
   --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
 
 Examples:
   $0 build stone
   $0 build stone --target root@192.168.1.10
   $0 build stone --target root@host1 --target root@host2
-  $0 build server --serve-pxe
   $0 switch twink
   $0 switch twink --target root@192.168.1.10
 EOF
@@ -49,7 +47,6 @@ HOSTNAME="${2:-${NIXOS_HOSTNAME:-$(hostname)}}"
 shift 2 || shift $#
 
 declare -a TARGET_HOSTS=()
-FLAG=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -57,11 +54,6 @@ while [[ $# -gt 0 ]]; do
       [[ -z "$2" ]] && { echo "Error: --target requires an argument" >&2; exit 1; }
       TARGET_HOSTS+=("$2")
       shift 2
-      ;;
-    --serve-pxe)
-      [[ -n "$FLAG" ]] && { echo "Error: only one flag allowed" >&2; exit 1; }
-      FLAG="$1"
-      shift
       ;;
     *)
       echo "Error: unknown option '$1'" >&2
@@ -116,71 +108,15 @@ switch_config() {
   fi
 }
 
-serve_pxe() {
-  if [[ "$HOSTNAME" != "server" ]]; then
-    echo "Error: --serve-pxe only supported for server" >&2
-    exit 1
-  fi
-
-  PXE_DIR="${PXE_DIR:-/var/lib/pxe}"
-
-  if [[ ! -d "$PXE_DIR" ]]; then
-    echo "Error: $PXE_DIR doesn't exist — must run on the PXE boot server (stone)." >&2
-    echo "       (services.pxeBootServer creates it; set PXE_DIR to override.)" >&2
-    exit 1
-  fi
-
-  echo "Building thin netboot image for server..."
-  NB="$SCRIPT_DIR#nixosConfigurations.server-netboot.config.system.build"
-  kernel=$(nix build --no-link --print-out-paths --impure "$NB.kernel")
-  initrd=$(nix build --no-link --print-out-paths --impure "$NB.netbootRamdisk")
-  ipxe=$(nix build --no-link --print-out-paths --impure "$NB.netbootIpxeScript")
-  toplevel=$(nix build --no-link --print-out-paths --impure \
-    "$SCRIPT_DIR#nixosConfigurations.server.config.system.build.toplevel")
-
-  echo "Staging boot files into $PXE_DIR..."
-  install -m 0644 "$kernel/bzImage" "$PXE_DIR/bzImage"
-  install -m 0644 "$initrd/initrd" "$PXE_DIR/initrd"
-  install -m 0644 "$ipxe/netboot.ipxe" "$PXE_DIR/netboot.ipxe"
-
-  echo "Copying target closure into $PXE_DIR/cache..."
-  nix copy --to "file://$PXE_DIR/cache?compression=zstd" "$toplevel"
-
-  echo ""
-  echo "PXE server ready. Serving from $PXE_DIR"
-  echo "Boxes will chain http://<stone>:8080/netboot.ipxe and pull closure at install time."
-  echo "Press Ctrl+C when done netbooting."
-  echo ""
-
-  trap - EXIT
-  while true; do sleep 1; done
-}
-
 case "$COMMAND" in
   update)
     (cd "$SCRIPT_DIR" && nix flake update)
     "$SCRIPT_DIR/module/home-manager/vscodium/update.sh"
     ;;
   build)
-    case "$FLAG" in
-      "")
-        if [[ ${#TARGET_HOSTS[@]} -gt 0 ]]; then
-          build_config
-        else
-          build_config
-        fi
-        ;;
-      --serve-pxe)
-        [[ ${#TARGET_HOSTS[@]} -gt 0 ]] && { echo "Error: --serve-pxe does not support --target" >&2; exit 1; }
-        serve_pxe
-        ;;
-    esac
+    build_config
     ;;
   switch)
-    if [[ -n "$FLAG" ]]; then
-      echo "Error: switch does not support --serve-pxe" >&2
-      exit 1
-    fi
     switch_config
     ;;
 esac
