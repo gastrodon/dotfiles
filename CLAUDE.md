@@ -53,6 +53,7 @@ module/
   identity.nix               # username, name, email, SSH key (eva / Eva Harris)
   users.nix                  # User account definition
   x11.nix                    # X11/startx setup (takes palette)
+  sway/                      # Sway (Wayland) session
   i3/                        # i3 window manager (takes palette)
     default.nix              # Enables i3, installs desktop packages, writes config via activation script
     config/                  # i3 config generation (keybinds, layout, floating, exec rules)
@@ -68,9 +69,8 @@ module/
     rofi.nix                 # App launcher
     ghostty.nix              # Terminal emulator
     zed/                     # Zed editor + extensions + keymap + language modules
-    zsh/                     # Zsh + oh-my-zsh (liner theme), aliases, initContent
+    zsh/                     # Zsh, nix-assembled prompt (prompt.nix), aliases, initContent
     claude.nix               # claude-code-bun package + `c` alias
-  rend/                      # Rust binary: rendering utility
 ```
 
 ## Config File Generation
@@ -121,5 +121,4 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 | Configure a new program | New `module/home-manager/<program>.nix`, import in `default.nix` |
 | Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` (cluster/server services: `lab/nix-modules`) |
 | Add a custom script | lab/pkgs `pkgs/`, then `nix flake update lab-pkgs` |
-| Add an i3 keybind | `module/i3/config/keybinds.nix` |
-| Add an i3 autostart | `module/i3/config/exec.nix` |
+| Add a sway/i3 keybind or autostart | `module/home-manager/wm-common.nix` |
