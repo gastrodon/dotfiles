@@ -13,6 +13,8 @@
 
   networking.hostName = "twink";
 
+  services.openssh.settings.PermitRootLogin = "no";
+
   home-manager.users.${config.identity.username}.imports = [ ../../module/home-manager/lab-mtls.nix ];
 
   desktop.terminal = pkgs.ghostty;
