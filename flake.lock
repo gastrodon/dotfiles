@@ -142,11 +142,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791963892,
-        "narHash": "sha256-ZSYV3l/0TozEaBmPOS08VH1ukeceBKzsfZkQPZf8aJI=",
+        "lastModified": 1791965124,
+        "narHash": "sha256-+XYiHU+F0aaOEIMfez7wxYJcBUctXwQxa0sy4thNe9o=",
         "ref": "refs/heads/main",
-        "rev": "5892f28e6b4e3301c6a9c6d189ca973afa29814e",
-        "revCount": 3,
+        "rev": "8e286c8351db5cb8b9d51ab6e588339fd6a974d6",
+        "revCount": 9,
         "type": "git",
         "url": "http://192.168.0.17:3000/lab/pkgs.git"
       },
