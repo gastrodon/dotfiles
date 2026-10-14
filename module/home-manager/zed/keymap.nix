@@ -14,6 +14,7 @@
         }
       ];
       "ctrl-j" = "terminal_panel::ToggleFocus";
+      "ctrl-shift-j" = "workspace::ToggleZoom";
     };
   }
   {
@@ -22,7 +23,10 @@
   }
   {
     context = "Editor && mode == full";
-    bindings."ctrl-enter" = "editor::NewlineBelow";
+    bindings = {
+      "ctrl-enter" = "editor::NewlineBelow";
+      "ctrl-shift-j" = "workspace::ToggleZoom";
+    };
   }
   {
     context = "ProjectPanel";
