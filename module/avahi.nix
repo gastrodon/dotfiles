@@ -7,6 +7,7 @@
     enable = true;
     nssmdns4 = true;
     openFirewall = true;
+    denyInterfaces = [ "tailscale0" ];
 
     publish = {
       enable = true;

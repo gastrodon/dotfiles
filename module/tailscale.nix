@@ -1,6 +1,4 @@
-# Tailscale client: joins the tailnet and enables Tailscale SSH by default,
-# so any tailnet member reaches this host directly (`ssh <host>`) instead of
-# hopping through a LAN-only box.
+# Tailscale client: joins the tailnet. Tailscale SSH is opt-in: it bypasses sshd and authorized_keys.
 {
   config,
   lib,
@@ -16,7 +14,7 @@ in
 
     ssh = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = false;
       description = "Accept Tailscale SSH connections from other tailnet nodes.";
     };
   };
@@ -26,9 +24,11 @@ in
       enable = true;
       openFirewall = true;
       authKeyFile = config.sops.secrets."tailscale/auth_key".path;
-      extraUpFlags = lib.optional cfg.ssh "--ssh";
       # LAN DNS is blocky via DHCP (EVA-551); MagicDNS would forward to a stale upstream instead.
-      extraSetFlags = [ "--accept-dns=false" ];
+      extraSetFlags = [
+        "--accept-dns=false"
+        "--ssh=${lib.boolToString cfg.ssh}"
+      ];
     };
 
     sops.secrets."tailscale/auth_key" = { };
