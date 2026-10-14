@@ -4,9 +4,6 @@
   pkgs,
   ...
 }:
-let
-  sshPubKey = builtins.readFile /home/eva/.ssh/id_ed25519.pub;
-in
 {
   options.identity = {
     username = lib.mkOption {
@@ -26,16 +23,9 @@ in
       default = "mail@gastrodon.io";
       description = "The user's email address";
     };
-
-    sshPubKey = lib.mkOption {
-      type = lib.types.str;
-      default = sshPubKey;
-      description = "SSH public key content";
-    };
   };
 
   config.identity = {
-    inherit sshPubKey;
     username = "eva";
     name = "Eva Harris";
     email = "mail@gastrodon.io";
