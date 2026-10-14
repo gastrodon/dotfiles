@@ -15,8 +15,8 @@ let
       token="$(${lib.getExe pkgs.bao-kv-get-cached} claude/gitea api_token 86400 2>/dev/null)" || exit 0
       [[ -z "$token" ]] && exit 0
 
-      marker="''${XDG_CACHE_HOME:-$HOME/.cache}/bao-kv-get/tea-gitea-synced-sha256"
-      mkdir -p "$(dirname "$marker")"
+      marker="''${XDG_RUNTIME_DIR:-/nonexistent}/bao-kv-get/tea-gitea-synced-sha256"
+      mkdir -p "$(dirname "$marker")" 2>/dev/null || marker=/dev/null
       digest="$(printf '%s' "$token" | sha256sum | cut -d' ' -f1)"
 
       if [[ -f "$marker" ]] && [[ "$(< "$marker")" == "$digest" ]]; then
