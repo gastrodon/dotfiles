@@ -54,6 +54,8 @@
   ];
 
   networking.hostName = "stone";
+
+  services.openssh.settings.PermitRootLogin = "no";
   services.nomadClient.datacenter = "stone";
 
   desktop.terminal = pkgs.ghostty;
