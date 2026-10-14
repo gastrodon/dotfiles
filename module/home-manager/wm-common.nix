@@ -197,7 +197,7 @@ in
         "${mod}+Shift+9" = null;
         "${mod}+Shift+0" = null;
 
-        "${mod}+Tab" = "workspace next";
+        "${mod}+Tab" = "exec --no-startup-id ${pkgs.rofi}/bin/rofi -show window";
         "${mod}+Shift+Tab" = "workspace prev";
 
         "${mod}+Return" = "exec --no-startup-id ${desktop.terminal}/bin/${desktop.terminal.pname}";
