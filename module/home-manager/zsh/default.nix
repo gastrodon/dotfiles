@@ -23,18 +23,6 @@
       enable = true;
     };
 
-    historySubstringSearch = {
-      enable = true;
-      searchUpKey = [
-        "^[[A"
-        "^[OA"
-      ];
-      searchDownKey = [
-        "^[[B"
-        "^[OB"
-      ];
-    };
-
     history = {
       size = 100000;
       save = 100000;
