@@ -220,7 +220,14 @@ let
   '';
 in
 {
-  home.packages = [
+  options.programs.claude.package = lib.mkOption {
+    type = lib.types.package;
+    readOnly = true;
+    default = claude;
+    description = "The claude wrapper with MCP servers and settings baked in.";
+  };
+
+  config.home.packages = [
     claude
     claudeRc
   ];

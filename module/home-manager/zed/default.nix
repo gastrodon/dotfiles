@@ -9,13 +9,15 @@
 let
   cfg = config.programs.zed-editor;
 
-  claude-code = claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  claude-agent-acp = pkgs.claude-agent-acp.override {
+    claude-code = claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  };
 
   userSettings = import ./settings.nix // {
     agent_servers."Claude Code" = {
       type = "custom";
-      command = lib.getExe pkgs.claude-agent-acp;
-      env.CLAUDE_CODE_EXECUTABLE = lib.getExe claude-code;
+      command = lib.getExe claude-agent-acp;
+      env.CLAUDE_CODE_EXECUTABLE = lib.getExe config.programs.claude.package;
     };
   };
   userKeymaps = import ./keymap.nix;
