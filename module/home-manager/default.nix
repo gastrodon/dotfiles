@@ -38,7 +38,6 @@
         ./i3blocks.nix
         ./xresources.nix
         ./passage.nix
-        ./trilium.nix
         (
           { config, ... }:
           {

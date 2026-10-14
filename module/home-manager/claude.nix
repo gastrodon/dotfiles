@@ -1,10 +1,24 @@
 {
   pkgs,
+  lib,
   claude-code-nix,
   ...
 }:
 let
   baoKvGet = import ../lab/home/bao-kv-get.nix { inherit pkgs; };
+  baoKvGetCached = import ../lab/home/bao-kv-get-cached.nix { inherit pkgs; };
+
+  triliumMcpHeaders = pkgs.writeShellApplication {
+    name = "trilium-mcp-headers";
+    runtimeInputs = [
+      baoKvGetCached
+      pkgs.jq
+    ];
+    text = ''
+      token="$(bao-kv-get-cached claude/trilium token)"
+      jq -n --arg t "$token" '{Authorization: ("Bearer " + $t)}'
+    '';
+  };
 
   mkClaude =
     {
@@ -127,11 +141,11 @@ let
     inkscape = {
       command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
     };
-    # The vault (Trilium). Claude Code expands the env var at connect time; trilium.nix exports it from Bao.
+    # The vault (Trilium); Claude Code runs headersHelper at connect time.
     trilium = {
       type = "http";
       url = "https://doc.lab.gastrodon.io/mcp";
-      headers.Authorization = "Bearer \${TRILIUM_MCP_TOKEN}";
+      headersHelper = lib.getExe triliumMcpHeaders;
     };
     # piscreen (the wall dashboard on rpi4b): query/apply/preview over plain
     # HTTP on the LAN. The Basic password is the same plaintext stopgap as

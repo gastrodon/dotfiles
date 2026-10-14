@@ -6,7 +6,7 @@
 # buildFHSEnv supplies exactly that, without relying on the host's nix-ld.
 #
 # Auth resolves as --api-key > LINEAR_API_KEY > .linear.toml > OS keyring. We take the
-# env var and fetch it from Bao at shell start (bao-kv-get.nix), so `linear auth login`
+# env var, fetched from Bao by the `linear` wrapper per invocation, so `linear auth login`
 # and its libsecret keyring never enter the picture — no interactive runtime state to manage.
 #
 # No shell completions: generating them means running the binary, which the build sandbox
@@ -24,8 +24,8 @@ let
     hash = "sha256-oTA1Cm0kAmhD2Mgs4xo8IyD4sjszT3HVC3qyuNuj8aM=";
   };
 
-  linear-cli = pkgs.buildFHSEnv {
-    name = "linear";
+  linear-fhs = pkgs.buildFHSEnv {
+    name = "linear-fhs";
 
     # git/jj: the CLI reads the current branch or commit trailers to pick the issue.
     # gh: `linear issue pr` shells out to it. The rest is what the ELF links against.
@@ -45,8 +45,20 @@ let
       homepage = "https://github.com/schpet/linear-cli";
       license = licenses.isc;
       platforms = [ "x86_64-linux" ];
-      mainProgram = "linear";
+      mainProgram = "linear-fhs";
     };
+  };
+
+  # bao-kv-get-cached: a cache hit skips the ~500-600ms AppRole login (bcrypt on the secret_id).
+  linear-cli = pkgs.writeShellApplication {
+    name = "linear";
+    text = ''
+      if [[ -z "''${LINEAR_API_KEY:-}" ]]; then
+        LINEAR_API_KEY="$(${lib.getExe baoKvGetCached} claude/linear api_key)"
+        export LINEAR_API_KEY
+      fi
+      exec ${lib.getExe linear-fhs} "$@"
+    '';
   };
 in
 {
@@ -60,14 +72,4 @@ in
     workspace = "gastrodon";
     team_id = "EVA";
   };
-
-  # Fetched at shell start, not baked into the store. Cached (bao-kv-get-cached.nix)
-  # so most shells hit disk instead of paying a live AppRole login every time -
-  # a raw bao-kv-get call costs ~500-600ms, almost all of it bcrypt-hashing the
-  # secret_id. Guarded so a shell that can't reach Bao (no network, secret_id
-  # missing, and no stale cache either) still starts clean instead of hanging.
-  programs.zsh.initContent = lib.mkOrder 550 ''
-    LINEAR_API_KEY="$(${baoKvGetCached}/bin/bao-kv-get-cached claude/linear api_key 2>/dev/null)" \
-      && export LINEAR_API_KEY
-  '';
 }
