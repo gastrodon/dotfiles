@@ -50,6 +50,12 @@
 
   services.upower.enable = true;
 
+  # /boot is typed basic-data, not EFI System, so fwupd can't find the ESP on its own
+  services.fwupd = {
+    enable = true;
+    daemonSettings.EspLocation = "/boot";
+  };
+
   # let the video group write backlight brightness
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness"
