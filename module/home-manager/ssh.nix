@@ -54,8 +54,7 @@ in
       stone.HostName = hosts.stone;
       twink.HostName = hosts.twink;
 
-      # `mso`, not `root`, but the session runs as uid 0).
-      # Key file on disk is still named after the modem model (dg4244_rsa).
+      # `mso` lands in a uid-0 session; legacy RSA only.
       modem = {
         HostName = hosts.modem;
         User = "mso";
@@ -63,18 +62,10 @@ in
         HostKeyAlgorithms = "+ssh-rsa";
         PubkeyAcceptedAlgorithms = "+ssh-rsa";
       };
-
-      # No server1/server2 aliases here (dropped -- the hardcoded-IP alias
-      # pattern went stale against DHCP-leased addresses; hosts.server1/
-      # server2 in module/hosts.nix remains the live source of truth,
-      # consumed directly where it's actually load-bearing: claude.nix's
-      # MCP SSH profiles, hosts/server/configuration.nix's Ollama wiring,
-      # and pi.nix's AGENTS.md text, all independently). Reach them with
-      # `ssh root@<ip>` directly (root pubkey login is granted by module/users.nix).
     };
   };
 
-  # programs.ssh symlinks ~/.ssh/config to the store (444); OpenSSH rejects it — replace with a 600 copy.
+  # programs.ssh symlinks ~/.ssh/config to the store (444); OpenSSH rejects it - replace with a 600 copy.
   home.activation.fixSshConfigPermissions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     config="$HOME/.ssh/config"
     if [ -L "$config" ]; then
