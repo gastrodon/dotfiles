@@ -1,5 +1,6 @@
 args@{
   desktop,
+  palette,
   pkgs,
   lib,
   ...
@@ -16,6 +17,20 @@ lib.mkIf (desktop.session == "wayland") {
     size = 18;
     gtk.enable = true;
     x11.enable = true;
+  };
+
+  services.dunst = {
+    enable = true;
+    settings = {
+      global = {
+        background = palette.background;
+        foreground = palette.brightBlue;
+        frame_color = palette.blue;
+        frame_width = 2;
+        highlight = palette.blue;
+      };
+      urgency_critical.frame_color = palette.red;
+    };
   };
 
   # dex would otherwise start a second nm-applet without --indicator
@@ -54,7 +69,6 @@ lib.mkIf (desktop.session == "wayland") {
         startup = [
           { command = "${pkgs.autotiling}/bin/autotiling"; }
           { command = "${pkgs.dex}/bin/dex --autostart --environment sway"; }
-          { command = "${pkgs.dunst}/bin/dunst"; }
           { command = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"; }
           { command = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"; }
           {
