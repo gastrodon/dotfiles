@@ -1,11 +1,5 @@
-# tea — Gitea's official CLI, for talking to our own Gitea server (not for
-# running one). tea has no credential-helper concept like git does: a token
-# has to live in its own ~/.config/tea/config.yml. So we fetch the same
-# claude/gitea Bao credential the git push helper uses (git.nix) - cached via
-# bao-kv-get-cached.nix - and sync it into a tea login at shell start,
-# backgrounded so it never blocks the prompt. Delete-then-add because `tea
-# login edit` has no non-interactive way to change a login's token; add also
-# fails if the login already exists, so any stale entry has to go first.
+# tea has no credential helper, so a user timer syncs the claude/gitea Bao token into a tea login.
+# Delete-then-add: `tea login edit` cannot change a token non-interactively.
 { pkgs, lib, ... }:
 let
   baoKvGetCached = import ./bao-kv-get-cached.nix { inherit pkgs; };
@@ -41,7 +35,20 @@ in
 {
   home.packages = [ pkgs.tea ];
 
-  programs.zsh.initContent = lib.mkOrder 550 ''
-    ${teaGiteaSync}/bin/tea-gitea-login-sync >/dev/null 2>&1 &!
-  '';
+  systemd.user.services.tea-gitea-login-sync = {
+    Unit.Description = "Sync the Bao Gitea token into tea's login";
+    Service = {
+      Type = "oneshot";
+      ExecStart = lib.getExe teaGiteaSync;
+    };
+  };
+
+  systemd.user.timers.tea-gitea-login-sync = {
+    Unit.Description = "Keep tea's Gitea login current";
+    Timer = {
+      OnStartupSec = "30s";
+      OnUnitActiveSec = "1h";
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
 }
