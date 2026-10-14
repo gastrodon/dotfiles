@@ -164,6 +164,7 @@ let
       model = "sonnet";
       advisorModel = "fable";
       effortLevel = "medium";
+      autoCompactWindow = 400000;
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
       };

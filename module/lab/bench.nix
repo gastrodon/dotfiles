@@ -69,6 +69,7 @@ let
     name = "bench-devices";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.gawk
       pkgs.systemd
       pkgs.usbutils
     ];
@@ -187,8 +188,7 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [
-      # Go-first MCU path: tinygo builds and flashes, avrdude does the AVR talking.
-      pkgs.go
+      # Go-first MCU path: tinygo (wraps its own go) builds and flashes, avrdude does the AVR talking.
       pkgs.tinygo
       pkgs.avrdude
       pkgs.arduino-cli
@@ -204,10 +204,6 @@ in
       pkgs.guvcview
       # Logic analyser / DMM capture, for when a protocol needs decoding rather than guessing.
       pkgs.sigrok-cli
-      # Host-side serial scripting. pyfirmata/telemetrix are NOT in nixpkgs — if we ever
-      # want live pin-poking without a reflash, it is a tinygo firmware + our own protocol,
-      # or a package we vendor ourselves.
-      (pkgs.python3.withPackages (ps: [ ps.pyserial ]))
       benchSnap
       benchDevices
       benchView
