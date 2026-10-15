@@ -69,6 +69,8 @@
       ];
       startup = [
         {
+          # A reload (home-manager's apply does one) resets outputs to the config file's, which has none.
+          always = true;
           command = toString (
             let
               monitors = {
