@@ -9,12 +9,14 @@ This directory contains machine-specific configurations for different hosts.
 - **Display**: DPMS power management disabled (`xset s off -dpms`)
 - **Features**: No battery or brightness controls
 - **Build**: `nix run .#build` or `nix run .#build -- stone`
+- **Installer ISO**: `nix run .#iso -- stone` (or `nix build .#iso-stone`)
 
 ### twink (Laptop)
 - **Boot**: GRUB with EFI support (`boot.loader.efi.canTouchEfiVariables = true`)
 - **Display**: DPMS power management enabled (`xset s 480 dpms 600 600 600`)
 - **Features**: Battery and brightness controls via i3blocks, backlight udev rules, upower service
 - **Build**: `nix run .#build` when on twink, or `nix run .#build -- twink`
+- **Installer ISO**: `nix run .#iso -- twink` (or `nix build .#iso-twink`)
 
 ## Structure
 
@@ -31,3 +33,4 @@ The shared configuration is in the root `configuration.nix`, which both hosts im
 3. Add `hosts/<hostname>/hardware-configuration.nix` (run `nixos-generate-config` on the target machine)
 4. Update `flake.nix` to add the new `nixosConfigurations.<hostname>` entry
 5. Run `nix run .#add-host` on the new machine to make it a `secrets.yaml` decrypter
+6. For an installer ISO, add `nixosConfigurations.<hostname>-installer` (via `mkInstaller`) and `packages.x86_64-linux.iso-<hostname>` to `flake.nix`

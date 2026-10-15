@@ -125,6 +125,11 @@
 
       apps.x86_64-linux = import ./build.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
 
+      packages.x86_64-linux = {
+        iso-stone = self.nixosConfigurations.stone-installer.config.system.build.isoImage;
+        iso-twink = self.nixosConfigurations.twink-installer.config.system.build.isoImage;
+      };
+
       # Build capabilities per host
       buildCapabilities = {
         stone = { };

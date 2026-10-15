@@ -44,10 +44,11 @@ Runs `nixos-rebuild build` (no switch, no root required). Emits `./result` which
 ## Repo Structure
 
 ```
-flake.nix                    # Flake inputs/outputs, defines each host's nixosConfiguration.
-build.nix                    # Flake apps: nix run .#<update|build|switch|add-host|remove-host>.
+flake.nix                    # Flake inputs/outputs, defines each host's nixosConfiguration, <host>-installer and packages.iso-<host>.
+build.nix                    # Flake apps: nix run .#<update|build|switch|add-host|remove-host|iso>.
 hosts/
   shared.nix                 # Shared entry point. Imports all common modules. Defines palette.
+  installer.nix              # Unattended installer ISO: disko + nixos-install of the host, host key from a HOSTKEYS stick
   stone/configuration.nix    # Per-host entry point + hardware-configuration.nix
   twink/configuration.nix    # Per-host entry point + hardware-configuration.nix
 module/
