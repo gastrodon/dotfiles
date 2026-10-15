@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Nix's git+ssh fetcher offers every ssh-agent key; isolate to the primary one.
 # If we can't unlock it here (e.g. no TTY for the passphrase prompt), fall back
 # to the caller's existing agent rather than leaving an empty one active.
-if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+if [[ -f "$HOME/.ssh/id_ed25519" && "${1:-}" != add-host ]]; then
   ORIGINAL_SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}"
   eval "$(ssh-agent -s)" >/dev/null
   trap 'ssh-agent -k >/dev/null 2>&1 || true' EXIT
@@ -20,12 +20,13 @@ fi
 
 usage() {
   cat >&2 <<EOF
-Usage: $0 <build|switch|update> [hostname] [options]
+Usage: $0 <build|switch|update|add-host> [hostname] [options]
 
 Commands:
   update             nix flake update
   build              Build configuration
   switch             Switch to new configuration + restart i3 / reload sway
+  add-host           Make this host's ssh host key a sops decrypter of secrets.yaml
 
 Options:
   --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
@@ -67,7 +68,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$COMMAND" in
-  build|switch|update) ;;
+  build|switch|update|add-host) ;;
   *) usage ;;
 esac
 
@@ -112,9 +113,53 @@ switch_config() {
   fi
 }
 
+add_host() {
+  local host_key=/etc/ssh/ssh_host_ed25519_key
+  local sops_yaml="$SCRIPT_DIR/.sops.yaml"
+  [[ "$HOSTNAME" =~ ^[a-z0-9-]+$ ]] || { echo "Error: bad hostname '$HOSTNAME'" >&2; exit 1; }
+
+  if [[ ! -s "$host_key.pub" ]]; then
+    echo "No $host_key; generating it..."
+    sudo ssh-keygen -q -t ed25519 -N '' -f "$host_key"
+  fi
+  local recipient
+  recipient="$(ssh-to-age < "$host_key.pub")"
+
+  if grep -q "^  - &$HOSTNAME " "$sops_yaml"; then
+    sed -i "s|^  - &$HOSTNAME .*|  - \&$HOSTNAME $recipient|" "$sops_yaml"
+  else
+    awk -v h="$HOSTNAME" -v r="$recipient" '
+      { lines[NR] = $0 }
+      /^  - &/ { lastkey = NR }
+      /^          - \*/ { lastref = NR }
+      END {
+        for (i = 1; i <= NR; i++) {
+          print lines[i]
+          if (i == lastkey) print "  - &" h " " r
+          if (i == lastref) print "          - *" h
+        }
+      }' "$sops_yaml" > "$sops_yaml.new"
+    mv "$sops_yaml.new" "$sops_yaml"
+  fi
+
+  local tmp
+  tmp="$(mktemp -d -p "${XDG_RUNTIME_DIR:-/dev/shm}")"
+  trap 'shred -u "$tmp"/* 2>/dev/null || true; rm -rf "$tmp"' EXIT
+  install -m 600 "$HOME/.ssh/id_ed25519" "$tmp/id"
+  echo "Unlocking a throwaway copy of ~/.ssh/id_ed25519 to re-key secrets.yaml..."
+  ssh-keygen -p -q -N '' -f "$tmp/id"
+  SOPS_AGE_KEY="$(ssh-to-age -private-key -i "$tmp/id")" \
+    sops updatekeys -y "$SCRIPT_DIR/secrets.yaml"
+
+  echo "$HOSTNAME is a decrypter; commit .sops.yaml and secrets.yaml, then ./build switch."
+}
+
 case "$COMMAND" in
   update)
     (cd "$SCRIPT_DIR" && nix flake update)
+    ;;
+  add-host)
+    add_host
     ;;
   build)
     build_config
