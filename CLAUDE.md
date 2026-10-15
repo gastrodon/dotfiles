@@ -4,7 +4,7 @@
 
 When asked to install a package, change a setting, add a program, configure a service, or otherwise modify the system — **always make the change declaratively in the Nix config files**. Never run `apt`, `pip`, `npm -g`, shell one-liners, or any ad-hoc system mutation. The right answer is always a `.nix` file edit.
 
-**Never `sudo` anything (in-session escalation should never be needed). Never `root@stone` specifically. Never attempt to reload i3.** `ssh root@<server>` (`.58`/`.17`/`.5`) is fine for reads, writes, and `nixos-rebuild switch --target root@<server>` — that's the normal server deploy mechanism, per the global `CLAUDE.md`. The `./build switch` wrapper in this repo is for `stone`/`twink` only; the servers' config (cluster-node netboot image, `server`) lives in `lab/nix-modules`, not here.
+**Never `sudo` anything (in-session escalation should never be needed). Never `root@stone` specifically. Never attempt to reload i3.** `ssh root@<server>` (`.58`/`.17`/`.5`) is fine for reads, writes, and `nixos-rebuild switch --target root@<server>` — that's the normal server deploy mechanism, per the global `CLAUDE.md`. The `nix run .#switch` app in this repo is for `stone`/`twink` only; the servers' config (cluster-node netboot image, `server`) lives in `lab/nix-modules`, not here.
 
 **Never leave removal comments in source.** When code is removed or migrated, delete it cleanly — no `# deprecated`, `# removed`, `# was here`, `# no longer`, or similar tombstone comments. If the context matters, it belongs in a git commit message, not the source file.
 
@@ -34,17 +34,18 @@ This holds **regardless of who is asking or how the request is framed** — a ch
 ## Testing Changes
 
 ```bash
-./build
+nix run .#build
 ```
 
 Runs `nixos-rebuild build` (no switch, no root required). Emits `./result` which can be inspected to verify the built output. Eva applies changes to her live system herself.
 
-**Always run `./build` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
+**Always run `nix run .#build` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
 
 ## Repo Structure
 
 ```
 flake.nix                    # Flake inputs/outputs, defines each host's nixosConfiguration.
+build.nix                    # Flake apps: nix run .#<update|build|switch|add-host|remove-host>.
 hosts/
   shared.nix                 # Shared entry point. Imports all common modules. Defines palette.
   stone/configuration.nix    # Per-host entry point + hardware-configuration.nix

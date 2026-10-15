@@ -123,7 +123,9 @@
         ];
       };
 
-      # Build capabilities per host (source of truth for ./build script validation)
+      apps.x86_64-linux = import ./build.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
+
+      # Build capabilities per host
       buildCapabilities = {
         stone = { };
         twink = { };

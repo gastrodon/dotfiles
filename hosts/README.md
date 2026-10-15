@@ -8,13 +8,13 @@ This directory contains machine-specific configurations for different hosts.
 - **Boot**: Direct GRUB on `/dev/nvme0n1` (no EFI, no separate /boot partition)
 - **Display**: DPMS power management disabled (`xset s off -dpms`)
 - **Features**: No battery or brightness controls
-- **Build**: `./build` or `NIXOS_HOSTNAME=stone ./build`
+- **Build**: `nix run .#build` or `nix run .#build -- stone`
 
 ### twink (Laptop)
 - **Boot**: GRUB with EFI support (`boot.loader.efi.canTouchEfiVariables = true`)
 - **Display**: DPMS power management enabled (`xset s 480 dpms 600 600 600`)
 - **Features**: Battery and brightness controls via i3blocks, backlight udev rules, upower service
-- **Build**: `./build` when on twink, or `NIXOS_HOSTNAME=twink ./build`
+- **Build**: `nix run .#build` when on twink, or `nix run .#build -- twink`
 
 ## Structure
 
@@ -30,4 +30,4 @@ The shared configuration is in the root `configuration.nix`, which both hosts im
 2. Add `hosts/<hostname>/configuration.nix` with host-specific settings
 3. Add `hosts/<hostname>/hardware-configuration.nix` (run `nixos-generate-config` on the target machine)
 4. Update `flake.nix` to add the new `nixosConfigurations.<hostname>` entry
-5. Update the build script to include the new hostname in validation
+5. Run `nix run .#add-host` on the new machine to make it a `secrets.yaml` decrypter
