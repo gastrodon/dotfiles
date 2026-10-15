@@ -66,11 +66,11 @@
         command = toString (
           let
             monitors = {
-              "DP-4" = "mode 2560x1440 transform 90 pos 0 1080";
+              "DP-2" = "mode 2560x1440 transform 90 pos 0 1080";
               "DP-3" = "mode 2560x1440 transform normal pos 1440 1562";
             };
             # Unspecified connected outputs default to 1080p and stack directly
-            # above DP-4 (bottom edge at y = 1080), left-to-right from x = 0.
+            # above DP-2 (bottom edge at y = 1080), left-to-right from x = 0.
             stack = {
               bottomY = 1080;
               startX = 0;
