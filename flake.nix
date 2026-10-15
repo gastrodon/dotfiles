@@ -42,13 +42,13 @@
     };
 
     lab-pkgs = {
-      url = "git+http://192.168.0.17:3000/lab/pkgs.git";
+      url = "git+https://git.lab.gastrodon.io/lab/pkgs.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Source only: stone joins the lab cluster via lab/nix-modules' stone-join (nomad-client + pxe-boot-server).
     lab-nix-modules = {
-      url = "git+http://192.168.0.17:3000/lab/nix-modules.git";
+      url = "git+https://git.lab.gastrodon.io/lab/nix-modules.git";
       flake = false;
     };
   };

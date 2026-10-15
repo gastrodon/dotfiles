@@ -40,7 +40,7 @@
       };
 
       credential = lib.optionalAttrs desktop.hasPrivateKeys {
-        "http://192.168.0.17:3000" = {
+        "https://git.lab.gastrodon.io" = {
           helper = lib.getExe pkgs.git-credential-gitea-vault;
         };
       };

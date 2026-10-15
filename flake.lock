@@ -128,11 +128,11 @@
         "rev": "03297204ce2bc86ac7aa43817cf884fb37b88909",
         "revCount": 26,
         "type": "git",
-        "url": "http://192.168.0.17:3000/lab/nix-modules.git"
+        "url": "https://git.lab.gastrodon.io/lab/nix-modules.git"
       },
       "original": {
         "type": "git",
-        "url": "http://192.168.0.17:3000/lab/nix-modules.git"
+        "url": "https://git.lab.gastrodon.io/lab/nix-modules.git"
       }
     },
     "lab-pkgs": {
@@ -148,11 +148,11 @@
         "rev": "8e286c8351db5cb8b9d51ab6e588339fd6a974d6",
         "revCount": 9,
         "type": "git",
-        "url": "http://192.168.0.17:3000/lab/pkgs.git"
+        "url": "https://git.lab.gastrodon.io/lab/pkgs.git"
       },
       "original": {
         "type": "git",
-        "url": "http://192.168.0.17:3000/lab/pkgs.git"
+        "url": "https://git.lab.gastrodon.io/lab/pkgs.git"
       }
     },
     "nix-index-database": {

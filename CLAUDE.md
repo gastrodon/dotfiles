@@ -109,7 +109,7 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 
 **NixOS modules** — new system-level config goes in `module/<name>.nix` (or a subdir with `default.nix`), then imported in `hosts/shared.nix`, or in the relevant `hosts/<host>/configuration.nix` if it's host-specific.
 
-**Custom packages** live in [lab/pkgs](http://192.168.0.17:3000/lab/pkgs) (input `lab-pkgs`) and arrive through its overlay as `pkgs.sys`, `pkgs.rend`, `pkgs.web`, `pkgs.fe`, `pkgs.scrt`. Add new ones there, then `nix flake update lab-pkgs`.
+**Custom packages** live in [lab/pkgs](https://git.lab.gastrodon.io/lab/pkgs) (input `lab-pkgs`) and arrive through its overlay as `pkgs.sys`, `pkgs.rend`, `pkgs.web`, `pkgs.fe`, `pkgs.scrt`. Add new ones there, then `nix flake update lab-pkgs`.
 
 **NUR** — Firefox extensions use NUR. The overlay is set up in `flake.nix`.
 

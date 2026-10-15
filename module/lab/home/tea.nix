@@ -2,7 +2,7 @@
 # Delete-then-add: `tea login edit` cannot change a token non-interactively.
 { pkgs, lib, ... }:
 let
-  giteaAddr = "http://192.168.0.17:3000";
+  giteaAddr = "https://git.lab.gastrodon.io";
   giteaLoginName = "gastrodon-gitea";
 
   teaGiteaSync = pkgs.writeShellApplication {
@@ -17,7 +17,7 @@ let
 
       marker="''${XDG_RUNTIME_DIR:-/nonexistent}/bao-kv-get/tea-gitea-synced-sha256"
       mkdir -p "$(dirname "$marker")" 2>/dev/null || marker=/dev/null
-      digest="$(printf '%s' "$token" | sha256sum | cut -d' ' -f1)"
+      digest="$(printf '%s %s' ${giteaAddr} "$token" | sha256sum | cut -d' ' -f1)"
 
       if [[ -f "$marker" ]] && [[ "$(< "$marker")" == "$digest" ]]; then
         exit 0
