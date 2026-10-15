@@ -34,6 +34,8 @@
   when_closing_with_no_tabs = "close_window";
   title_bar.show_menus = false;
 
+  agent.show_turn_stats = true;
+
   load_direnv = "shell_hook";
   use_system_path_prompts = false;
 }
