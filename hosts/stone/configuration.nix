@@ -112,12 +112,6 @@
               if [ ''${#args[@]} -gt 0 ]; then
                 ${swaymsg} "$(IFS=';'; echo "''${args[*]}")"
               fi
-
-              # sway has no primary output; XWayland does
-              primary=$(name_of ${lib.escapeShellArg landscape})
-              if [ -n "$primary" ]; then
-                ${pkgs.xrandr}/bin/xrandr --output "$primary" --primary
-              fi
             ''
           );
         }
