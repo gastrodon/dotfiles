@@ -15,6 +15,18 @@
       ];
       "ctrl-j" = "terminal_panel::ToggleFocus";
       "ctrl-shift-j" = "workspace::ToggleZoom";
+      "alt-pagedown" = "multi_workspace::NextThread";
+      "alt-pageup" = "multi_workspace::PreviousThread";
+      "alt-end" = "multi_workspace::NextProject";
+      "alt-home" = "multi_workspace::PreviousProject";
+    };
+  }
+  {
+    # Editor binds alt-page{up,down} to editor::Page{Up,Down} by default.
+    context = "Editor";
+    bindings = {
+      "alt-pagedown" = "multi_workspace::NextThread";
+      "alt-pageup" = "multi_workspace::PreviousThread";
     };
   }
   {
