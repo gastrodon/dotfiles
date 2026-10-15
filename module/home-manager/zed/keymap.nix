@@ -19,12 +19,17 @@
       "alt-pageup" = "multi_workspace::PreviousThread";
       "alt-end" = "multi_workspace::NextProject";
       "alt-home" = "multi_workspace::PreviousProject";
+      "ctrl-w" = "git::Worktree";
+      "ctrl-b" = "branches::OpenRecent";
+      "alt-ctrl-shift-w" = null;
+      "alt-ctrl-shift-b" = null;
     };
   }
   {
-    # Editor binds alt-page{up,down} to editor::Page{Up,Down} by default.
+    # Editor binds alt-page{up,down} to editor::Page{Up,Down} and ctrl-shift-j to editor::JoinLines by default.
     context = "Editor";
     bindings = {
+      "ctrl-shift-j" = "workspace::ToggleZoom";
       "alt-pagedown" = "multi_workspace::NextThread";
       "alt-pageup" = "multi_workspace::PreviousThread";
     };
@@ -35,10 +40,12 @@
   }
   {
     context = "Editor && mode == full";
-    bindings = {
-      "ctrl-enter" = "editor::NewlineBelow";
-      "ctrl-shift-j" = "workspace::ToggleZoom";
-    };
+    bindings."ctrl-enter" = "editor::NewlineBelow";
+  }
+  {
+    # Pane binds ctrl-w to pane::CloseActiveItem by default.
+    context = "Pane";
+    bindings."ctrl-w" = "git::Worktree";
   }
   {
     context = "ProjectPanel";
