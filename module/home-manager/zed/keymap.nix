@@ -6,6 +6,7 @@
       "ctrl-o" = "file_finder::Toggle";
       "ctrl-t" = "agent::NewThread";
       "ctrl-shift-w" = "pane::CloseActiveItem";
+      "ctrl-shift-o" = "multi_workspace::FocusWorkspaceSidebar";
       "ctrl-shift-alt-o" = "projects::OpenRemote";
       "ctrl-alt-o" = [
         "projects::OpenRemote"
@@ -41,12 +42,20 @@
   }
   {
     context = "Editor && mode == full";
-    bindings."ctrl-enter" = "editor::NewlineBelow";
+    bindings = {
+      "ctrl-enter" = "editor::NewlineBelow";
+      "ctrl-shift-o" = "multi_workspace::FocusWorkspaceSidebar";
+    };
   }
   {
     # Pane binds ctrl-w to pane::CloseActiveItem by default.
     context = "Pane";
     bindings."ctrl-w" = "git::Worktree";
+  }
+  {
+    # A second ctrl+shift+o, now inside the sidebar, focuses its thread filter.
+    context = "ThreadsSidebar";
+    bindings."ctrl-shift-o" = "agents_sidebar::FocusSidebarFilter";
   }
   {
     context = "ProjectPanel";
