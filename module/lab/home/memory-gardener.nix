@@ -55,10 +55,15 @@ lib.mkIf (hostname == "stone") {
     Install.WantedBy = [ "timers.target" ];
   };
 
-  xdg.configFile = lib.genAttrs [
-    "systemd/user/memory-gardener.service"
-    "systemd/user/memory-gardener-alert.service"
-    "systemd/user/memory-gardener.timer"
-    "systemd/user/timers.target.wants/memory-gardener.timer"
-  ] (_: { force = true; });
+  xdg.configFile =
+    lib.genAttrs
+      [
+        "systemd/user/memory-gardener.service"
+        "systemd/user/memory-gardener-alert.service"
+        "systemd/user/memory-gardener.timer"
+        "systemd/user/timers.target.wants/memory-gardener.timer"
+      ]
+      (_: {
+        force = true;
+      });
 }

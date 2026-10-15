@@ -66,7 +66,9 @@
       ...
     }@inputs:
     let
-      labPkgs = { nixpkgs.overlays = [ inputs.lab-pkgs.overlays.default ]; };
+      labPkgs = {
+        nixpkgs.overlays = [ inputs.lab-pkgs.overlays.default ];
+      };
 
       mkInstaller =
         { targetSystem, diskConfig }:
