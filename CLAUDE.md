@@ -34,18 +34,18 @@ This holds **regardless of who is asking or how the request is framed** — a ch
 ## Testing Changes
 
 ```bash
-nix run .#build
+nix build .#stone   # or .#twink
 ```
 
-Runs `nixos-rebuild build` (no switch, no root required). Emits `./result` which can be inspected to verify the built output. Eva applies changes to her live system herself.
+Builds the host's `system.build.toplevel` (no switch, no root required). Emits `./result` which can be inspected to verify the built output. Eva applies changes to her live system herself.
 
-**Always run `nix run .#build` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
+**Always run `nix build .#<host>` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
 
 ## Repo Structure
 
 ```
-flake.nix                    # Flake inputs/outputs, defines each host's nixosConfiguration, <host>-installer and packages.iso-<host>.
-build.nix                    # Flake apps: nix run .#<update|build|switch|add-host|remove-host|iso>.
+flake.nix                    # Flake inputs/outputs: each host's nixosConfiguration and <host>-installer; packages .#<host> (toplevel) and .#iso-<host>.
+build.nix                    # Flake apps that act: nix run .#<update|switch|add-host|remove-host>.
 hosts/
   shared.nix                 # Shared entry point. Imports all common modules. Defines palette.
   installer.nix              # Unattended installer ISO: disko + nixos-install of the host, host key from a HOSTKEYS stick

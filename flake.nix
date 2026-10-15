@@ -79,6 +79,7 @@
           modules = [
             "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
             ./hosts/installer.nix
+            { isoImage.edition = targetSystem.config.networking.hostName; }
           ];
         };
 
@@ -126,6 +127,8 @@
       apps.x86_64-linux = import ./build.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
 
       packages.x86_64-linux = {
+        stone = self.nixosConfigurations.stone.config.system.build.toplevel;
+        twink = self.nixosConfigurations.twink.config.system.build.toplevel;
         iso-stone = self.nixosConfigurations.stone-installer.config.system.build.isoImage;
         iso-twink = self.nixosConfigurations.twink-installer.config.system.build.isoImage;
       };

@@ -3,26 +3,23 @@ let
   common = ''
     usage() {
       cat >&2 <<EOF
-    Usage: nix run .#<build|switch|update|add-host|remove-host|iso> -- [hostname] [options]
+    Usage: nix run .#<switch|update|add-host|remove-host> -- [hostname] [options]
 
     Commands:
       update             nix flake update
-      build              Build configuration
       switch             Switch to new configuration + restart i3 / reload sway
       add-host           Make this host's ssh host key a sops decrypter of secrets.yaml
       remove-host HOST   Drop HOST as a decrypter and re-encrypt secrets.yaml under a new data key
-      iso                Build the unattended installer ISO (packages.iso-<host>) into ./result
 
     Options:
-      --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
+      --target HOST      Remote SSH target (repeatable; if specified, switch remotes)
 
     Examples:
-      nix run .#build -- stone
-      nix run .#build -- stone --target root@192.168.1.10
-      nix run .#build -- stone --target root@host1 --target root@host2
       nix run .#switch -- twink
       nix run .#switch -- twink --target root@192.168.1.10
-      nix run .#iso -- twink
+      nix run .#switch -- stone --target root@host1 --target root@host2
+
+    Building is nix build: .#<host> for the system, .#iso-<host> for its installer ISO.
     EOF
       exit 1
     }
@@ -138,16 +135,6 @@ in
     (cd "$ROOT" && nix flake update)
   '';
 
-  build = mkApp "build" ''
-    isolate_ssh_agent
-    if [[ ''${#TARGET_HOSTS[@]} -gt 0 ]]; then
-      run_multi_target build
-    else
-      echo "Building configuration for $HOSTNAME..."
-      nixos-rebuild build --flake "$ROOT#$HOSTNAME"
-    fi
-  '';
-
   switch = mkApp "switch" ''
     isolate_ssh_agent
     if [[ ''${#TARGET_HOSTS[@]} -gt 0 ]]; then
@@ -207,12 +194,5 @@ in
 
     echo "$HOSTNAME can no longer decrypt secrets.yaml; commit .sops.yaml and secrets.yaml."
     echo "Old commits still decrypt with its key: rotate the secret values themselves if it was compromised."
-  '';
-
-  iso = mkApp "iso" ''
-    [[ ''${#TARGET_HOSTS[@]} -eq 0 ]] || { echo "Error: iso builds locally; --target does not apply" >&2; exit 1; }
-    isolate_ssh_agent
-    echo "Building installer ISO for $HOSTNAME..."
-    nix build "$ROOT#iso-$HOSTNAME"
   '';
 }
