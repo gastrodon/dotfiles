@@ -4,7 +4,8 @@
     bindings = {
       "ctrl-p" = "command_palette::Toggle";
       "ctrl-o" = "file_finder::Toggle";
-      "ctrl-t" = "workspace::NewFile";
+      "ctrl-t" = "agent::NewThread";
+      "ctrl-shift-w" = "pane::CloseActiveItem";
       "ctrl-shift-alt-o" = "projects::OpenRemote";
       "ctrl-alt-o" = [
         "projects::OpenRemote"
