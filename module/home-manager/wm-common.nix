@@ -206,7 +206,7 @@ in
 
         "${mod}+Shift+e" = "exec --no-startup-id powermenu";
 
-        "${mod}+Escape" = "exec --no-startup-id blur-lock";
+        "${mod}+grave" = "exec --no-startup-id blur-lock";
 
         "${mod}+Shift+c" = "reload";
 
