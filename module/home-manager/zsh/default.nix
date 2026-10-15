@@ -62,6 +62,9 @@
       bindkey '^[[3~' delete-char
       bindkey '^[[1;5C' forward-word
       bindkey '^[[1;5D' backward-word
+      autoload -Uz edit-command-line
+      zle -N edit-command-line
+      bindkey '^X^E' edit-command-line
       alias -- -='cd -'
     '';
 
