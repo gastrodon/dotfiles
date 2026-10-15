@@ -128,6 +128,8 @@
 
       apps.x86_64-linux = import ./build.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
 
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+
       packages.x86_64-linux = {
         stone = self.nixosConfigurations.stone.config.system.build.toplevel;
         twink = self.nixosConfigurations.twink.config.system.build.toplevel;

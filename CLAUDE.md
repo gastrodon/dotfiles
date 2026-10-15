@@ -41,6 +41,8 @@ Builds the host's `system.build.toplevel` (no switch, no root required). Emits `
 
 **Always run `nix build .#<host>` after making any Nix config changes.** Fix all errors before presenting the result — never show code that hasn't successfully built. New files must be `git add`-ed before Nix can see them in the flake store.
 
+Format with `nix fmt`. `.githooks/pre-commit` runs CI's `nixfmt --check` on staged files; enable it once per clone with `git config core.hooksPath .githooks`.
+
 ## Repo Structure
 
 ```

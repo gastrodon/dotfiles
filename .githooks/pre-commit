@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# The same nixfmt --check CI runs, on staged .nix files only.
+set -euo pipefail
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR -- '*.nix')
+[[ ${#files[@]} -eq 0 ]] && exit 0
+nix shell nixpkgs#nixfmt -c nixfmt --check "${files[@]}" || {
+  echo "pre-commit: run 'nix fmt' and restage" >&2
+  exit 1
+}
