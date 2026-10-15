@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Nix's git+ssh fetcher offers every ssh-agent key; isolate to the primary one.
 # If we can't unlock it here (e.g. no TTY for the passphrase prompt), fall back
 # to the caller's existing agent rather than leaving an empty one active.
-if [[ -f "$HOME/.ssh/id_ed25519" && "${1:-}" != add-host ]]; then
+if [[ -f "$HOME/.ssh/id_ed25519" && "${1:-}" != add-host && "${1:-}" != remove-host ]]; then
   ORIGINAL_SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}"
   eval "$(ssh-agent -s)" >/dev/null
   trap 'ssh-agent -k >/dev/null 2>&1 || true' EXIT
@@ -20,13 +20,14 @@ fi
 
 usage() {
   cat >&2 <<EOF
-Usage: $0 <build|switch|update|add-host> [hostname] [options]
+Usage: $0 <build|switch|update|add-host|remove-host> [hostname] [options]
 
 Commands:
   update             nix flake update
   build              Build configuration
   switch             Switch to new configuration + restart i3 / reload sway
   add-host           Make this host's ssh host key a sops decrypter of secrets.yaml
+  remove-host HOST   Drop HOST as a decrypter and re-encrypt secrets.yaml under a new data key
 
 Options:
   --target HOST      Remote SSH target (repeatable; if specified, build for remotes)
@@ -46,8 +47,10 @@ EOF
 COMMAND="$1"
 shift
 HOSTNAME="${NIXOS_HOSTNAME:-$(hostname)}"
+HOST_GIVEN=false
 if [[ $# -gt 0 && "$1" != --* ]]; then
   HOSTNAME="$1"
+  HOST_GIVEN=true
   shift
 fi
 
@@ -68,7 +71,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$COMMAND" in
-  build|switch|update|add-host) ;;
+  build|switch|update|add-host|remove-host) ;;
   *) usage ;;
 esac
 
@@ -113,6 +116,16 @@ switch_config() {
   fi
 }
 
+# Runs a command with SOPS_AGE_KEY from a throwaway unlocked copy of eva's ssh key, shredded on exit.
+with_eva_age_key() {
+  UNLOCK_DIR="$(mktemp -d -p "${XDG_RUNTIME_DIR:-/dev/shm}")"
+  trap 'shred -u "$UNLOCK_DIR"/* 2>/dev/null || true; rm -rf "$UNLOCK_DIR"' EXIT
+  install -m 600 "$HOME/.ssh/id_ed25519" "$UNLOCK_DIR/id"
+  echo "Unlocking a throwaway copy of ~/.ssh/id_ed25519 to re-key secrets.yaml..."
+  ssh-keygen -p -q -N '' -f "$UNLOCK_DIR/id"
+  SOPS_AGE_KEY="$(ssh-to-age -private-key -i "$UNLOCK_DIR/id")" "$@"
+}
+
 add_host() {
   local host_key=/etc/ssh/ssh_host_ed25519_key
   local sops_yaml="$SCRIPT_DIR/.sops.yaml"
@@ -142,16 +155,25 @@ add_host() {
     mv "$sops_yaml.new" "$sops_yaml"
   fi
 
-  local tmp
-  tmp="$(mktemp -d -p "${XDG_RUNTIME_DIR:-/dev/shm}")"
-  trap 'shred -u "$tmp"/* 2>/dev/null || true; rm -rf "$tmp"' EXIT
-  install -m 600 "$HOME/.ssh/id_ed25519" "$tmp/id"
-  echo "Unlocking a throwaway copy of ~/.ssh/id_ed25519 to re-key secrets.yaml..."
-  ssh-keygen -p -q -N '' -f "$tmp/id"
-  SOPS_AGE_KEY="$(ssh-to-age -private-key -i "$tmp/id")" \
-    sops updatekeys -y "$SCRIPT_DIR/secrets.yaml"
+  with_eva_age_key sops updatekeys -y "$SCRIPT_DIR/secrets.yaml"
 
   echo "$HOSTNAME is a decrypter; commit .sops.yaml and secrets.yaml, then ./build switch."
+}
+
+remove_host() {
+  local sops_yaml="$SCRIPT_DIR/.sops.yaml"
+  $HOST_GIVEN || { echo "Error: remove-host needs an explicit hostname" >&2; exit 1; }
+  [[ "$HOSTNAME" =~ ^[a-z0-9-]+$ ]] || { echo "Error: bad hostname '$HOSTNAME'" >&2; exit 1; }
+  [[ "$HOSTNAME" != eva ]] || { echo "Error: eva is the re-keying identity, not a host" >&2; exit 1; }
+  grep -q "^  - &$HOSTNAME " "$sops_yaml" || { echo "Error: $HOSTNAME is not in .sops.yaml" >&2; exit 1; }
+
+  sed -i -e "/^  - &$HOSTNAME /d" -e "/^          - \*$HOSTNAME\$/d" "$sops_yaml"
+
+  # rotate replaces the data key, so a saved copy of the old one stops working on new commits.
+  with_eva_age_key bash -c 'sops updatekeys -y "$1" && sops rotate -i "$1"' _ "$SCRIPT_DIR/secrets.yaml"
+
+  echo "$HOSTNAME can no longer decrypt secrets.yaml; commit .sops.yaml and secrets.yaml."
+  echo "Old commits still decrypt with its key: rotate the secret values themselves if it was compromised."
 }
 
 case "$COMMAND" in
@@ -160,6 +182,9 @@ case "$COMMAND" in
     ;;
   add-host)
     add_host
+    ;;
+  remove-host)
+    remove_host
     ;;
   build)
     build_config
