@@ -25,6 +25,11 @@ let
       exit 1
     }
 
+    if [[ $EUID -eq 0 ]]; then
+      echo "Error: run as your user, not under sudo; switch asks for sudo itself" >&2
+      exit 1
+    fi
+
     ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || ROOT=""
     if [[ -z "$ROOT" || ! -f "$ROOT/hosts/shared.nix" || ! -f "$ROOT/.sops.yaml" ]]; then
       echo "Error: run this from inside the dotfiles repo" >&2
@@ -147,7 +152,7 @@ in
       run_multi_target switch
     else
       echo "Switching to configuration for $HOSTNAME..."
-      nixos-rebuild switch --flake "$ROOT#$HOSTNAME"
+      nixos-rebuild switch --sudo --flake "$ROOT#$HOSTNAME"
       { i3-msg restart || swaymsg reload; } 2>/dev/null || true
     fi
   '';
