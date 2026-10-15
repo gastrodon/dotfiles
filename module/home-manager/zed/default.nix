@@ -18,6 +18,10 @@ let
       type = "custom";
       command = lib.getExe claude-agent-acp;
       env.CLAUDE_CODE_EXECUTABLE = lib.getExe config.programs.claude.package;
+      default_config_options = {
+        mode = "auto";
+        effort = "low";
+      };
     };
   };
   userKeymaps = import ./keymap.nix;

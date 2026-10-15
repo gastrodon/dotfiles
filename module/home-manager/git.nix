@@ -51,6 +51,7 @@
       ".ignore_*"
       ".claude/"
       "HANDOFF.md"
+      ".direnv/*"
     ];
   };
 }
