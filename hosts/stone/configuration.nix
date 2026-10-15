@@ -54,66 +54,75 @@
   desktop.hasSpeaker = true;
   desktop.session = "wayland";
 
-  desktop.extra.swayconfig = {
-    workspaceOutputAssign = [
-      {
-        workspace = "10";
-        output = "DP-3";
-      }
-    ];
-    startup = [
-      {
-        command = toString (
-          let
-            monitors = {
-              "DP-2" = "mode 2560x1440 transform 90 pos 0 1080";
-              "DP-3" = "mode 2560x1440 transform normal pos 1440 1562";
-            };
-            # Unspecified connected outputs default to 1080p and stack directly
-            # above DP-2 (bottom edge at y = 1080), left-to-right from x = 0.
-            stack = {
-              bottomY = 1080;
-              startX = 0;
-              width = 1920;
-              height = 1080;
-            };
-            swaymsg = "${pkgs.sway}/bin/swaymsg";
-          in
-          pkgs.writeShellScript "stone-monitor-layout" ''
-            connected=$(${swaymsg} -t get_outputs -r | ${pkgs.jq}/bin/jq -r '.[].name')
+  desktop.extra.swayconfig =
+    let
+      # Matched by make/model/serial: the NVIDIA connector names differ between Xorg and sway.
+      landscape = "Acer Technologies Acer VG270U 0x023192E2";
+      portrait = "Acer Technologies Acer VG270U 0x01415551";
+    in
+    {
+      workspaceOutputAssign = [
+        {
+          workspace = "10";
+          output = landscape;
+        }
+      ];
+      startup = [
+        {
+          command = toString (
+            let
+              monitors = {
+                ${portrait} = "mode 2560x1440 transform 90 pos 0 1080";
+                ${landscape} = "mode 2560x1440@74.971Hz transform normal pos 1440 1562";
+              };
+              # Unspecified connected outputs default to 1080p and stack directly
+              # above the portrait monitor (bottom edge at y = 1080), left-to-right from x = 0.
+              stack = {
+                bottomY = 1080;
+                startX = 0;
+                width = 1920;
+                height = 1080;
+              };
+              swaymsg = "${pkgs.sway}/bin/swaymsg";
+            in
+            pkgs.writeShellScript "stone-monitor-layout" ''
+              outputs=$(${swaymsg} -t get_outputs -r | ${pkgs.jq}/bin/jq -r '.[] | "\(.name)\t\(.make) \(.model) \(.serial)"')
+              name_of() { printf '%s\n' "$outputs" | ${pkgs.gawk}/bin/awk -F'\t' -v id="$1" '$2 == id { print $1 }'; }
 
-            args=()
-            ${lib.concatStringsSep "\n" (
-              lib.mapAttrsToList (name: opts: ''
-                if printf '%s\n' "$connected" | grep -qx ${lib.escapeShellArg name}; then
-                  args+=("output ${name} ${opts}")
-                fi
-              '') monitors
-            )}
+              args=()
+              known=" "
+              ${lib.concatStringsSep "\n" (
+                lib.mapAttrsToList (id: opts: ''
+                  name=$(name_of ${lib.escapeShellArg id})
+                  if [ -n "$name" ]; then
+                    args+=("output $name ${opts}")
+                    known="$known$name "
+                  fi
+                '') monitors
+              )}
 
-            x=${toString stack.startX}
-            y=$((${toString stack.bottomY} - ${toString stack.height}))
-            for out in $connected; do
-              case "$out" in
-                ${lib.concatStringsSep "|" (lib.attrNames monitors)}) continue ;;
-              esac
-              args+=("output $out mode ${toString stack.width}x${toString stack.height} transform normal pos $x $y")
-              x=$((x + ${toString stack.width}))
-            done
+              x=${toString stack.startX}
+              y=$((${toString stack.bottomY} - ${toString stack.height}))
+              for out in $(printf '%s\n' "$outputs" | cut -f1); do
+                case "$known" in *" $out "*) continue ;; esac
+                args+=("output $out mode ${toString stack.width}x${toString stack.height} transform normal pos $x $y")
+                x=$((x + ${toString stack.width}))
+              done
 
-            if [ ''${#args[@]} -gt 0 ]; then
-              ${swaymsg} "$(IFS=';'; echo "''${args[*]}")"
-            fi
+              if [ ''${#args[@]} -gt 0 ]; then
+                ${swaymsg} "$(IFS=';'; echo "''${args[*]}")"
+              fi
 
-            # sway has no primary output; XWayland does
-            if printf '%s\n' "$connected" | grep -qx DP-3; then
-              ${pkgs.xrandr}/bin/xrandr --output DP-3 --primary
-            fi
-          ''
-        );
-      }
-    ];
-  };
+              # sway has no primary output; XWayland does
+              primary=$(name_of ${lib.escapeShellArg landscape})
+              if [ -n "$primary" ]; then
+                ${pkgs.xrandr}/bin/xrandr --output "$primary" --primary
+              fi
+            ''
+          );
+        }
+      ];
+    };
 
   # RTX 2080 Super needs the unsupported-GPU flag; no hardware cursor on proprietary NVIDIA.
   programs.sway = {
