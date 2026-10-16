@@ -10,7 +10,7 @@ When asked to install a package, change a setting, add a program, configure a se
 
 ## Documentation lives in the wiki, not in comments
 
-Incident writeups, design rationale, "why not the obvious alternative," and any other narrative that's more than a sentence belongs in a Linear doc, not a comment block in a `.nix` file — see the [Dotfiles internals index](https://linear.app/gastrodon/document/dotfiles-internals-index-a4c17edd64c6) for the existing docs and which Linear project (Home Infrastructure, Agentic Tooling, piscreen, Shop — whichever actually owns the affected subsystem) each kind of change belongs under.
+Incident writeups, design rationale, "why not the obvious alternative," and any other narrative that's more than a sentence belongs in a vault note (Trilium, `https://doc.lab.gastrodon.io`; see the `infra` and `decisions` folders), not a comment block in a `.nix` file. Bugs and tooling gaps found along the way are Gitea issues on the affected repo; planned work is Plane.
 
 **Default: when a change has non-obvious "why," write or update a wiki doc for it, without being asked.** Only skip this if the user explicitly says not to for that change.
 
