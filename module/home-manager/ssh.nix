@@ -5,6 +5,17 @@
 }:
 let
   hosts = import ../lab/hosts.nix;
+
+  # `<name>` reaches the box over the LAN; `<name>-ts` over the tailnet. MagicDNS is off
+  # (--accept-dns=false), so `tailscale nc` resolves the tailnet name via the daemon.
+  # HostKeyAlias keeps one known_hosts entry per box across both paths.
+  tailnetProfile = name: {
+    "${name}-ts" = {
+      HostName = name;
+      HostKeyAlias = name;
+      ProxyCommand = "${lib.getExe pkgs.tailscale} nc %h %p";
+    };
+  };
 in
 {
   services.ssh-agent.enable = true;
@@ -49,10 +60,16 @@ in
         IdentitiesOnly = true;
         AddKeysToAgent = "yes";
         SetEnv.TERM = "xterm-256color";
+        ConnectTimeout = 8;
+        ServerAliveInterval = 15;
       };
 
       stone.HostName = hosts.stone;
       twink.HostName = hosts.twink;
+    }
+    // tailnetProfile "stone"
+    // tailnetProfile "twink"
+    // {
 
       # `mso` lands in a uid-0 session; legacy RSA only.
       modem = {

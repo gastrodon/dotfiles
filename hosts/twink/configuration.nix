@@ -9,9 +9,12 @@
     ./hardware-configuration.nix
     ../../module/bluetooth.nix
     ../../module/claude-code.nix
+    ../../module/tailscale.nix
   ];
 
   networking.hostName = "twink";
+
+  services.tailscaleClient.enable = true;
 
   services.openssh.settings = {
     PermitRootLogin = "no";
