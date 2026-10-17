@@ -94,6 +94,21 @@ let
     '';
   };
 
+  planeMcpWrapper = pkgs.writeShellApplication {
+    name = "plane-mcp-wrapped";
+    runtimeInputs = [
+      pkgs.uv
+      pkgs.bao-kv-get
+    ];
+    text = ''
+      PLANE_API_KEY="$(bao-kv-get claude/plane api_key)"
+      export PLANE_API_KEY
+      export PLANE_WORKSPACE_SLUG="lab"
+      export PLANE_BASE_URL="https://plane.lab.gastrodon.io"
+      exec uvx plane-mcp-server stdio "$@"
+    '';
+  };
+
   # Lets Claude drive a running Inkscape over D-Bus (github.com/Shriinivas/inkmcp).
   # Pinned to a commit, no tagged releases upstream. Only ONE Inkscape window
   # is ever reachable at a time — see wiki: Inkscape MCP (inkmcp): wiring and
@@ -138,6 +153,9 @@ let
     };
     inkscape = {
       command = "${inkscapeMcpWrapper}/bin/inkscape-mcp-wrapped";
+    };
+    plane = {
+      command = "${planeMcpWrapper}/bin/plane-mcp-wrapped";
     };
     # The vault (Trilium); Claude Code runs headersHelper at connect time.
     trilium = {
