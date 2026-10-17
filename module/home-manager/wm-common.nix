@@ -65,10 +65,6 @@ in
         instance = "yad";
       }
       {
-        class = "Galculator";
-        instance = "galculator";
-      }
-      {
         class = "Blueberry.py";
         instance = "blueberry.py";
       }

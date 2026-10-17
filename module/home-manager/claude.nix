@@ -218,6 +218,19 @@ let
   claudeRc = pkgs.writeShellScriptBin "claude-rc" ''
     exec ${pkgs.lib.getExe claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default} rc "$@"
   '';
+
+  desktopSshConfigs = (pkgs.formats.json { }).generate "claude-desktop-ssh-configs.json" [
+    {
+      id = "stone-lan";
+      name = "stone (LAN)";
+      sshHost = "stone";
+    }
+    {
+      id = "stone-tailnet";
+      name = "stone (tailnet)";
+      sshHost = "stone-ts";
+    }
+  ];
 in
 {
   options.programs.claude.package = lib.mkOption {
@@ -231,4 +244,15 @@ in
     claude
     claudeRc
   ];
+
+  # Claude Desktop reads sshConfigs from ~/.claude/settings.json, which Claude Code also
+  # writes to; merge our key in instead of owning the file. Hosts resolve via ssh.nix.
+  config.home.activation.claudeDesktopSshConfigs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    settings="$HOME/.claude/settings.json"
+    mkdir -p "$HOME/.claude"
+    [ -f "$settings" ] || echo '{}' > "$settings"
+    tmp=$(mktemp)
+    ${pkgs.jq}/bin/jq --slurpfile c ${desktopSshConfigs} '.sshConfigs = $c[0]' "$settings" > "$tmp" \
+      && mv "$tmp" "$settings"
+  '';
 }
