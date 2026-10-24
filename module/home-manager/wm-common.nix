@@ -59,7 +59,8 @@ in
 
     floating.modifier = mod;
 
-    floating.criteria = [
+    # class/instance/window_role are X11-only criteria; sway rejects them without Xwayland (i3 is always X11).
+    floating.criteria = lib.optionals (desktop.session == "x11" || desktop.xwayland) [
       {
         class = "Yad";
         instance = "yad";
