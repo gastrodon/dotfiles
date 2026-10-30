@@ -9,15 +9,24 @@
 }:
 let
   env = [ "PATH=/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin" ];
-  garden = lib.getExe pkgs.memory-gardener;
+  flake = "git+https://git.lab.gastrodon.io/lab/pkgs.git";
+  garden = pkgs.writeShellApplication {
+    name = "memory-gardener";
+    runtimeInputs = [
+      pkgs.nix
+      pkgs.coreutils
+    ];
+    text = ''
+      out=$(nix build --refresh --no-link --print-out-paths "${flake}#memory-gardener")
+      mkdir -p "$HOME/.claude/agents"
+      rm -f "$HOME/.claude/agents/gardener.md"
+      install -m644 "$out/share/memory-gardener/gardener.md" "$HOME/.claude/agents/gardener.md"
+      exec "$out/bin/memory-gardener" "$@"
+    '';
+  };
 in
 lib.mkIf (hostname == "stone") {
-  home.packages = [ pkgs.memory-gardener ];
-
-  home.file.".claude/agents/gardener.md" = {
-    source = "${pkgs.memory-gardener}/share/memory-gardener/gardener.md";
-    force = true;
-  };
+  home.packages = [ garden ];
 
   systemd.user.services.memory-gardener = {
     Unit = {
@@ -29,7 +38,7 @@ lib.mkIf (hostname == "stone") {
       Type = "oneshot";
       Environment = env ++ [ "CLAUDE_CODE_DISABLE_AUTO_MEMORY=1" ];
       WorkingDirectory = "%h";
-      ExecStart = "${garden} run";
+      ExecStart = "${lib.getExe garden} run";
       TimeoutStartSec = "6h";
       Nice = 10;
     };
@@ -41,7 +50,7 @@ lib.mkIf (hostname == "stone") {
       Type = "oneshot";
       Environment = env;
       WorkingDirectory = "%h";
-      ExecStart = "${garden} alert --unit memory-gardener.service";
+      ExecStart = "${lib.getExe garden} alert --unit memory-gardener.service";
     };
   };
 
