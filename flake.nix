@@ -127,6 +127,8 @@
 
       apps.x86_64-linux = import ./build.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
 
+      overlays.default = import ./package;
+
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
 
       packages.x86_64-linux = {
@@ -134,6 +136,10 @@
         twink = self.nixosConfigurations.twink.config.system.build.toplevel;
         iso-stone = self.nixosConfigurations.stone-installer.config.system.build.isoImage;
         iso-twink = self.nixosConfigurations.twink-installer.config.system.build.isoImage;
+      };
+
+      checks.x86_64-linux = import ./check.nix {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux.extend self.overlays.default;
       };
 
       # Build capabilities per host

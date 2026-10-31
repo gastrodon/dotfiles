@@ -1,5 +1,5 @@
 # "claude-code local development" capability — import on hosts where eva runs `claude` (stone, twink).
-# Wires the home-manager claude.nix + the sops.secrets its MCP wrappers consume. Hosts that skip it never decrypt secrets.yaml.
+# Wires the home-manager claude.nix + the sops approle secrets the lab profiles read. Hosts that skip it never decrypt secrets.yaml.
 # Also installs Claude Desktop + Cowork's VM sandbox (EVA-592).
 {
   config,
