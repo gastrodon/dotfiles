@@ -93,7 +93,6 @@
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
-          "${inputs.lab-nix-modules}/module/stone-join.nix"
           home-manager.nixosModules.home-manager
           labPkgs
           { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }

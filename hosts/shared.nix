@@ -6,8 +6,6 @@
   ...
 }:
 let
-  clusterHosts = import ../module/lab/hosts.nix;
-
   # Solarized Dark
   palette = {
     black = "#073642";
@@ -61,9 +59,6 @@ in
   ];
 
   networking.networkmanager.enable = true;
-  networking.extraHosts = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (name: ip: "${ip} ${name}") clusterHosts
-  );
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
 
@@ -72,11 +67,6 @@ in
     curl
     git
     xdotool
-    fe
-    scrt
-    sys
-    rend
-    web
   ];
 
   fonts.packages = with pkgs; [

@@ -10,8 +10,7 @@
     ./hardware-configuration.nix
     ../../module/avahi.nix
     ../../module/claude-code.nix
-    ../../module/lab/tea.nix
-    ../../module/lab/bench.nix
+    ../../module/bench.nix
     ../../module/tailscale.nix
   ];
 
@@ -22,21 +21,8 @@
   # Hardware bench: Uno + camera are physically attached to stone.
   hwBench.enable = true;
 
-  # PXE/RAM boot server for the diskless cluster nodes (EVA-298 / EVA-300).
-  # THE DAEMON IS NOT HERE — pixiecore runs as a Nomad job; see
-  # lab/nomad-jobs infra/pixiecore.nomad.hcl. These ports are just the
-  # firewall hole it can't open for itself.
-  networking.firewall.allowedUDPPorts = [
-    67 # proxy-DHCP (pixiecore runs with --dhcp-no-bind, coexists with dg4244)
-    69 # TFTP
-    4011 # proxy-DHCP boot server port
-  ];
-
-  # pi + pi-black — stone-only, and needs no system-level wiring (auth is interactive,
-  # no sops secrets), so it goes straight into home-manager rather than via a module/ wrapper.
   # 3d-print (FreeCAD) — stone-only, same reasoning: only stone has the printer/CAD workflow.
   home-manager.users.${config.identity.username}.imports = [
-    ../../module/home-manager/pi.nix
     ../../module/home-manager/3d-print.nix
   ];
 
@@ -47,7 +33,6 @@
     PasswordAuthentication = false;
     KbdInteractiveAuthentication = false;
   };
-  services.nomadClient.datacenter = "stone";
 
   desktop.terminal = pkgs.ghostty;
   desktop.hasPrivateKeys = true;
@@ -161,13 +146,6 @@
       device = "/swapfile";
       size = 16 * 1024;
     }
-  ];
-
-  networking.firewall.allowedTCPPorts = [
-    # pixiecore's HTTP, serving bzImage and the ~1.5 GB initrd to booting nodes
-    # (EVA-300; see the netboot block above). Not 80 or 8080 — see wiki: PXE
-    # install path vs cluster netboot, don't confuse the two.
-    8064
   ];
 
   environment.systemPackages = [
