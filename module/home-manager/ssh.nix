@@ -4,8 +4,6 @@
   ...
 }:
 let
-  hosts = import ../lab/hosts.nix;
-
   # `<name>` reaches the box over the LAN; `<name>-ts` over the tailnet. MagicDNS is off
   # (--accept-dns=false), so `tailscale nc` resolves the tailnet name via the daemon.
   # HostKeyAlias keeps one known_hosts entry per box across both paths.
@@ -51,6 +49,7 @@ in
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
+    includes = [ "~/.nix-profile/share/ssh/config.d/*" ];
 
     # programs.ssh.settings is freeform: keys are literal ssh_config(5) directive
     # names (PascalCase), not the nix-friendly aliases matchBlocks used.
@@ -64,22 +63,11 @@ in
         ServerAliveInterval = 15;
       };
 
-      stone.HostName = hosts.stone;
-      twink.HostName = hosts.twink;
+      stone.HostName = "192.168.0.77";
+      twink.HostName = "192.168.0.122";
     }
     // tailnetProfile "stone"
-    // tailnetProfile "twink"
-    // {
-
-      # `mso` lands in a uid-0 session; legacy RSA only.
-      modem = {
-        HostName = hosts.modem;
-        User = "mso";
-        IdentityFile = "~/.ssh/dg4244_rsa";
-        HostKeyAlgorithms = "+ssh-rsa";
-        PubkeyAcceptedAlgorithms = "+ssh-rsa";
-      };
-    };
+    // tailnetProfile "twink";
   };
 
   # programs.ssh symlinks ~/.ssh/config to the store (444); OpenSSH rejects it - replace with a 600 copy.

@@ -1,5 +1,4 @@
 {
-  pkgs,
   identity,
   desktop,
   lib,
@@ -8,6 +7,7 @@
 {
   programs.git = {
     enable = true;
+    includes = [ { path = "~/.nix-profile/share/git/config"; } ];
 
     settings = {
       user = {
@@ -36,12 +36,6 @@
       url = lib.optionalAttrs desktop.hasPrivateKeys {
         "git@github.com:" = {
           insteadOf = "https://github.com/";
-        };
-      };
-
-      credential = lib.optionalAttrs desktop.hasPrivateKeys {
-        "https://git.lab.gastrodon.io" = {
-          helper = lib.getExe pkgs.git-credential-gitea-vault;
         };
       };
     };
