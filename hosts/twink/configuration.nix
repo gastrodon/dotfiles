@@ -23,7 +23,7 @@
     KbdInteractiveAuthentication = false;
   };
 
-  services.tpmClientCert = {
+  tpmClientCert = {
     enable = true;
     token = "lab-mtls";
   };

@@ -46,6 +46,7 @@
     ];
 
     initContent = lib.mkOrder 600 ''
+      for f in ~/.nix-profile/share/profile.d/*.sh(N); do source "$f"; done
       zmodload -i zsh/complist
       WORDCHARS=
       zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'

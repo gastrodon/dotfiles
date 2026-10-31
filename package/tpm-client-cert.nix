@@ -12,7 +12,7 @@
   coreutils,
   gnugrep,
   gawk,
-  token ? "tpm-client-cert",
+  token ? "client-cert",
 }:
 let
   module = "${lib.getLib tpm2-pkcs11}/lib/libtpm2_pkcs11.so";

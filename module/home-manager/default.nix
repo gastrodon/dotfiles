@@ -39,6 +39,15 @@
         ./i3blocks.nix
         ./xresources.nix
         ./passage.nix
+        (
+          { config, ... }:
+          {
+            home.file.".claude/CLAUDE.md" = {
+              source = config.lib.file.mkOutOfStoreSymlink "/srv/code/lab/docs/claude/global.md";
+              force = true;
+            };
+          }
+        )
       ];
 
       home.stateVersion = "25.11";

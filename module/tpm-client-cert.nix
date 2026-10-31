@@ -5,18 +5,18 @@
   ...
 }:
 let
-  cfg = config.services.tpmClientCert;
+  cfg = config.tpmClientCert;
   tool = pkgs.tpm-client-cert.override {
     tpm2-pkcs11 = config.security.tpm2.pkcs11.package;
     inherit (cfg) token;
   };
 in
 {
-  options.services.tpmClientCert = {
+  options.tpmClientCert = {
     enable = lib.mkEnableOption "TPM-held client certificate tooling (tpm2-pkcs11)";
     token = lib.mkOption {
       type = lib.types.str;
-      default = "tpm-client-cert";
+      default = "client-cert";
       description = "PKCS#11 token label.";
     };
   };

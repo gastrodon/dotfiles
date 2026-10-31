@@ -104,7 +104,7 @@ writeShellApplication {
       done < <(find "$d/claude/plugins" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | LC_ALL=C sort)
     done
 
-    rm -f "$out/mcp.json"
+    [ -e "$tmp/mcp.json" ] || rm -f "$out/mcp.json"
     for f in settings.json mcp.json plugin-dirs; do
       [ -e "$tmp/$f" ] && mv "$tmp/$f" "$out/$f"
     done
