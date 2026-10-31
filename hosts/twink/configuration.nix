@@ -10,6 +10,7 @@
     ../../module/bluetooth.nix
     ../../module/claude-code.nix
     ../../module/tailscale.nix
+    ../../module/tpm-client-cert.nix
   ];
 
   networking.hostName = "twink";
@@ -22,23 +23,13 @@
     KbdInteractiveAuthentication = false;
   };
 
-  home-manager.users.${config.identity.username}.imports = [ ../../module/home-manager/lab-mtls.nix ];
-
-  security.tpm2 = {
+  services.tpmClientCert = {
     enable = true;
-    pkcs11.enable = true;
-    tctiEnvironment.enable = true;
+    token = "lab-mtls";
   };
-  users.users.${config.identity.username}.extraGroups = [ config.security.tpm2.tssGroup ];
-  environment.systemPackages = [ pkgs.tpm2-tools ];
-
-  # the token PIN is typed into eva-uid prompts; same-uid ptrace would read it
-  boot.kernel.sysctl."kernel.yama.ptrace_scope" = lib.mkDefault 1;
-  assertions = [
-    {
-      assertion = config.boot.kernel.sysctl."kernel.yama.ptrace_scope" >= 1;
-      message = "twink needs kernel.yama.ptrace_scope >= 1 for the lab-mtls PIN";
-    }
+  environment.systemPackages = [
+    pkgs.sys
+    pkgs.rend
   ];
 
   desktop.terminal = pkgs.ghostty;
