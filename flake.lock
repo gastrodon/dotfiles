@@ -119,43 +119,6 @@
         "type": "github"
       }
     },
-    "lab-nix-modules": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1792281436,
-        "narHash": "sha256-HHLTcUhgomzbb99p2COCFgZWJIn7t/4jZ+lGOp415uo=",
-        "ref": "refs/heads/main",
-        "rev": "c3e90b60a515dfb1a5125e14c1f05e7f9f4597a4",
-        "revCount": 43,
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/lab/nix-modules.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/lab/nix-modules.git"
-      }
-    },
-    "lab-pkgs": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "qcq": "qcq"
-      },
-      "locked": {
-        "lastModified": 1792388092,
-        "narHash": "sha256-2JYRKFyqmAg6+XPwenGG4D6TMSD8HKcxyXucRatrp1o=",
-        "ref": "refs/heads/main",
-        "rev": "a3d268a4536be8e30d281acb6f76159cb1031d8c",
-        "revCount": 24,
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/lab/pkgs.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/lab/pkgs.git"
-      }
-    },
     "nix-index-database": {
       "inputs": {
         "nixpkgs": [
@@ -243,26 +206,6 @@
         "type": "github"
       }
     },
-    "qcq": {
-      "inputs": {
-        "nixpkgs": [
-          "lab-pkgs",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1792358139,
-        "narHash": "sha256-hBQBjoQO65so5JvYUW1i672XP1prpTXEuyOGNNyIrQM=",
-        "ref": "refs/heads/main",
-        "rev": "73f28e7e2de48f928ee5eaf526a81a225dec44dc",
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/kitchen/qcq.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.lab.gastrodon.io/kitchen/qcq.git"
-      }
-    },
     "root": {
       "inputs": {
         "claude-code-nix": "claude-code-nix",
@@ -270,8 +213,6 @@
         "disko": "disko",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
-        "lab-nix-modules": "lab-nix-modules",
-        "lab-pkgs": "lab-pkgs",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_2",
         "nur": "nur",

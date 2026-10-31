@@ -48,7 +48,6 @@ in
     ../module/podman.nix
     ../module/sops.nix
     ../module/shared-workspace.nix
-    ../module/lab
   ];
 
   nixpkgs.config.allowUnfree = true;

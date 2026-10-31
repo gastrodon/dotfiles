@@ -147,8 +147,4 @@
       size = 16 * 1024;
     }
   ];
-
-  environment.systemPackages = [
-    pkgs.openbao
-  ];
 }

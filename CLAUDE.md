@@ -63,7 +63,8 @@ module/
     config/                  # i3 config generation (keybinds, layout, floating, exec rules)
     blocks.nix               # i3blocks status bar config
     scripts.nix              # Helper scripts (brightness, lock, etc.)
-  lab/                       # Home-lab ties: hosts.nix (IP map), bench.nix, tea.nix, home/ (bao-kv-get, memory-gardener, lab-docs-pull); stone's cluster membership comes from lab/nix-modules' stone-join
+  bench.nix                  # Hardware bench (stone): udev names, camera, bench-snap/bench-view
+  tpm-client-cert.nix        # Generic TPM2 PKCS#11 client-cert tooling (twink opts in)
   home-manager/              # Home Manager user-level config (runs as eva)
     default.nix              # HM entrypoint: sets extraSpecialArgs, imports all HM modules
     git.nix                  # Git config
@@ -74,7 +75,9 @@ module/
     ghostty.nix              # Terminal emulator
     zed/                     # Zed editor + extensions + keymap + language modules
     zsh/                     # Zsh, nix-assembled prompt (prompt.nix), aliases, initContent
-    claude.nix               # claude-code-bun package + `c` alias
+    claude.nix               # claude-code-bun package + `c` alias; claude-wrapper.nix merges profile drop-ins at launch
+package/                     # Overlay (overlays.default): sys, rend, tpm-client-cert, claude-config-merge
+check.nix                    # flake checks (claude-config-merge, wrapper argv)
 ```
 
 ## Config File Generation
@@ -109,7 +112,7 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 
 **NixOS modules** — new system-level config goes in `module/<name>.nix` (or a subdir with `default.nix`), then imported in `hosts/shared.nix`, or in the relevant `hosts/<host>/configuration.nix` if it's host-specific.
 
-**Custom packages** live in [lab/pkgs](https://git.lab.gastrodon.io/lab/pkgs) (input `lab-pkgs`) and arrive through its overlay as `pkgs.sys`, `pkgs.rend`, `pkgs.web`, `pkgs.fe`, `pkgs.scrt`. Add new ones there, then `nix flake update lab-pkgs`.
+**Custom packages** live in `package/` and arrive through `overlays.default` (applied to both hosts). Lab capability is not in this flake: install `lab-access`, `lab-claude` and `lab-mtls` with `nix profile add git+https://git.lab.gastrodon.io/lab/pkgs.git#<profile>`; this repo only hooks what a profile drops into `~/.nix-profile/share` (ssh, git, profile.d, claude drop-ins).
 
 **NUR** — Firefox extensions use NUR. The overlay is set up in `flake.nix`.
 
@@ -123,6 +126,6 @@ foo.url = "git+ssh://git@github.com/gastrodon/foo";
 | Add a shell alias | `module/home-manager/zsh/default.nix` → `shellAliases` |
 | Add a shell function/init | `module/home-manager/zsh/default.nix` → `initContent` |
 | Configure a new program | New `module/home-manager/<program>.nix`, import in `default.nix` |
-| Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` (cluster/server services: `lab/nix-modules`) |
-| Add a custom script | lab/pkgs `pkgs/`, then `nix flake update lab-pkgs` |
+| Add a system service | New `module/<service>.nix`, import in `hosts/shared.nix` |
+| Add a custom package | `package/`, register in `package/default.nix` |
 | Add a sway/i3 keybind or autostart | `module/home-manager/wm-common.nix` |

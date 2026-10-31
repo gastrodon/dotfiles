@@ -40,17 +40,6 @@
       url = "github:nmcbride/claude-desktop-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    lab-pkgs = {
-      url = "git+https://git.lab.gastrodon.io/lab/pkgs.git";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Source only: stone joins the lab cluster via lab/nix-modules' stone-join (nomad-client + pxe-boot-server).
-    lab-nix-modules = {
-      url = "git+https://git.lab.gastrodon.io/lab/nix-modules.git";
-      flake = false;
-    };
   };
 
   outputs =
@@ -66,10 +55,6 @@
       ...
     }@inputs:
     let
-      labPkgs = {
-        nixpkgs.overlays = [ inputs.lab-pkgs.overlays.default ];
-      };
-
       mkInstaller =
         { targetSystem, diskConfig }:
         nixpkgs.lib.nixosSystem {
@@ -94,7 +79,7 @@
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
           home-manager.nixosModules.home-manager
-          labPkgs
+          { nixpkgs.overlays = [ self.overlays.default ]; }
           { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
@@ -118,7 +103,7 @@
           ./hosts/shared.nix
           ./hosts/twink/configuration.nix
           home-manager.nixosModules.home-manager
-          labPkgs
+          { nixpkgs.overlays = [ self.overlays.default ]; }
           { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
           sops-nix.nixosModules.sops
