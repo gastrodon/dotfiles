@@ -6,6 +6,7 @@
     metrics = false;
   };
   auto_update = false;
+  disable_ai = true;
   edit_predictions.provider = "none";
 
   ui_font_size = 16;
@@ -24,6 +25,7 @@
     96
     120
   ];
+  autosave.after_delay.milliseconds = 500;
   format_on_save = "on";
   ensure_final_newline_on_save = true;
   remove_trailing_whitespace_on_save = true;
