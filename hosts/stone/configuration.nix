@@ -12,6 +12,7 @@
     ../../module/avahi.nix
     ../../module/claude-code.nix
     ../../module/bench.nix
+    ../../module/adb.nix
     ../../module/steam.nix
     ../../module/tailscale.nix
   ];

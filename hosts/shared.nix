@@ -46,7 +46,6 @@ in
     ../module/users.nix
     (import ../module/x11.nix { inherit palette; })
     ../module/podman.nix
-    ../module/adb.nix
     ../module/sops.nix
     ../module/shared-workspace.nix
   ];
