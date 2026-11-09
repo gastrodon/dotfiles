@@ -2,6 +2,8 @@
 {
   programs.steam = {
     enable = true;
+    package = pkgs.steam.override { extraArgs = "-pipewire"; };
+    remotePlay.openFirewall = true;
     extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
 

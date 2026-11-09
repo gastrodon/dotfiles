@@ -12,6 +12,7 @@
     ../../module/avahi.nix
     ../../module/claude-code.nix
     ../../module/bench.nix
+    ../../module/steam.nix
     ../../module/tailscale.nix
   ];
 
@@ -51,7 +52,7 @@
       workspaceOutputAssign = [
         {
           workspace = "10";
-          output = landscape;
+          output = "HEADLESS-1";
         }
       ];
       startup = [
@@ -104,6 +105,22 @@
             ''
           );
         }
+        {
+          # Virtual output for WayVR; survives the real monitors being off. Created once, re-placed on every reload.
+          always = true;
+          command = toString (
+            let
+              swaymsg = "${pkgs.sway}/bin/swaymsg";
+              jq = "${pkgs.jq}/bin/jq";
+              headless = ''${swaymsg} -t get_outputs -r | ${jq} -r '[.[] | select(.name | startswith("HEADLESS"))][0].name // empty' '';
+            in
+            pkgs.writeShellScript "stone-vr-output" ''
+              [ -n "$(${headless})" ] || ${swaymsg} create_output
+              name=$(${headless})
+              ${swaymsg} output "$name" mode 1920x1080 scale 1 pos 4000 0
+            ''
+          );
+        }
       ];
     };
 
@@ -145,8 +162,12 @@
     enable = true;
     package = nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wivrn;
     openFirewall = true;
+    autoStart = true;
   };
-  environment.systemPackages = [ pkgs.wayvr ];
+  users.users.${config.identity.username}.linger = true;
+  environment.systemPackages = [
+    nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wayvr
+  ];
 
   powerManagement.cpuFreqGovernor = "performance";
 
