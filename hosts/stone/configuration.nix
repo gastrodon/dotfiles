@@ -158,6 +158,12 @@
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
 
+  # Steam asks for a screen share at startup; share the VR output without a picker so it works from the headset.
+  xdg.portal.wlr.settings.screencast = lib.mkForce {
+    chooser_type = "none";
+    output_name = "HEADLESS-1";
+  };
+
   services.wivrn = {
     enable = true;
     package = nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wivrn;
