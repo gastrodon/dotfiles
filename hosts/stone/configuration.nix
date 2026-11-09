@@ -3,6 +3,7 @@
   config,
   lib,
   pkgs,
+  nixpkgs-unstable,
   ...
 }:
 {
@@ -142,6 +143,7 @@
 
   services.wivrn = {
     enable = true;
+    package = nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wivrn;
     openFirewall = true;
   };
   environment.systemPackages = [ pkgs.wayvr ];

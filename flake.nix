@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -46,6 +47,7 @@
     {
       self,
       nixpkgs,
+      nixpkgs-unstable,
       home-manager,
       sops-nix,
       nur,
@@ -74,7 +76,7 @@
     {
       nixosConfigurations.stone = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit claude-code-nix claude-desktop-nix; };
+        specialArgs = { inherit claude-code-nix claude-desktop-nix nixpkgs-unstable; };
         modules = [
           ./hosts/shared.nix
           ./hosts/stone/configuration.nix
