@@ -159,6 +159,13 @@
   hardware.nvidia-container-toolkit.enable = true;
 
   # Steam asks for a screen share at startup; share the VR output without a picker so it works from the headset.
+  # 0.8.2 dies with "session already has a frame object" when Steam flaps pause/stream; fixed in later releases.
+  nixpkgs.overlays = [
+    (final: prev: {
+      inherit (nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}) xdg-desktop-portal-wlr;
+    })
+  ];
+
   xdg.portal.wlr.settings.screencast = lib.mkForce {
     chooser_type = "none";
     output_name = "HEADLESS-1";
