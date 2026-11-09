@@ -27,6 +27,7 @@
   ];
 
   networking.hostName = "stone";
+  networking.firewall.allowedUDPPorts = [ 34197 ];
 
   services.openssh.settings = {
     PermitRootLogin = "no";
@@ -138,6 +139,12 @@
   };
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
+
+  services.wivrn = {
+    enable = true;
+    openFirewall = true;
+  };
+  environment.systemPackages = [ pkgs.wayvr ];
 
   powerManagement.cpuFreqGovernor = "performance";
 
