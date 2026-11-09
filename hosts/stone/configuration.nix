@@ -162,6 +162,7 @@
   xdg.portal.wlr.settings.screencast = lib.mkForce {
     chooser_type = "none";
     output_name = "HEADLESS-1";
+    force_mod_linear = true;
   };
 
   services.wivrn = {
