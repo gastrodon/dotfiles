@@ -1,12 +1,18 @@
-{ pkgs, ... }:
+{ pkgs, nixpkgs-unstable, ... }:
 {
   programs.steam = {
     enable = true;
-    package = pkgs.steam.override {
-      extraArgs = "-pipewire";
-      # Steam's 32-bit EGL otherwise loads the 64-bit egl-gbm and fails, so -pipewire capture dies.
-      extraEnv.__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS = "/run/opengl-driver/share/egl/egl_external_platform.d:/run/opengl-driver-32/share/egl/egl_external_platform.d";
-    };
+    # Same glibc as the unstable wivrn runtime, which pressure-vessel loads from the host.
+    package =
+      (import nixpkgs-unstable {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config.allowUnfree = true;
+      }).steam.override
+        {
+          extraArgs = "-pipewire";
+          # Steam's 32-bit EGL otherwise loads the 64-bit egl-gbm and fails, so -pipewire capture dies.
+          extraEnv.__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS = "/run/opengl-driver/share/egl/egl_external_platform.d:/run/opengl-driver-32/share/egl/egl_external_platform.d";
+        };
     extraPackages = [ pkgs.pulseaudio ];
     remotePlay.openFirewall = true;
     extraCompatPackages = [ pkgs.proton-ge-bin ];
