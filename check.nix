@@ -18,13 +18,15 @@ in
     export HOME=$TMPDIR/home
     mkdir -p $HOME
     t=$TMPDIR/t
-    mkdir -p $t/a/claude/{mcp.d,settings.d,plugins/p1/.claude-plugin} $t/b/claude/{mcp.d,settings.d,plugins/p1dup/.claude-plugin,plugins/p2/.claude-plugin}
+    mkdir -p $t/a/claude/{mcp.d,settings.d,instructions.d,plugins/p1/.claude-plugin} $t/b/claude/{mcp.d,settings.d,instructions.d,plugins/p1dup/.claude-plugin,plugins/p2/.claude-plugin}
     ln -s $t/a $t/a-link
     echo '{"name":"p1"}' > $t/a/claude/plugins/p1/.claude-plugin/plugin.json
     echo '{"name":"p1"}' > $t/b/claude/plugins/p1dup/.claude-plugin/plugin.json
     echo '{"name":"p2"}' > $t/b/claude/plugins/p2/.claude-plugin/plugin.json
     echo '{"mcpServers":{"one":{"command":"/x/one"}}}' > $t/a/claude/mcp.d/a.json
     echo '{"mcpServers":{"two":{"command":"/x/two"}}}' > $t/b/claude/mcp.d/b.json
+    printf 'rules a\n' > $t/a/claude/instructions.d/a.md
+    printf 'rules b\n' > $t/b/claude/instructions.d/b.md
     echo '{"model":"opus","permissions":{"allow":["A","B"]},"env":{"X":"1"}}' > $t/a/claude/settings.d/a.json
     echo '{"permissions":{"allow":["B","C"]},"env":{"Y":"2"},"model":null}' > $t/b/claude/settings.d/b.json
     echo '{"model":"sonnet","effort":"low","permissions":{"deny":["D"]}}' > $t/base.json
@@ -37,6 +39,7 @@ in
     jq -e '.mcpServers == {one:{command:"/x/one"},two:{command:"/x/two"}}' $TMPDIR/o1/mcp.json
     jq -e '.permissions.allow == ["A","B","C"] and .permissions.deny == ["D"]
       and .model == "opus" and .effort == "low" and .env == {X:"1",Y:"2"}' $TMPDIR/o1/settings.json
+    printf 'rules a\n\nrules b\n' | diff - $TMPDIR/o1/instructions.md
     printf '%s\n%s\n' $(realpath $t/a/claude/plugins/p1) $(realpath $t/b/claude/plugins/p2) | diff - $TMPDIR/o1/plugin-dirs
 
     # duplicate server name fails and names both files
@@ -52,6 +55,7 @@ in
     export CLAUDE_CONFIG_MERGE_SHARE_DIRS=$t/empty
     claude-config-merge --base $t/base.json --out $TMPDIR/o3
     test ! -e $TMPDIR/o3/mcp.json
+    test ! -e $TMPDIR/o3/instructions.md
     jq -e '. == input' $TMPDIR/o3/settings.json $t/base.json
     test ! -s $TMPDIR/o3/plugin-dirs
     touch $out
@@ -61,7 +65,8 @@ in
     pkgs.runCommand "claude-wrapper-check" { nativeBuildInputs = [ pkgs.diffutils ]; }
       ''
         t=$TMPDIR/t
-        mkdir -p $t/a/claude/{mcp.d,plugins/p1/.claude-plugin} $t/empty
+        mkdir -p $t/a/claude/{mcp.d,instructions.d,plugins/p1/.claude-plugin} $t/empty
+        echo rules > $t/a/claude/instructions.d/a.md
         echo '{"name":"p1"}' > $t/a/claude/plugins/p1/.claude-plugin/plugin.json
         echo '{"mcpServers":{"one":{"command":"/x/one"}}}' > $t/a/claude/mcp.d/a.json
         export XDG_RUNTIME_DIR=$TMPDIR/run
@@ -77,6 +82,7 @@ in
 
         CLAUDE_CONFIG_MERGE_SHARE_DIRS=$t/a $w --hello > $TMPDIR/out1
         printf '%s\n' --settings $XDG_RUNTIME_DIR/claude/settings.json --mcp-config $XDG_RUNTIME_DIR/claude/mcp.json \
+          --append-system-prompt-file $XDG_RUNTIME_DIR/claude/instructions.md \
           --plugin-dir $(realpath $t/a/claude/plugins/p1) --hello | diff - $TMPDIR/out1
 
         CLAUDE_CONFIG_MERGE_SHARE_DIRS=$t/empty $w --hello > $TMPDIR/out2

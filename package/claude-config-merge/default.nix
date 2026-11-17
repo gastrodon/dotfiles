@@ -3,6 +3,7 @@
   jq,
   coreutils,
   findutils,
+  gawk,
 }:
 writeShellApplication {
   name = "claude-config-merge";
@@ -10,6 +11,7 @@ writeShellApplication {
     jq
     coreutils
     findutils
+    gawk
   ];
   text = ''
     base=""
@@ -47,7 +49,7 @@ writeShellApplication {
 
     declare -A seen_file=()
     collect() {
-      local sub="$1" d f r
+      local sub="$1" pat="''${2:-*.json}" d f r
       for d in "''${dirs[@]}"; do
         [ -d "$d/claude/$sub" ] || continue
         while IFS= read -r f; do
@@ -55,12 +57,13 @@ writeShellApplication {
           [ -z "''${seen_file[$sub:$r]:-}" ] || continue
           seen_file[$sub:$r]=1
           echo "$r"
-        done < <(find "$d/claude/$sub" -maxdepth 1 \( -type f -o -type l \) -name '*.json' | LC_ALL=C sort)
+        done < <(find "$d/claude/$sub" -maxdepth 1 \( -type f -o -type l \) -name "$pat" | LC_ALL=C sort)
       done
     }
 
     mapfile -t mcp_files < <(collect mcp.d)
     mapfile -t settings_files < <(collect settings.d)
+    mapfile -t instruction_files < <(collect instructions.d '*.md')
 
     declare -A owner=()
     for f in "''${mcp_files[@]}"; do
@@ -91,6 +94,10 @@ writeShellApplication {
       rm -f "$tmp/mcp.json.full"
     fi
 
+    if [ "''${#instruction_files[@]}" -gt 0 ]; then
+      awk 'FNR == 1 && NR != 1 { print "" } { print }' "''${instruction_files[@]}" > "$tmp/instructions.md"
+    fi
+
     : > "$tmp/plugin-dirs"
     declare -A seen_plugin=()
     for d in "''${dirs[@]}"; do
@@ -105,7 +112,8 @@ writeShellApplication {
     done
 
     [ -e "$tmp/mcp.json" ] || rm -f "$out/mcp.json"
-    for f in settings.json mcp.json plugin-dirs; do
+    [ -e "$tmp/instructions.md" ] || rm -f "$out/instructions.md"
+    for f in settings.json mcp.json instructions.md plugin-dirs; do
       [ -e "$tmp/$f" ] && mv "$tmp/$f" "$out/$f"
     done
     exit 0

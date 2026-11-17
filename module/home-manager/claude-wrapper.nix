@@ -19,6 +19,9 @@ pkgs.writeShellScriptBin "claude" ''
   if [ -e "$dir/mcp.json" ]; then
     args+=(--mcp-config "$dir/mcp.json")
   fi
+  if [ -e "$dir/instructions.md" ]; then
+    args+=(--append-system-prompt-file "$dir/instructions.md")
+  fi
   while IFS= read -r p; do
     args+=(--plugin-dir "$p")
   done < "$dir/plugin-dirs"
