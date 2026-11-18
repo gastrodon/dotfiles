@@ -47,7 +47,7 @@ Format with `nix fmt`. `.githooks/pre-commit` runs CI's `nixfmt --check` on stag
 
 ```
 flake.nix                    # Flake inputs/outputs: each host's nixosConfiguration and <host>-installer; packages .#<host> (toplevel) and .#iso-<host>.
-build.nix                    # Flake apps that act: nix run .#<update|switch|add-host|remove-host>.
+build.nix                    # Flake apps that act: nix run .#<update|switch>.
 hosts/
   shared.nix                 # Shared entry point. Imports all common modules. Defines palette.
   installer.nix              # Unattended installer ISO: disko + nixos-install of the host, host key from a HOSTKEYS stick
@@ -92,7 +92,7 @@ in builtins.readFile (fmt.generate "config.yaml" {
 })
 ```
 
-This applies everywhere: `sops.templates`, `home.file`, activation scripts, anywhere a config file is produced.
+This applies everywhere: `home.file`, activation scripts, anywhere a config file is produced.
 
 ## Flake Inputs
 

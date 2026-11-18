@@ -12,11 +12,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nur.url = "github:nix-community/NUR";
 
     disko = {
@@ -49,7 +44,6 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
-      sops-nix,
       nur,
       disko,
       claude-code-nix,
@@ -84,7 +78,6 @@
           { nixpkgs.overlays = [ self.overlays.default ]; }
           { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
-          sops-nix.nixosModules.sops
         ];
       };
 
@@ -108,7 +101,6 @@
           { nixpkgs.overlays = [ self.overlays.default ]; }
           { home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ]; }
           nur.modules.nixos.default
-          sops-nix.nixosModules.sops
         ];
       };
 

@@ -32,5 +32,4 @@ The shared configuration is in the root `configuration.nix`, which both hosts im
 2. Add `hosts/<hostname>/configuration.nix` with host-specific settings
 3. Add `hosts/<hostname>/hardware-configuration.nix` (run `nixos-generate-config` on the target machine)
 4. Update `flake.nix` to add the new `nixosConfigurations.<hostname>` entry and `packages.x86_64-linux.<hostname>`
-5. Run `nix run .#add-host` on the new machine to make it a `secrets.yaml` decrypter
-6. For an installer ISO, add `nixosConfigurations.<hostname>-installer` (via `mkInstaller`) and `packages.x86_64-linux.iso-<hostname>` to `flake.nix`
+5. For an installer ISO, add `nixosConfigurations.<hostname>-installer` (via `mkInstaller`) and `packages.x86_64-linux.iso-<hostname>` to `flake.nix`

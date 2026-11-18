@@ -1,5 +1,5 @@
 # "claude-code local development" capability — import on hosts where eva runs `claude` (stone, twink).
-# Wires the home-manager claude.nix + the sops approle secrets the lab profiles read. Hosts that skip it never decrypt secrets.yaml.
+# Wires the home-manager claude.nix.
 # Also installs Claude Desktop + Cowork's VM sandbox (EVA-592).
 {
   config,
@@ -23,10 +23,19 @@
   };
   users.users.claude.extraGroups = [ "devs" ];
 
+  # Where the lab profiles read the approle secret ids.
+  passage.secrets = {
+    CLAUDE_APPROLE_GITEA = {
+      path = "/run/secrets/bao/gitea_approle_secret_id";
+      owner = config.identity.username;
+    };
+    CLAUDE_APPROLE_MCP = {
+      path = "/run/secrets/bao/claude_mcp_approle_secret_id";
+      owner = config.identity.username;
+    };
+  };
+
   home-manager.users.${config.identity.username}.imports = [
     ./home-manager/claude.nix
   ];
-
-  sops.secrets."bao/gitea_approle_secret_id".owner = config.identity.username;
-  sops.secrets."bao/claude_mcp_approle_secret_id".owner = config.identity.username;
 }

@@ -2,7 +2,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -23,7 +22,7 @@ in
     services.tailscale = {
       enable = true;
       openFirewall = true;
-      authKeyFile = config.sops.secrets."tailscale/auth_key".path;
+      authKeyFile = config.passage.secrets.TAILSCALE_AUTH_KEY.path;
       # LAN DNS is blocky via DHCP (EVA-551); MagicDNS would forward to a stale upstream instead.
       extraSetFlags = [
         "--accept-dns=false"
@@ -31,6 +30,10 @@ in
       ];
     };
 
-    sops.secrets."tailscale/auth_key" = { };
+    passage.secrets.TAILSCALE_AUTH_KEY.restartUnits = [ "tailscaled-autoconnect.service" ];
+
+    # Skipped until passage-sync has put the key on disk.
+    systemd.services.tailscaled-autoconnect.unitConfig.ConditionFileNotEmpty =
+      config.passage.secrets.TAILSCALE_AUTH_KEY.path;
   };
 }

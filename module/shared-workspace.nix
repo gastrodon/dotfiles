@@ -1,9 +1,9 @@
 # A working tree both the human and the agent can reach.
 #
 # WHY THIS EXISTS. The agent runs as an OS user. If that user is `eva`, it
-# inherits eva's whole identity -- including the age key at
-# ~/.config/sops/age/keys.txt, which is a recipient of every secrets file, so
-# the agent can decrypt everything by default rather than by decision. The
+# inherits eva's whole identity -- including the passage age identity at
+# ~/.passage/identities, so the agent can decrypt every stored secret by
+# default rather than by decision. The
 # only real boundary is a different uid.
 #
 # But /home/eva is 0700, so an agent running as `claude` cannot traverse into
