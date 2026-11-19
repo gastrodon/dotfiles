@@ -7,7 +7,7 @@
 let
   githubKeys = builtins.fetchurl {
     url = "https://github.com/gastrodon.keys";
-    sha256 = "sha256-o46IPXKvUzgoNgSdLt9j3ThkeJbc6P5HGcFZKHH3Rhw=";
+    sha256 = "sha256-rKuy/JBoqT8mWi4ei9b4Fq4eaj/jf+vZJwisHDbdnPI=";
   };
 in
 {
