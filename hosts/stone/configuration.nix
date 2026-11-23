@@ -50,12 +50,6 @@
       portrait = "Acer Technologies Acer VG270U 0x01415551";
     in
     {
-      workspaceOutputAssign = [
-        {
-          workspace = "10";
-          output = "HEADLESS-1";
-        }
-      ];
       startup = [
         {
           # A reload (home-manager's apply does one) resets outputs to the config file's, which has none.
@@ -106,22 +100,6 @@
             ''
           );
         }
-        {
-          # Virtual output for WayVR; survives the real monitors being off. Created once, re-placed on every reload.
-          always = true;
-          command = toString (
-            let
-              swaymsg = "${pkgs.sway}/bin/swaymsg";
-              jq = "${pkgs.jq}/bin/jq";
-              headless = ''${swaymsg} -t get_outputs -r | ${jq} -r '[.[] | select(.name | startswith("HEADLESS"))][0].name // empty' '';
-            in
-            pkgs.writeShellScript "stone-vr-output" ''
-              [ -n "$(${headless})" ] || ${swaymsg} create_output
-              name=$(${headless})
-              ${swaymsg} output "$name" mode 1920x1080 scale 1 pos 4000 0
-            ''
-          );
-        }
       ];
     };
 
@@ -159,7 +137,6 @@
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
 
-  # Steam asks for a screen share at startup; share the VR output without a picker so it works from the headset.
   # 0.8.2 dies with "session already has a frame object" when Steam flaps pause/stream; fixed in later releases.
   nixpkgs.overlays = [
     (final: prev: {
@@ -167,11 +144,8 @@
     })
   ];
 
-  xdg.portal.wlr.settings.screencast = lib.mkForce {
-    chooser_type = "none";
-    output_name = "HEADLESS-1";
-    force_mod_linear = true;
-  };
+  # Keeps the shared slurp output picker; Steam's startup screen share now prompts for an output too.
+  xdg.portal.wlr.settings.screencast.force_mod_linear = true;
 
   services.wivrn = {
     enable = true;
